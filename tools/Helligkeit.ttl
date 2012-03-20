@@ -1,0 +1,142 @@
+; Tera Term Pro macro file for Line-End-Test and -Setup
+
+defaultpass = 'f6367851'
+defaulttimeout = 5
+
+defaultred4 = 2600
+defaultred3 = 4050
+defaultredc = 1700
+defaultred2 = 3700
+defaultred1 = 5050
+
+
+
+:PROGLOOP
+	; /////// INIT ///////
+	
+	timeout = defaulttimeout
+	
+
+	; ///////////////////////// Set powerlevel ////////////////////////
+
+	call getprompt
+	call superuser
+	beep
+	inputbox 'Powerlevel in percent:' 'Change Power Level'
+
+	str2int inputval inputstr
+	
+	if result=1 then
+		profilesetid = '2.2.2.2'
+		int2str profilesetvalue (inputval*defaultred4/100)
+		call profileset
+		profilesetid = '2.2.2.3'
+		int2str profilesetvalue (inputval*defaultred3/100)
+		call profileset
+		profilesetid = '2.2.2.4'
+		int2str profilesetvalue (inputval*defaultredc/100)
+		call profileset
+		profilesetid = '2.2.2.5'
+		int2str profilesetvalue (inputval*defaultred2/100)
+		call profileset
+		profilesetid = '2.2.2.6'
+		int2str profilesetvalue (inputval*defaultred1/100)
+		call profileset
+		
+		stringtosend = 'profile save'
+		call msend
+	endif
+
+	
+
+	
+
+	; ////////////////////////  D O N E  /////////////////////
+	
+	goto RESTART
+:ERRTIMEOUT
+	beep
+	messagebox 'Timeout while waiting for response' 'ERROR'
+	pause 2
+:RESTART
+	beep
+	yesnobox 'R E S T A R T ?' 'Beacon LineEndSuite'
+	if result goto PROGLOOP
+	end
+	
+
+
+	; ********************* helper functions *********************
+
+:getprompt
+	count = 0
+	timeout_old = timeout
+	timeout = 1
+	sendln
+	mpause 100
+	sendln
+	mpause 100
+	flushrecv
+	while count < 10
+		sendln
+		mpause 100
+		wait '>'
+		if result=1 break
+		count = count + 1
+	endwhile
+	timeout = timeout_old
+return
+
+
+:msend
+	mpause 100
+    strlen stringtosend
+	ccount = result
+	idx = 1
+	while idx < ccount + 2
+		strcopy stringtosend idx 1 substr
+		send substr
+		mpause 50
+		idx = idx + 1
+	endwhile
+	send 13
+return
+
+
+:profileset
+	flushrecv
+	stringtosend = 'profile set '
+	strconcat stringtosend profilesetid
+	strconcat stringtosend ' '
+	strconcat stringtosend profilesetvalue
+	call msend
+	timeout = 2
+	wait '#>'
+	timeout = defaulttimeout
+return
+
+:superuser
+	flushrecv
+	stringtosend = 'su'
+	call msend
+	timeout = 2
+	wait 'Password: ' 'OK' '>'
+	if result=1 then
+		stringtosend = defaultpass
+		call msend
+		wait '>'
+	endif
+	timeout = defaulttimeout
+return
+
+:tabortcommand
+	idx = 1
+	while idx < 10
+		send 13
+		mpause 200
+		idx = idx + 1
+	endwhile
+	flushrecv
+return
+
+ 
