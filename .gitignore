@@ -1,0 +1,42 @@
+
+# /code/main/Libraries/STM32F2xx_StdPeriph_Driver/
+
+# /code/main/Libraries/STM32F2xx_StdPeriph_Driver/inc/
+
+# /code/main/Libraries/STM32F2xx_StdPeriph_Driver/src/
+
+# /code/zigbee/zigbee/BitCloud/Components/APS/include/private/
+
+# /code/zigbee/zigbee/BitCloud/Components/ConfigServer/include/private/
+
+# /code/zigbee/zigbee/BitCloud/Components/HAL/drivers/ISD/
+
+# /code/zigbee/zigbee/BitCloud/Components/HAL/drivers/ISD/include/
+
+# /code/zigbee/zigbee/BitCloud/Components/HAL/drivers/ISD/list/
+
+# /code/zigbee/zigbee/BitCloud/Components/HAL/drivers/ISD/objs/
+
+# /code/zigbee/zigbee/BitCloud/Components/HAL/drivers/ISD/src/
+
+# /code/zigbee/zigbee/BitCloud/Components/MAC_PHY/MAC_ENV/
+
+# /code/zigbee/zigbee/BitCloud/Components/MAC_PHY/MAC_ENV/include/
+
+# /code/zigbee/zigbee/BitCloud/Components/MAC_PHY/MAC_HWD_PHY/
+
+# /code/zigbee/zigbee/BitCloud/Components/MAC_PHY/MAC_HWD_PHY/include/
+
+# /code/zigbee/zigbee/BitCloud/Components/MAC_PHY/MAC_HWI/
+
+# /code/zigbee/zigbee/BitCloud/Components/MAC_PHY/MAC_HWI/include/
+
+# /code/zigbee/zigbee/BitCloud/Components/PersistDataServer/include/private/
+
+# /code/zigbee/zigbee/makefiles/
+
+# /code/zigbee/zigbee/makefiles/zigbee/
+
+# /datasheets/rs485/
+
+# /firmware/release/
