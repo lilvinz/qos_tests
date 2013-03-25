@@ -1,0 +1,3 @@
+[submodule "code/submodules/flashtool"]
+	path = code/submodules/flashtool
+	url = ssh://git@gitlab/flashtool.git
