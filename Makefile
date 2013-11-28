@@ -4,12 +4,10 @@
 # Set bash shell
 export SHELL := /bin/bash
 
-# set project repository's root path
-export TOP := $(realpath .)
-
 # Set up some macros for common directories within the tree
 export ROOT_DIR := $(CURDIR)
 export TARGETS_DIR := $(ROOT_DIR)/src/targets
+export TESTS_DIR := $(ROOT_DIR)/src/tests
 export TOOLS_DIR := $(ROOT_DIR)/tools
 export BUILD_DIR := $(ROOT_DIR)/build
 export DL_DIR=$(ROOT_DIR)/downloads
@@ -87,8 +85,8 @@ help:
 	@echo "   [Unittests]"
 	@echo "     ut_<test>            - Build unit test <test>"
 	@echo "                            supported tests are ($(ALL_UNITTESTS))"
-	@echo "     ut_<test>_tap        - Run test and capture TAP output into a file"
-	@echo "     ut_<test>_run        - Run test and dump TAP output to console"
+	@echo "     ut_<test>_xml        - Run test and capture XML output into a file"
+	@echo "     ut_<test>_run        - Run test and dump XML output to console"
 	@echo
 	@echo "   [Misc]"
 	@echo "     astyle FILE=<name>   - Executes the astyle code formatter to reformat"
@@ -119,9 +117,11 @@ fw_$(1): fw_$(1)_fw
 fw_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/fw && \
 		$$(MAKE) -r --no-print-directory \
-		TOP=$(TOP) \
 		BOARD_NAME=$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)"
+		BUILD_TYPE=fw \
+		OUTDIR=$(BUILD_DIR)/fw_$(1) \
+		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
+		$$*
 
 .PHONY: $(1)_clean
 $(1)_clean: fw_$(1)_clean
@@ -139,9 +139,11 @@ bl_$(1)_bino: bl_$(1)_bin
 bl_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/bl && \
 		$$(MAKE) -r --no-print-directory \
-		TOP=$(TOP) \
 		BOARD_NAME=$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)"
+		BUILD_TYPE=bl \
+		OUTDIR=$(BUILD_DIR)/bl_$(1) \
+		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
+		$$*
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
@@ -157,9 +159,11 @@ ef_$(1): ef_$(1)_bin
 ef_$(1)_%: bl_$(1)_bin fw_$(1)_fw
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
-		TOP=$(TOP) \
 		BOARD_NAME=$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)"
+		BUILD_TYPE=ef \
+		OUTDIR=$(BUILD_DIR)/ef_$(1) \
+		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
+		$$*
 
 .PHONY: ef_$(1)_clean
 ef_$(1)_clean:
@@ -175,9 +179,11 @@ ft_$(1): ef_$(1)_bin
 ft_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
-		TOP=$(TOP) \
 		BOARD_NAME=$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)"
+		BUILD_TYPE=ft \
+		OUTDIR=$(BUILD_DIR)/ft_$(1) \
+		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
+		$$*
 
 .PHONY: ft_$(1)_clean
 ft_$(1)_clean:
@@ -267,9 +273,7 @@ $(foreach board, $(FT_BOARDS), $(eval $(call FT_TEMPLATE,$(board))))
 #
 ##############################
 
-ALL_UNITTESTS := $(notdir $(wildcard src/tests/*))
-
-UT_OUT_DIR := $(BUILD_DIR)/tests
+ALL_UNITTESTS := $(notdir $(wildcard $(TESTS_DIR)/*))
 
 $(UT_OUT_DIR):
 	$(V1) mkdir -p $@
@@ -295,14 +299,13 @@ ut_$(1): ut_$(1)_elf
 
 ut_$(1)_%: $$(UT_OUT_DIR)
 	$(V1) mkdir -p $(UT_OUT_DIR)/$(1)
-	$(V1) cd $(ROOT_DIR)/src/tests/$(1) && \
+	$(V1) cd $(TESTS_DIR)/$(1) && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
-		BOARD_SHORT_NAME=$(1) \
 		BUILD_TYPE=ut \
 		TCHAIN_PREFIX="" \
 		TARGET=$(1) \
-		OUTDIR="$(UT_OUT_DIR)/$(1)" \
+		OUTDIR=$(BUILD_DIR)/fw_$(1) \
 		GTEST_DIR=$(GTEST_DIR) \
 		$$*
 
@@ -316,7 +319,7 @@ endef
 # Expand the unittest rules
 $(foreach ut, $(ALL_UNITTESTS), $(eval $(call UT_TEMPLATE,$(ut))))
 
-# Disable parallel make when the all_ut_run target is requested otherwise the TAP
+# Disable parallel make when the all_ut_run target is requested otherwise the XML
 # output is interleaved with the rest of the make output.
 ifneq ($(strip $(filter all_ut_run,$(MAKECMDGOALS))),)
     .NOTPARALLEL:
