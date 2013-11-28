@@ -28,13 +28,13 @@ arm_sdk_clean:
 #
 ###########################################################################################################
 
-OPENOCD_DIR       := $(TOOLS_DIR)/openocd
+OPENOCD_DIR := $(TOOLS_DIR)/openocd
 OPENOCD_BUILD_DIR := $(DL_DIR)/openocd-build
 
 .PHONY: openocd_install
 openocd_install: | $(DL_DIR) $(TOOLS_DIR)
-openocd_install: OPENOCD_URL     := https://github.com/lilvinz/openocd
-openocd_install: OPENOCD_REV     := v0.7.0_freertos_cm4_stacking
+openocd_install: OPENOCD_URL := https://github.com/lilvinz/openocd
+openocd_install: OPENOCD_REV := v0.7.0_freertos_cm4_stacking
 openocd_install: OPENOCD_OPTIONS := --enable-maintainer-mode --prefix="$(OPENOCD_DIR)" --enable-ftdi --enable-stlink
 openocd_install: openocd_clean
     # download the source
@@ -43,19 +43,19 @@ openocd_install: openocd_clean
 	$(V1) mkdir -p "$(OPENOCD_BUILD_DIR)"
 	$(V1) git clone --no-checkout $(OPENOCD_URL) "$(OPENOCD_BUILD_DIR)"
 	$(V1) ( \
-	  cd $(OPENOCD_BUILD_DIR) ; \
-	  git checkout -q $(OPENOCD_REV) ; \
+	    cd $(OPENOCD_BUILD_DIR) ; \
+	    git checkout -q $(OPENOCD_REV) ; \
 	)
 
     # build and install
 	$(V0) @echo " BUILD        $(OPENOCD_DIR)"
 	$(V1) mkdir -p "$(OPENOCD_DIR)"
 	$(V1) ( \
-	  cd $(OPENOCD_BUILD_DIR) ; \
-	  ./bootstrap ; \
-	  ./configure  $(OPENOCD_OPTIONS) ; \
-	  $(MAKE) ; \
-	  $(MAKE) install ; \
+	    cd $(OPENOCD_BUILD_DIR) ; \
+	    ./bootstrap ; \
+	    ./configure  $(OPENOCD_OPTIONS) ; \
+	    $(MAKE) ; \
+	    $(MAKE) install ; \
 	)
 
     # delete the extracted source when we're done
@@ -74,11 +74,11 @@ openocd_clean:
 #
 ###########################################################################################################
 
-GTEST_DIR       := $(TOOLS_DIR)/gtest-1.6.0
+GTEST_DIR := $(TOOLS_DIR)/gtest-1.7.0
 
 .PHONY: gtest_install
 gtest_install: | $(DL_DIR) $(TOOLS_DIR)
-gtest_install: GTEST_URL  := http://googletest.googlecode.com/files/gtest-1.6.0.zip
+gtest_install: GTEST_URL := http://googletest.googlecode.com/files/gtest-1.7.0.zip
 gtest_install: GTEST_FILE := $(notdir $(GTEST_URL))
 gtest_install: gtest_clean
     # download the file unconditionally since google code gives back 404
