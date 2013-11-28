@@ -1,0 +1,687 @@
+Release Notes
+=============
+BitCloud 1_12_0
+Date	 July 6 2011
+
+I. Scope
+========
+The purpose of Release Notes is to specify the composition of
+BitCloud SDK.  This document lists resolved defects and 
+implemented features for this and all previous versions.  Scroll 
+down to the end of the document for known issues and limitations.
+
+II. Products/configurations
+===========================
+
+This package includes the following software deliverables:
+- BitCloud ZigBee PRO stack v1.12.0 (headers and libraries);
+- BitCloud sample application source files, Makefiles and project files;
+- SerialNet v2.6.0 (for supported platforms only)
+- WSN Monitor v2.2.1.66
+- Configurator v2.0.0.153
+- GUI Serial/OTAU Bootloader v1.2.1.165
+- WSNRunner v1.2.3.263 (for supported platforms only)
+- Embedded serial bootloader (for supported platforms only)
+- Range test utility (for supported platforms only) 
+
+III. Compatibility and minimum system requirements
+==================================================
+
+Minimum system requirements and pre-requisites are listed in AVR2052
+application note (see Documentation folder)
+
+
+IV. Revision History
+====================
+
+BitCloud 1.12.0/BitCloud Profile Suite 1.8.0:
+
+New Features (34)
+   [ZIGBEEODC-1438] - Support explicitely RCB128RFA1 board in BitCloud SDKs
+   [ZIGBEEODC-1447] - Debug and redesign APS transport key
+   [ZIGBEEODC-1422] - Add dependency between Library type and Device role to   .cf project files
+   [ZIGBEEODC-1429] - Change Configurator parameters classification
+   [ZIGBEEODC-1433] - Update copyrights in BitCloud code
+   [ZIGBEEODC-1405] - Extend length and cmd ID fields to two bytes in the Runner protocol
+   [ZIGBEEODC-1388] - Support frame counter increase for security schemes
+   [ZIGBEEODC-770]  - Support sleeping mode on all device types
+   [ZIGBEEODC-1146] - Implement OTAU server side in BitCloud ZCL
+   [ZIGBEEODC-1374] - Make APS Ack timeouts depend on transmission radius
+   [ZIGBEEODC-1385] - Support GCC on SAM3S platform
+   [ZIGBEEODC-1400] - Support new version of IAR ARM
+   [ZIGBEEODC-1342] - Review CS_RX_ON_WHEN_IDLE implementation
+   [ZIGBEEODC-1390] - Make SerialBootloader documentation universal for supported platforms
+   [ZIGBEEODC-1256] - Add possiblity to disable BSP-specific peripherals from application code
+   [ZIGBEEODC-1002] - Support Atmel MeshBeans in BitCloud
+   [ZIGBEEODC-1375] - It shall be possible to access Manufacturer Specific Code from indication function
+   [ZIGBEEODC-1386] - Extend NWK_NetworkDiscoveryReq with option to keep entries in neighbor table
+   [ZIGBEEODC-627]  - Implement secrutity type selection based on cluster specification
+   [ZIGBEEODC-1358] - Support RCB212, RCB231 and RCB230 in SerialNet
+   [ZIGBEEODC-1359] - Optimize stack sizes in IAR linker scripts
+   [ZIGBEEODC-614]  - Implement ZDO EndDevice Binding feature
+   [ZIGBEEODC-1375] - It shall be possible to access Manufacturer Specific Code from indication function
+   [ZIGBEEODC-1290] - Update HAL according to new errata of Xmega MCU
+   [ZIGBEEODC-1313] - Support per-cluster security settings in ZCL
+   [ZIGBEEODC-1428] - Create template project
+   [ZIGBEEODC-179]  - DOC: Improve documentation of ZDO_StartSyncReq and ZDO_StopSyncReq
+   [ZIGBEEODC-277]  - DOC: Create BitCloud porting guide
+   [ZIGBEEODC-1341] - DOC: Create OTAU application note
+   [ZIGBEEODC-140]  - DOC: Improve stack parameter documentation in csDefaults.h
+   [ZIGBEEODC-74]   - DOC: Add stack initialization description to BitCloud User Guide
+   [ZIGBEEODC-1390] - DOC: Make SerialBootloader documentation universal for supported platforms
+   [ZIGBEEODC-1423] - DOC: Support REB CBB and RF4CE boards in Quick Start Guides
+   [ZIGBEEODC-1323] - Generate files describing dependency of project names' on parameters such as platform, radio, ota, amp etc.
+
+Resolved defects (63)
+   [ZIGBEEODC-1488] - WSNDemo RCB231 cannon join to SAM3S RF230B. Standart security
+   [ZIGBEEODC-1477] - WSNDemo preconfigured key - EndDevices continuously rejoin.
+   [ZIGBEEODC-1478] - ZAppSi: Demo HADevice shows 'Assert'
+   [ZIGBEEODC-1480] - SEDevices in mix network with AVR32 don't function as expected.
+   [ZIGBEEODC-1481] - ZAppSi: No packets from Demo HADevice.
+   [ZIGBEEODC-1484] - No IAR projects for bootloader in all releases.
+   [ZIGBEEODC-1455] - Static address is lost after reset
+   [ZIGBEEODC-1470] - HADevices - thermostat doesn't have setpointCommand in USART output
+   [ZIGBEEODC-1472] - XMEGA Meter cannot join to MEGARF ESP with SESecurity
+   [ZIGBEEODC-1474] - ZAppSi: Bind request is expected
+   [ZIGBEEODC-1448] - Unnecessary byte in zcl packets that are sent by runner
+   [ZIGBEEODC-1268] - ZAppSi Runner doesn't work on REB CBB RF212
+   [ZIGBEEODC-1436] - Network does not start with precompiled WSNDemo images
+   [ZIGBEEODC-1445] - Incorrect sleep period on REB_CBB
+   [ZIGBEEODC-1449] - WSNDemo: AVR 32 cannot join to SAM3S. StandartSec
+   [ZIGBEEODC-1453] - Makefile_All_DummyEssSec_STK600* shall be removed from release
+   [ZIGBEEODC-1464] - Throughput PreconfSec NoAck - coordinator doesn't receive packets.
+   [ZIGBEEODC-1466] - WSNDemo: too much MAC data requests
+   [ZIGBEEODC-1468] - WSNDemo doesn't work with standard security and preconfigured Link key
+   [ZIGBEEODC-1469] - Increase the version of BitCloud in SerialNet
+   [ZIGBEEODC-1435] - CS_APS_BLOCK_SIZE should be set in Config Server
+   [ZIGBEEODC-1427] - Improve security modes
+   [ZIGBEEODC-1430] - Remove "_US" from SerialNet file names for RF212
+   [ZIGBEEODC-1446] - REB_CBB doesn't hear beacons for a long time (about 50 minutes)
+   [ZIGBEEODC-1268] - ZAppSi Runner doesn't work on REB CBB RF212
+   [ZIGBEEODC-1371] - Bootloader could not get device info on MegaRF RCB_BB with Runner
+   [ZIGBEEODC-1437] - PDS initialization may spoil normal workflow (on megarf)
+   [ZIGBEEODC-1394] - Set securityCapability bit to 0 for SE Profiles
+   [ZIGBEEODC-1393] - Finalize empty BSP
+   [ZIGBEEODC-1384] - Parent shall send commands directly to its unauthenticated child
+   [ZIGBEEODC-1357] - SerialNet doesn't work on RCB128RFA1
+   [ZIGBEEODC-328]  - Fix button management in LowPower application
+   [ZIGBEEODC-1373] - OTAU does not work through 2 hopes
+   [ZIGBEEODC-1360] - ZDO_StartNetworkReq() changes ZDO state even if node is joined to a network
+   [ZIGBEEODC-1362] - Fix Network Lost and Left indication in SerialNet
+   [ZIGBEEODC-51]   - LCD sometimes freezes on Raven boards.
+   [ZIGBEEODC-272]  - QA: MAC - No beacon from Coordinator while Orphan scan
+   [ZIGBEEODC-273]  - QA: MAC - Device freezes after data request if extended addresses use
+   [ZIGBEEODC-275]  - QA: MAC - No DissasociateReq to remote device
+   [ZIGBEEODC-899]  - Invalid lines in USART log for Display1 device on MegaRF
+   [ZIGBEEODC-1310] - Atmega128RFA1 connectivity issue
+   [ZIGBEEODC-1373] - OTAU does not work through 2 hopes
+   [ZIGBEEODC-1394] - Set securityCapability bit to 0 for SE Profiles
+   [ZIGBEEODC-1121] - Bootloader GUI Client shows incorrect (non-existent) addresses in the list of OTAU devieces.
+   [ZIGBEEODC-1393] - Finalize empty BSP
+   [ZIGBEEODC-1415] - Make basic cluster supported by default in all SE- devices
+   [ZIGBEEODC-864]  - incorrect default CS_CHANNEL_MASK for ZIGBIT900
+   [ZIGBEEODC-1300] - Incorrect   .aps project for MegaRF Bootloader
+   [ZIGBEEODC-1309] - SEDevices with UNIVERSAL_EXTENDED_ADDRESS do not work
+   [ZIGBEEODC-1336] - LowPower doesn't work on RCB with RF 230 and Gcc
+   [ZIGBEEODC-328]  - Fix button management in LowPower application
+   [ZIGBEEODC-911]  - zappsi demo with sesecurity - Read Attr response: fail (0xc3)
+   [ZIGBEEODC-931]  - Invalid lines sometimes uppear in USART log if image was compiled by IAR
+   [ZIGBEEODC-1067] - Fix Universal address and universal TC address for AVR32
+   [ZIGBEEODC-1076] - CORTEX: WSNDemo: End Device: Sometimes some fields contain incorrect values
+   [ZIGBEEODC-538]  - Throughput value differs for GCC and IAR compilers
+   [ZIGBEEODC-1412] - ZAppSi: no activity on runner + demo with highsecurity on HADevice
+   [ZIGBEEODC-1410] - ZAppSi: no activity on runner + demo with certicom security on SEDevice
+   [ZIGBEEODC-1337] - XMEGA: WSNDemo configuration file doesn't have #if (APP_USE_OTAU == 1) section
+   [ZIGBEEODC-904]  - Runner with SE security if uploaded by bootloader doesn't work
+   [ZIGBEEODC-1453] - Makefile_All_DummyEssSec_STK600* shall be removed from release
+   [ZIGBEEODC-1498] - Evaluation Tools - CS_UID is not set for MEGARF and AVR32
+   [ZIGBEEODC-1497] - IAR prject of WSNDemo (with OTAU) for MegaRF contains incorrect configurations with HighSec
+
+
+------------------
+BitCloud 1.11.0/BitCloud Profile Suite 1.7.0:
+
+New features (37)
+    [ZIGBEEODC-1246] - Add possibility to include Manufacturer Specific Code in ZCL frame header
+    [ZIGBEEODC-1282] - Write step-by-step porting guide for new apps build system
+    [ZIGBEEODC-1283] - Add list of all values for PROJECT_NAME and CONFIG_NAME supported for particular application in the given SDK to apps main Makefile
+    [ZIGBEEODC-1284] - Update AVR studion apps project files
+    [ZIGBEEODC-1285] - Fix minor issues in SampleApps
+    [ZIGBEEODC-1188] - Introduce Flash Memory driver to be used by PDS for Cortex MCU
+    [ZIGBEEODC-1208] - Add support for getScheduledPrice in ZCL
+    [ZIGBEEODC-1210] - Migrate to new version 6.10.2 of IAR Workbench for ARM
+    [ZIGBEEODC-1213] - Improve SSP: don't use additional memory for encryption
+    [ZIGBEEODC-104]  - It shall be possible to detect existing networks and their parameters prior to network start procedure
+    [ZIGBEEODC-500]  - RCBs, STK500 and STK600 platforms configuring harmonization
+    [ZIGBEEODC-1018] - Create a hosted HA application that would use zappsi host lib
+    [ZIGBEEODC-1143] -   .srec image for Xmega MCUs shall contain EEPROM section
+    [ZIGBEEODC-1166] - Support reading of UID from ext. EEPROM on ATAVR128RFA1-EK
+    [ZIGBEEODC-1170] - Support HAL API for external interrupts on SAM3S
+    [ZIGBEEODC-1176] - Support new configServer
+    [ZIGBEEODC-1192] - Prepare embedded bootloader code for release with SDK
+    [ZIGBEEODC-1145] - Support connection of RF chip to Xmega USART pins
+    [ZIGBEEODC-1153] - APS Refactoring
+    [ZIGBEEODC-1157] - Support non-standard channels in RF212
+    [ZIGBEEODC-32]   - Refactoring - Change the structure of ConfigServer
+    [ZIGBEEODC-613]  - TC permission table shall be enabled in ZSE deliveries
+    [ZIGBEEODC-615]  - Introduce Unique names for the ZAppSiHost libraries.
+    [ZIGBEEODC-938]  - ZDO should initiate ieee address searching when aps has received transport key.
+    [ZIGBEEODC-950]  - Add antenna diversity support to BitCloud (RF231 only)
+    [ZIGBEEODC-1017] - Add SPI support in zappsi
+    [ZIGBEEODC-1096] - Improve Configurator
+    [ZIGBEEODC-1128] - Refactoring of APS commands
+    [ZIGBEEODC-1138] - ConfigServer parameters harmonization
+    [ZIGBEEODC-1130] - Redesign Config Server
+    [ZIGBEEODC-1132] - Migrate to new configurator
+    [ZIGBEEODC-1015] - Add GCC support to Cortex port
+    [ZIGBEEODC-1016] - Add GCC support to HA applications on Cortex and XMEGA
+    [ZIGBEEODC-1019] - Open main()
+    [ZIGBEEODC-1051] - Exclude frame counter (out & in) from NWK security IB and APS key pair descriptor
+    [ZIGBEEODC-1100] - Support new configServer
+    [ZIGBEEODC-1103] - Refactoring APS: Binding
+
+	
+Resolved defects (87)
+    [ZIGBEE-1121] OTAU does not work with end devices
+    [ZIGBEE-1040] SE: ESP freezing on xMega boards
+    [ZIGBEEODC-1230] - WSNDemo+OTAU+standard security. End device could not join to network.
+    [ZIGBEEODC-1237] - WSNDemo: Sometimes Iar compiled nodes do not join to network
+    [ZIGBEEODC-1242] - When GCC comiler was used, HADevice doesn't work
+    [ZIGBEEODC-1245] - Update +WSRC and +WNWKPANID commands
+    [ZIGBEEODC-1259] - Fix TC swapOut
+    [ZIGBEEODC-1260] - WSNDemo, HighSec - More than 9 EndDevices cannot be in network
+    [ZIGBEEODC-1263] - Errors occure during uploading of SE METER over the Bootloader on the XMega256A3
+    [ZIGBEEODC-1266] - Assert - 0x7106 displayed while running HADimmerSwitch(hosted)_PC.exe
+    [ZIGBEEODC-1267] - Sometimes too low temperature reported on REMOTE_CONTROL device (from -2800 to -400)
+    [ZIGBEEODC-1269] - Authentication problem during connection of Runner to HighSec network
+    [ZIGBEEODC-1272] - XMEGA, SE: Meter and thermostat cannot join to ESP
+    [ZIGBEEODC-1276] - Error occurs while "Download and Degug" throw IAR IDE
+    [ZIGBEEODC-1279] - WSNDemo: IAR compiled images for RCB and ZIGBIT doesn't work
+    [ZIGBEEODC-1280] - WSNDemo HighSec - Coordinator cannot join some end devices
+    [ZIGBEEODC-1287] - SEDevices: in mixed network Display rejoins all the time
+    [ZIGBEEODC-1288] - OTAU doesn't start on STK600 if external memory label is AT45DB041D
+    [ZIGBEEODC-1289] - SEDevices: ESP on MegaRF cannot start network
+    [ZIGBEEODC-1292] - Router shows that coordinator is a parent
+    [ZIGBEEODC-1297] - Warnings when building SEDevices
+    [ZIGBEEODC-1302] - MegaRF: Bootloader cannot be build with make and COMPILER_TYPE = IAR
+    [ZIGBEEODC-1306] - The garbage leaks to the port on ZIGBIT and RF212 with SerialNet_Rf212_US.hex
+    [ZIGBEEODC-1186] - ZDO_ZDP_MANAGER_QUEUE_EMPTY (0x5013) assert occurs
+    [ZIGBEEODC-1204] - Couldn't build WSNDEMO MegaRF with OTAU
+    [ZIGBEEODC-1205] - Couldn't build WSNDEMO ZIGBIT with OTAU
+    [ZIGBEEODC-1206] - WSNDemo, XMEGAD3 EndDevice, compiled with Gcc doesn't work
+    [ZIGBEEODC-1209] - Peer2Peer failed if APP_FRAGMENTATION = 1
+    [ZIGBEEODC-1212] - Fix encryption of APS authentication command by NWK-layer
+    [ZIGBEEODC-1224] - Incorrect sending period for XMEGA D3. It sends packets every 140 sec instead of 120 seconds.
+    [ZIGBEEODC-1225] - Both router and end device are unable to join to WSNDemo network
+    [ZIGBEEODC-1228] - Incorrect list of microcontrollers for stk600 in the WSNDemo project for xmega
+    [ZIGBEEODC-1232] - Configurator: Context help hints are unavailable for the most fields
+    [ZIGBEEODC-1240] - Only 2 MacBeaconReq are received from coordinator
+    [ZIGBEEODC-1311] - WSNMonitor.log: negative "wait" value appears.
+    [ZIGBEEODC-152]  - QA: Invalid total transmissions parameter returns while channel scan
+    [ZIGBEEODC-535]  - HAL component doesn't compile with debug info in SDK
+    [ZIGBEEODC-574]  - Some kind compiler optimization breaks HAL time critical code.
+    [ZIGBEEODC-581]  - Fix InterPAN data transmission with High Security
+    [ZIGBEEODC-1136] - Upon +WLEAVE command node shall leave network without forcing its children to leave
+    [ZIGBEEODC-1144] - Reset ZDO PowerManger at ZDO init
+    [ZIGBEEODC-1161] - Migrate to new version 6.x of IAR ARM Workbench
+    [ZIGBEEODC-1165] - In large networks broadcast is very unreliable on SerialNet devices
+    [ZIGBEEODC-1167] - WSNDemo images for Xmega MCUs on STK600 shall have a non-zero predefined UID
+    [ZIGBEEODC-1168] - In sample apps make default CS_CHANNEL_MASK assignment dependent on the frequency band supported
+    [ZIGBEEODC-1172] - Initiate automatic rejoin after node leaves the network on +WLEAVE command
+    [ZIGBEEODC-1178] - SerialNet node with static addressing cannot join the network
+    [ZIGBEEODC-1180] - SE Application (IPD and ESP) cannot rejoin network after reset
+    [ZIGBEEODC-1181] - Incorrect logging output in "dimmableLight.c"
+    [ZIGBEEODC-1183] - Fix Stack Reset for Runner application running on platforms with VCP
+    [ZIGBEEODC-1187] - SAM3S: USART_CHANNEL_1 shall be used by default
+    [ZIGBEEODC-1193] - Default SAM3S binaries of WSNDemo don't join the network
+    [ZIGBEEODC-1195] - Incorrect comments in the configuration file for HA Devices
+    [ZIGBEEODC-1198] - Misprint in "dimmerSwitch.c" source file for HA Devices
+    [ZIGBEEODC-1202] - Error occurs while XMEGA D3 is building with certicom security
+    [ZIGBEEODC-1203] - File "dimmerSwitch.c" contains two functions non-connected with the other code.
+    [ZIGBEEODC-199]  - Fix Frequency Agility feature.
+    [ZIGBEEODC-1077] - SDK not building when path to root has spaces
+    [ZIGBEEODC-1125] - Rename HAL_FREQUENCY value for SAM7X_EK
+    [ZIGBEEODC-1135] - Wrong size of  machwd rx buffer
+    [ZIGBEEODC-1141] - ZAppSi Demo application shuold be fixed after APS refactoring
+    [ZIGBEEODC-278]  - Investigate repetition quantity at NWK layer
+    [ZIGBEEODC-686]  - Problems when starting Demo zappsi on STK600 and Runner on STK600
+    [ZIGBEEODC-728]  - Binaries. Names of images for MegaRf include "STK600"
+    [ZIGBEEODC-908]  - Unable to program with AVRStudio default hex-file, compiled with IAR WB
+    [ZIGBEEODC-1021] - In transmission with standard security APS-level encryption occurs
+    [ZIGBEEODC-1123] - AttributeId is shown incorrectly in attribute event indication
+    [ZIGBEEODC-1127] - Simultaneous rejoin requests block rejoin responses from the parent
+    [ZIGBEEODC-1137] - Fix ED short address changing by parent after rejoin
+    [ZIGBEEODC-1139] - APS data indication is not called on ED if data is sent when ED is sleeping
+    [ZIGBEEODC-1053] - PS: TC swapout feature does not work
+    [ZIGBEEODC-1078] - BitCloud: Bring precompiled binaries names in correspondence with requirements
+    [ZIGBEEODC-1079] - ZDP_NEIGBOR_TABLE_LIST_SIZE shall depend on security scheme
+    [ZIGBEEODC-1083] - Application "Lowpower" doesn't work on the RCB platform
+    [ZIGBEEODC-1084] - RUNNER: APP_MAX_COMMAND_PAYLOAD_SIZE was named R_MAX_COMMAND_PAYLOAD_SIZE
+    [ZIGBEEODC-1085] - RCB + RCB_BB: application Throughput: COM port doesn't work
+    [ZIGBEEODC-1087] - at3290p.aps - project files not found
+    [ZIGBEEODC-1088] - at3290p.ewp - is in an old format
+    [ZIGBEEODC-1091] - XMEGA - cannot compile HAL
+    [ZIGBEEODC-1095] - PingPong application doesn't work on the RCB231 + RCB_BB
+    [ZIGBEEODC-1102] - RCB + RCB_BB: application Peer2peer: COM port doesn't work
+    [ZIGBEEODC-1105] - SAM7X: PINGPONG NoBinding paket transmission doesn't start
+    [ZIGBEEODC-1106] - SAM7X: PINGPONG Devices are not able to bind
+    [ZIGBEEODC-1107] - HAL\configuration - change some default values
+    [ZIGBEEODC-1108] - ZIGBIT - cannot compile HAL for RCB platform
+    [ZIGBEEODC-1112] - Profile releases: Bring precompiled binaries names in correspondence with requirements
+    [ZIGBEEODC-1114] - Bootloader is crashed after unsuccessful uploading
+    [ZIGBEEODC-1120] - XMEGA D3 Runner and Demo for PC does not send anything
+    [ZIGBEEODC-1126] - Fix PHY freezing reported by customer
+
+------------------	
+BitCloud 1.10.0/BitCloud Profile Suite 1.6.0:
+
+New features (35)
+[ZIGBEEODC-958] - Combine ZigBit, ZigBit 900 and ZigBit Amp SDK
+[ZIGBEEODC-347] - Add stochastic addressing to SerialNet
+[ZIGBEEODC-516] - Verify and close possible security vulnerability in BitCloud stack
+[ZIGBEEODC-556] - Implement information update about children based on received Device Annces.
+[ZIGBEEODC-689] - Update SE profile implementation based on SEP Intermediate Release Profile Specification (095310r21ZB) or the latest version of specification.
+[ZIGBEEODC-866] - Redesign zappsi protocol to make it more robust
+[ZIGBEEODC-158] - Application and sleep timer sould be refactored
+[ZIGBEEODC-554] - Remove MAC "Inline dependency" on platform type.
+[ZIGBEEODC-681] - Port OTA cluster on XMEGA A3 and XMEGA D3 devices and RF212 (in addition to existing platforms)
+[ZIGBEEODC-688] - Port SE applications to sam3s4c (Cortex) microcontroller and SAM3S-EK development kit.
+[ZIGBEEODC-837] - Support dataflash 45 series on STK600 for OTAU
+[ZIGBEEODC-867] - Implement SPI driver for Xmega HAL
+[ZIGBEEODC-916] - Support GCC by HA applications
+[ZIGBEEODC-926] - Port core stack to XMEGA D3
+[ZIGBEEODC-518] - Support SerialNet on megaRF
+[ZIGBEEODC-584] - Implement HA Level Control cluster
+[ZIGBEEODC-585] - Implement HA thermostat and temperature measurement clusters
+[ZIGBEEODC-821] - Support XPLAIN XMEGA evaluation kit/board w/ RZ600 radio sticks
+[ZIGBEEODC-862] - It shall be possible to change RF port on Xmega from HAL only
+[ZIGBEEODC-863] - Include MCU name in the bootloader.hex file supplied with the SDK.
+[ZIGBEEODC-883] - Support PS 1.5.0 verification
+[ZIGBEEODC-884] - Run OTAU with Certicom libs
+[ZIGBEEODC-898] - Binary data transfer is not supported in SerialNet
+[ZIGBEEODC-903] - Implement HA Groups and Scenes manager
+[ZIGBEEODC-611] - Implement APS tunneling
+[ZIGBEEODC-847] - Allow OTAU cluster to work with WSNDemo and RF212
+[ZIGBEEODC-865] - Support Certicom libraries on megaRF
+[ZIGBEEODC-583] - Allow OTAU cluster to work with WSNDemo and RF212
+[ZIGBEEODC-640] - Make RX_TX_INDICATOR modifiable without need for stack source code
+[ZIGBEEODC-682] - Update OTA implementation to meet the latest OTA specification
+[ZIGBEEODC-788] - Add indication about new concentrator in source routing.
+[ZIGBEEODC-795] - Implement handler of jump to NULL
+[ZIGBEEODC-805] - Add route loop breaking mechanism
+[ZIGBEEODC-806] - Merge ZHP-specific security
+[ZIGBEEODC-816] - Create two different SerialNet binaries - with and without Security support
+
+Resolved Defects (107)
+[ZIGBEEODC-1055] - WSNDemo with HighSec and preconfigured trust center master key doesn't work
+[ZIGBEEODC-1054] - Assert in Demo application
+[ZIGBEEODC-1058] - SE scripts should expect new version of runner
+[ZIGBEEODC-1062] - Bootloader can't be run on the RCB platform
+[ZIGBEEODC-1038] - CBA: running scripts on megaRf boards cause parsing problem
+[ZIGBEEODC-1041] - Route failure and no ApsDataConf during data transmission
+[ZIGBEEODC-358] - WSNMonitor displays incorrect temperature for T<0C
+[ZIGBEEODC-410] - ZDPDemo. ED scan does not work for routers
+[ZIGBEEODC-992] - Lowpower stops switching between Light, Temperature and Battery
+[ZIGBEEODC-1030] - SE: ESP freezing in high-security network
+[ZIGBEEODC-1034] - CBA: Device freezes after few data transfer iterations
+[ZIGBEEODC-1036] - Stack profile shall be verified during network join
+[ZIGBEEODC-1037] - OTAU: no UpgradeEndReq from client on megaRf boards
+[ZIGBEEODC-1039] - SE: Thermostat periodically resets in HighSec network
+[ZIGBEEODC-1045] - BC:MEGARF: WSNDEMO: ServerDiscavery is performed in any case: flash is coonected to MCU or not
+[ZIGBEEODC-1046] - BC:MEGARF: WSNDEMO: ServerDiscovery is performed in any case: flash is coonected to MCU or not
+[ZIGBEEODC-1047] - BC:MEGARF:OTAU: OtauClient does't switch to the new image after upgrading has finished (END Upgrade REsponce has recieved)
+[ZIGBEEODC-1048] - BC:MEGARF:OTAU: OtauClient (wsnDemo) doesn't switch to uploaded image after upgrading has finished (End Updating Responce has received)
+[ZIGBEEODC-1049] - BC:MEGARF:WSNDEMO: IARPROJECT: Separate Config Doesn't work at all
+[ZIGBEEODC-1050] - BC:MEGARF:SERIALNET: Device can't send data to itself and input of HiperTerminal just hang up
+[ZIGBEEODC-1055] - WSNDemo with HighSec and preconfigured trust center master key doesn't work
+[ZIGBEEODC-1066] - SE Thermostat device should be modified to support universal extended address feature
+[ZIGBEEODC-1075] - WSNDemo doesn't work on the CORTEX platform with HighSecurity
+[ZIGBEEODC-944] - serial communication(uart) is terminated between bootloader GUI and xMega (Runner + otau server)
+[ZIGBEEODC-953] - Communication doesn't recover after light switch reset
+[ZIGBEEODC-968] - HA: light switch freezes if sending to group is done
+[ZIGBEEODC-969] - asdu is encrypted in APSDE-DATA.confirm
+[ZIGBEEODC-999] - Errors when making sample applications from command line using IAR compiler.
+[ZIGBEEODC-1041] - Route failure and no ApsDataConf during data transmission
+[ZIGBEEODC-1042] - During fast data exchange stack performs frequent APS-level retries
+[ZIGBEEODC-466] - AT+WCHAN? returns 0 on coordinator after network start
+[ZIGBEEODC-526] - WSNDemo. ED does not leave network if it's parent does not reply
+[ZIGBEEODC-531] - WSNDemo No Router rejoins
+[ZIGBEEODC-769] - APS_MAX_TRANSMISSION_WINDOW_SIZE shall be configurable by user
+[ZIGBEEODC-812] - Update constant values for RF212 registers (Tx power, RSSI base value, etc. )
+[ZIGBEEODC-870] - Investigate Button interrupts and task handler issue
+[ZIGBEEODC-930] - End Device with +WAUTONET=1 freezes if parent is lost
+[ZIGBEEODC-937] - USART Transmission Complete ISR is executed before the complete flush of the transmission buffer
+[ZIGBEEODC-941] - discoverRoute bit is set incorrectly
+[ZIGBEEODC-942] - Data is sent for end device without waiting for data request
+[ZIGBEEODC-943] - Extra channel then scanning on '212
+[ZIGBEEODC-945] - OTAU on xMega + rf212 is restarted constantly
+[ZIGBEEODC-949] - ZSE: Swap-out feature doesn't work in zse sample application
+[ZIGBEEODC-951] - Problem with result codes oder and presence in SerialNet
+[ZIGBEEODC-952] - No communication with coordinator after end device rejoins to router
+[ZIGBEEODC-515] - P2P: during bidirectional transfer nodes lost data.
+[ZIGBEEODC-624] - High-security network doesn't form with HW_AES on STK600 with xMega256a3
+[ZIGBEEODC-765] - +WSLEEP command shall work even if not joined to the network
+[ZIGBEEODC-822] - Secured SerialNet: Security settings are not stored in EEPROM
+[ZIGBEEODC-909] - Secured ED rejoin attempt after parent loss fails
+[ZIGBEEODC-913] - In secured network ZDO_CHILD_REMOVED_STATUS shall be called only for authenticated children
+[ZIGBEEODC-919] - ESP device with SE security cannot be compiled for MegaRF
+[ZIGBEEODC-920] - \HAL\Configuration file shall contain only one released platform
+[ZIGBEEODC-922] - Display devices on MegaRF stop sending packets to USART
+[ZIGBEEODC-927] - Meter does not send packets to USART with SESecurity on.
+[ZIGBEEODC-928] - OTAU feature does not work with enabled nwk routing optimization
+[ZIGBEEODC-929] - misspelling in Thermostat USART output
+[ZIGBEEODC-934] - ESP with SESec for XMEGA doesn't work
+[ZIGBEEODC-353] - Mixed secured network of 61 nodes was failed
+[ZIGBEEODC-382] - WSNDemo: Mixed not secured network of 85 nodes lost integrate during 10 hours working
+[ZIGBEEODC-567] - Decrypt the asdu field of APS_DataReq in APS_DataConf.
+[ZIGBEEODC-713] - Thermostat stops any activity
+[ZIGBEEODC-720] - ZSE. Devices don't join ESP after restart a network
+[ZIGBEEODC-722] - ZSE. Two responses for Load control event command
+[ZIGBEEODC-815] - SerialNet. Duplicated \r\n after ATD with incorrect parameters
+[ZIGBEEODC-848] - Fix SerialNet freezing
+[ZIGBEEODC-876] - Cannot compile ESP application from MegaRF SESec project
+[ZIGBEEODC-879] - Cannot compile runner application for XMega (any security)
+[ZIGBEEODC-880] - Cannot compile runner application for MegaRf (SE security)
+[ZIGBEEODC-886] - ZAppSi Demo for MegaRF
+[ZIGBEEODC-889] - Tunneling doesn't work in some cases
+[ZIGBEEODC-891] - HAL cannot be compiled for MegaRF
+[ZIGBEEODC-892] - Swap-out feature does not work for ZSE application
+[ZIGBEEODC-893] - ZSE Key establishment interrupts for meter device
+[ZIGBEEODC-894] - Fix ZDO wakeup procedure when node is not in the network
+[ZIGBEEODC-895] - Impossible to discover OTA nodes in Bootloader GUI when OTAU was performed.
+[ZIGBEEODC-900] - DRLC cluster not present on MegaRF SEDevices with SE security
+[ZIGBEEODC-905] - ZAppSi Demo can not be compiled for PC
+[ZIGBEEODC-910] - APS Data Indication securityStatus field desn't contain actual value.
+[ZIGBEEODC-912] - TC in std security network stops sending network key command
+[ZIGBEEODC-928] - OTAU feature does not work with enabled nwk routing optimization
+[ZIGBEEODC-929] - misspelling in Thermostat USART output
+[ZIGBEEODC-494] - Lowpower: zero Light / Battery values for ZigBits
+[ZIGBEEODC-563] - Last byte of downloaded image is corrupted sometimes.
+[ZIGBEEODC-764] - PingPong application freezes on ARM platform
+[ZIGBEEODC-771] - Data abort exception in SSP
+[ZIGBEEODC-772] - SerialNet: Command output has no ends of line after receiving events
+[ZIGBEEODC-774] - PWM commands don't work in SerialNet
+[ZIGBEEODC-790] - No Runner application in the release
+[ZIGBEEODC-792] - Incorrect default High security options in WSN Demo application
+[ZIGBEEODC-793] - Cortex. Serial port doesn't work in WSNDemo
+[ZIGBEEODC-801] - WSNDemo with HighSec. End device cannot join the netrwork
+[ZIGBEEODC-802] - WSNDemo_OTAU: Upload process doesn't continue
+[ZIGBEEODC-803] - STK600. WSNDemo. Incorrect sleep period of end devices
+[ZIGBEEODC-807] - No possibility to compile HAL for Cortex and AVR32 platforms
+[ZIGBEEODC-808] - Peer2peer - secured mix network -No APS Acks from Coord
+[ZIGBEEODC-809] - SerialNet: Incorrect relationship returns for WNB command
+[ZIGBEEODC-810] - SerialNet: Duplicated EVENT:LOST for ED after parent leave
+[ZIGBEEODC-811] - SerialNet. Sometimes devices stop answer
+[ZIGBEEODC-813] - SerialNet. WCHILDREN command doesn't return address of child
+[ZIGBEEODC-824] - ZDP Demo - no iar project
+[ZIGBEEODC-827] - ZDPDemo - ED Scan with status e9
+[ZIGBEEODC-828] - BitCloud high sec libs are required for MEGARF
+[ZIGBEEODC-832] - WSNDemoOTAU: New image doesn't apply after update process.
+[ZIGBEEODC-838] - EndDevice sends incorrect nodeType when HighSec is on
+[ZIGBEEODC-842] - AVR32:Precompiled binaries are built with UID 0
+
+BitCloud PS 1.5.0:
+------------------	
+
+**New Features
+[ZIGBEEODC-611] Implement APS tunneling
+[ZIGBEEODC-865] Support Certicom libraries on megaRF
+[ZIGBEEODC-850] Support new structure of profile release
+[ZIGBEEODC-682] Update OTA implementation to meet the latest OTA specification
+[ZIGBEEODC-599] OTAU refactoring
+[ZIGBEEODC-637] Fix ZAppSi Demo application
+[ZIGBEEODC-595] Set securityCapability flag by ZigBee spec
+[ZIGBEEODC-638] Create BitCloud build for xmega128A1+rf212.
+	
+**Resolved Defects
+[ZIGBEEODC-889] Tunneling doesn't work in some cases
+[ZIGBEEODC-720] ZSE. Devices don't join ESP after restart a network
+[ZIGBEEODC-886] ZAppSi Demo for MegaRF
+[ZIGBEEODC-896] Almost all certification scripts run unsuccessfully			
+[ZIGBEEODC-722] ZSE. Two responses for Load control event command
+[ZIGBEEODC-892] Swap-out feature does not work for ZSE application
+[ZIGBEEODC-876] Cannot compile ESP application from MegaRF SESec project
+[ZIGBEEODC-879] Cannot compile runner application for XMega (any security)
+[ZIGBEEODC-880] Cannot compile runner application for MegaRf (SE security)
+[ZIGBEEODC-891] HAL cannot be compiled for MegaRF
+[ZIGBEEODC-537] Device shall not select router with maximum network depth when joining a network
+[ZIGBEEODC-566] HAL_AppTimer_t is not accurate
+[ZIGBEEODC-596] Fix hardware AES in HighSec
+[ZIGBEEODC-605] Fix zclDeviceLinkKeyDesc... varizble usage in SE apps
+[ZIGBEEODC-704] SEDevice. Thermostat stops after long time of working
+[ZIGBEEODC-580] verify customer's binding fix in APS
+[ZIGBEEODC-589] Implement feature test to check sending to bind address to multiple recipients
+[ZIGBEEODC-699] Thermostat falls in assert after several minutes after start
+[ZIGBEEODC-724] Incorrect indication on end device when rxOnWhenIdle is true.
+[ZIGBEEODC-395] Router cannot join to network because of CS_MAX_NETWORK_DEPTH
+[ZIGBEEODC-696] SE scripts: ED doesn't apply new key
+[ZIGBEEODC-707] HA. Scene names with unnecessary symbols are sent to serial port
+[ZIGBEEODC-710] SE scripts: Incorrect value of ZCLVersion Attribute
+	
+BitCloud PS 1.4.0:
+------------------
+**New Features
+[ZIGBEEODC-601] Fix IAR projects automatic generation
+
+[ZIGBEEZSE-193] Implement TC swap-out feature - device side ( not TC )
+[ZIGBEEZSE-201] Support HA profile on STK600-megaRF and RCB megaRF
+[ZIGBEEZSE-209] Add to profile applications a way to operate without buttons
+[ZIGBEEZSE-210] Implement of OTAU server cluster on ZapSi Runner.
+[ZIGBEEZSE-211] Upgrade OTAU client.
+[ZIGBEEZSE-213] Refactoring of ZDO: leave and start.
+[ZIGBEEZSE-214] Add swap-out module in ZDO
+
+[ZIGBEEZSE-180] Improve automatic night build procedure for profiles.
+
+[ZIGBEEZSE-186] Implement additional HA devices
+[ZIGBEEZSE-188] Support multicast on NWK layer
+[ZIGBEEZSE-189] Develop Power Configuration, Temperature Measurement, and Humidity Measurement clusters
+[ZIGBEEZSE-190] Add scenes and groups clusters to on/off lights switch device
+[ZIGBEEZSE-194] Change price command format
+
+[ZIGBEEZSE-170] To wipe out warning about NWK SetGet
+[ZIGBEEZSE-174] Add report timer interval to Config Server
+[ZIGBEEZSE-178] Remove _ZCL_SECURITY_ macros from profiles apps
+[ZIGBEEZSE-179] Remove ZCL warnings
+[ZIGBEEZSE-181] Refactor rParser.c runner file
+	
+**Resolved Defects
+[ZIGBEEODC-651] Unnecessary workspaces should be removed from IAR EW projects for Demo zappsi
+[ZIGBEEODC-674] CBA - "Bad confirm status: AA" when running stc.py and sts.py
+[ZIGBEEODC-693] Some changes in release structure
+[ZIGBEEODC-697] Thermostat failed on AVR32 platform
+[ZIGBEEODC-692] Can not start SE py scripts with SE security
+
+[ZIGBEEODC-605] Fix zclDeviceLinkKeyDesc... varizble usage in SE apps
+[ZIGBEEODC-634] HA: commands are not encrypted on NWK 
+[ZIGBEEODC-644] OTAU: ESP sends Transport Key to OTAU client only.
+[ZIGBEEODC-645] OTAU: Client doesn't send Update Relocation List command
+[ZIGBEEODC-647] SEDevice. APP_Fragmentation parameter is 0 by default
+[ZIGBEEODC-648] Cannot build Demo for zappsi host lib for STK600,
+[ZIGBEEODC-657] SEDevice. Timeout value is always 0 in IdentifyQueryResponse
+[ZIGBEEODC-662] SEDevice. Warning while building application
+[ZIGBEEODC-663] HAdevice. SESecurity option is enabled for STK600 workspace
+[ZIGBEEODC-670] SEdevice: Incorrect message sends to port for Display message command
+[ZIGBEEODC-675] Script SEscripts\zsetest.py doesn't match coding style
+[ZIGBEEODC-679] SEDevice. Meter doesn't work in SE-secured network
+[ZIGBEEODC-649] Can't build Runner for megaRF and stk600 platforms
+[ZIGBEEODC-669] SEdevice: Incorrect message sends to port for Publish price command
+
+[ZIGBEEODC-600] Fix Configurator issues
+[ZIGBEEODC-606] Generate HAL_SE library for profiles release
+[ZIGBEEODC-608] SEdevice - Thermostat and Display cannot finish binding procedure
+[ZIGBEEODC-636] Fix ZAppSiHsotLib build procedure for PC platform
+[ZIGBEEODC-642] OTAU: Binding procedure doesn't start, when OTAU client is EndDevice.
+[ZIGBEEODC-653] Runner for ARM are not delivered in release and corresponding project files shall be removed.
+[ZIGBEEODC-654] SEDevice. Key establishment procedure stops for one of displays
+[ZIGBEEODC-658] Binary evaluation images for all applications shall be build and added to release
+[ZIGBEEODC-659] Can't run zcl scripts on RCB platform
+[ZIGBEEODC-660] CBA scripts - superfluous clasters are registered
+[ZIGBEEODC-661] SEDevices with universal extended address. Devices repeat binding
+[ZIGBEEODC-668] SEdevice: Incorrect message (with endpoint = 0) sends to port for bindings
+[ZIGBEEODC-672] CBA scripts - start_coordinator.py prints error message when checking version and build number of WSNRunner.
+[ZIGBEEODC-680] zappsi Demo application shall be configured with APP_EXTENDED_ADDR 0x2LL
+[ZIGBEEODC-697] Thermostat failed on AVR32 platform
+
+[ZIGBEEODC-652] Incorrect RUNNER_FEATURE_HEADER values in ZAppSiHostLib\Configuration
+[ZIGBEEODC-665] HAdevice: Add Remote control device type to iarConfiguration
+[ZIGBEEODC-667] Runner : APP_USE_BINDING parameter is switched off by default
+	
+[ZIGBEEODC-602] Incorrect identifier "USART_CHANNEL" for RCB platform
+[ZIGBEEODC-643] SE device: 2d display doesnot work (no response to Display message command)
+	
+[ZIGBEEODC-604] Port SE devices Apps to AVR32 platfrom
+[ZIGBEEODC-608] SEdevice - Thermostat and Display cannot finish binding procedure
+[ZIGBEEODC-629] ZSE devices don't work on AVR32.
+[ZIGBEEODC-643] SE device: 2d display doesnot work (no response to Display message command)
+	
+[ZIGBEEZSE-216] FIX SE security (certicom)
+[ZIGBEEZSE-208] Link keys ain't set for ha devices (Light and Light Switch devices)
+[ZIGBEEZSE-219] No APS retransmission of ZCL commands
+	
+[ZIGBEEZSE-77]  QA: Invalid Transaction Sequence Number
+[ZIGBEEZSE-177] merge serialmanager to single source
+
+BitCloud PS 1.3.0:
+------------------
+
+[ZIGBEEZSE-175]   Finalize ZSE to ZCL renaming.  
+[ZIGBEEZSE-172]   Meter as End Device are not able to send Match descriptor request  
+[ZIGBEEZSE-165]   Optimize Runner to fit into 128K/16K (flash/ram) on XMEGA  
+[ZIGBEEZSE-164]   Implement device applications utilizing on/off light switch and on/off light devices  
+[ZIGBEEZSE-163]   Implement select HA clusters   
+[ZIGBEEZSE-159]   Confirm to read parameters (from remote device) request command can be missed.  
+[ZIGBEEZSE-169]   Create public tag with all profiles supported.  
+[ZIGBEEZSE-167]   Rename feature UNIVERSAL_TC_LINK_KEY to UNIVERSAL_TC_EXT_ADDR  
+[ZIGBEEZSE-160]   Assert is fired in an ESP devive when key establishment is terminated.  
+[ZIGBEEZSE-151]   Investigate adding delimiters to zappsi protocol   
+[ZIGBEEZSE-144]   Output the keys generated through the serial interface.  
+[ZIGBEEZSE-101]   Add app notification mechanism for ZCL attribute writes  
+[ZIGBEEZSE-150]   Create Compiler flags table for MEGARF
+[ZIGBEEZSE-152]   Allow special universal link key for talking to any device without an assigned key
+[ZIGBEEZSE-157]   Implement magic key to be used by ESP to talk to unknown MACs
+[ZIGBEEZSE-74]    Make building of ZCL components separate from ZSE specific components
+[ZIGBEEZSE-147]   Introduce power management for Meter device type.
+[ZIGBEEZSE-148]   Run ZCL on MEGARF STK600 Top Card
+[ZIGBEEZSE-45]    Allow SE applications to work without pre-configured ESP MAC address
+[ZIGBEEZSE-143]   Organize dependency of ZAppSi demo application on runner stack features.
+[ZIGBEEZSE-32]    Optimize stack table sizes for Smart Energy applications
+[ZIGBEEZSE-153]   Fix build procedure for ZAppSi
+
+* BitCloud PS 1.2.0:
+--------------------
+New features
+
+[ZIGBEEZSE-135] - Create CBA cluster-specific headers and add clusters to Runner.
+[ZIGBEEZSE-136] - Implement BACNet python scripts for CBA.
+[ZIGBEEZSE-137] - Implement duplex transmission in BACNet tunneling scripts
+[ZIGBEEZSE-139] - Decrypt sent frames on APS layer for many-to-one binding.
+[ZIGBEEZSE-125] - Implement BACnet Tunnel and generic tunnel clusters
+[ZIGBEEZSE-158]	- Update all documentation from BitCloud SE to BitCloud Profile Suite  
+	
+* BitCloud SE 1.1.0:
+--------------------
+
+New features
+[ZIGBEEZSE-2] - C API and library for ZPTester serial interface on host microcontroller
+[ZIGBEEZSE-57] - Dynamic IAR configuration headers files creation.
+[ZIGBEEZSE-102] - Add GetScheduledPrice command to Price cluster
+[ZIGBEEZSE-124] - Investigate Clusters functionality which shall be implemented for CBA
+[ZIGBEEZSE-126] - Change field direction in read/write attribute functions to clusterSide
+[ZIGBEEZSE-127] - Implement automated tests based on ESP certification tests.
+[ZIGBEEZSE-130] - Merge Runner updated after ZSE certification to new Runner which is a part of ZAppSI
+[ZIGBEEZSE-139] - Decrypt sent frames on APS layer
+[ZIGBEEZSE-120] - Implement Identify, Messaging and Price (?) clusters logic in runner
+[ZIGBEEZSE-118] - Create base sequence diagrams for ZSE
+[ZIGBEEZSE-90] - Script development for SE certification. 
+[ZIGBEEZSE-99] - Support ZCL_ReadAttributeValue command in runner application
+[ZIGBEEZSE-105] - Implement Report Event Status Signature generator.
+[ZIGBEEZSE-15] - APS Fragmentation feature development
+[ZIGBEEZSE-19] - Expand wsntester environment description in BitCloud SE Quick Start Guide
+[ZIGBEEZSE-48] - Add timeouts to KE Cluster, Improving the Trust Center functionality.
+[ZIGBEEZSE-58] - Implement ZDP bind feture.
+[ZIGBEEZSE-116] - zappsi: Implement Demo application which uses C API library and operates as Meter
+[ZIGBEEZSE-115] - zappsi: Implement comands Parser/Composer module.
+[ZIGBEEZSE-114] - zappsi: Implement SerialManager module
+[ZIGBEEZSE-117] - zappsi: Ceate base application architecture.
+[ZIGBEEZSE-91] - Script development for DRLC Cluster
+[ZIGBEEZSE-92] - Script development for Simple Metering Cluster
+[ZIGBEEZSE-93] - Script development for Price Cluster
+[ZIGBEEZSE-94] - Script development for Messaging Cluster
+[ZIGBEEZSE-97] - Script development for Key Establishment Cluster
+[ZIGBEEZSE-98] - Script development for Basic and Identify Clusters
+[ZIGBEEZSE-64] - Allow to join High Sec network without knowledge about the Trust Center ext address
+[ZIGBEEZSE-65] - Allow reception of unsolicited publish price
+[ZIGBEEZSE-68] - Allow reception of a drlc event, cancel event, cancel all events, display message packets.
+
+Resolved issues:
+[ZIGBEEZSE-100] - QA: Publish Price command transmitts with invalid direction parameter
+[ZIGBEEZSE-106] - QA: Server and Client part of cluster can't work on the same endpoint
+[ZIGBEEZSE-86] - QA: Invalid TransactionSeqNumber after receiving ZCL frame
+[ZIGBEEZSE-103] - The nonstandard status (0xC4) return in Response to Read/Write/Configure Request Attribute series commands in ZCL if attribute not exists in cluster specified.
+[ZIGBEEZSE-104] - QA: Invalid ReadAttributeResp
+[ZIGBEEZSE-107] - Trust Center transmit App Master Key via APS Transport Key command in response to APS Request Key with App key type.
+[ZIGBEEZSE-108] - ZDO not set new App link key received via APS Transport Key command from TC.
+[ZIGBEEZSE-109] - APS Data Indication securityStatus field desn't contain actual value (UNPLANNED).
+[ZIGBEEZSE-111] - ZCL Default response transmitted as reaction on incoming message even if such response not needed.
+[ZIGBEEZSE-27] - Report Attributes mechanism from Meter device is absent
+[ZIGBEEZSE-41] - Script path incorrect in documentation
+[ZIGBEEZSE-80] - SE secured Meter and Thermostat don't works in SE secured network.
+[ZIGBEEZSE-82] - QA: No messages to Display from ESP
+[ZIGBEEZSE-83] - QA: Thermostat fails to join ESP in SE-secured network
+[ZIGBEEZSE-85] - QA : No message send to COM-port on STK600 boards
+
+* BitCloud SE 1.0.0:
+--------------------
+
+* BitCloud SE 0.9.0:
+--------------------
+
+[ZIGBEEZSE-9]  ZSE Security support on the Sample Apps
+[ZIGBEEZSE-12] Trust Center Premission Table persistence feature support
+
+[ZIGBEEZSE-6]  ZSE Security development
+[ZIGBEEZSE-14] BitCloud High Security support development and testing.
+[ZIGBEEZSE-5]  ZSE Test Specification implementation - The Messaging Cluster
+[ZIGBEEZSE-17] Include SERunner and WSNTester command line tools in SDK
+[ZIGBEEZSE-18] Create release documentation for ZSE
+
+[ZIGBEEZSE-23] unable to read/write MeterStatusSet attribute
+[ZIGBEEZSE-24] Unable to read/write MeteringDeviceType attribute
+[ZIGBEEZSE-25] Unable to read/write UnitofMeasure attribute
+	
+o Added support for XMEGA platform
+o Added SERunner application
+o Modified BitCloud SDK file system structure to meet user requirements
+o Created AVR2055 BitCloud Smart Energy Quick Start Guide 
+	
+* BitCloud SE 0.2.2:
+--------------------
+o IAR EWARM 5.3 toolchain support added.
+
+* BitCloud SE 0.2.0:
+--------------------
+o Implemented support for following clusters (only mandatory attributes) - 
+  price
+  messaging
+  demand response and load control
+  simple metering
+  time
+o Added ESP and Thermostat reference applications
+o Added IAR EWARM toolchain support
+
+* BitCloud SE 0.1.0:
+--------------------
+o Implemented Meter and In-premise display reference applications.
+
+
+V. Known issues and limitations
+================================
+ZIGBEEODC-1499	Evaluation tools - EU and CHINA pages are absent for SAM3S WSNDemo
+ZIGBEEODC-1494	AVR Studio 5 is not supported for ATmega128RFA1, ATmega and XMEGA devices
+ZIGBEEODC-1439	VCP via USB is not supported on Sensor Terminal Board in RF4CE kit
+ZIGBEEODC-1493	ZAppSi HA does not work fully as expected
+ZIGBEEODC-1475	End Device doesn't send WSNDemo app packets during OTA Uploading
+ZIGBEEODC-1434	Concentrator discovery interval is timed incorrectly
+ZIGBEEODC-1406	CS_SECURITY_ON flag doesn't work in BitCloud PS
+ZIGBEEODC-1480 	SEDevices in mix network with AVR32 don't function as expected.

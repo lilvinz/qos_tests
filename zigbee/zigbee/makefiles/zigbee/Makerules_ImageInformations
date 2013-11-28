@@ -1,0 +1,20 @@
+#==============================================================================
+# Create Image Information
+#==============================================================================
+
+FIRMWARE_FILE = ./../../zigbee.bin
+
+IMAGE_INFO_STRUCT_OFFSET = 0x4
+IMAGE_INFO_CHECKSUM = $(shell perl ./../../tools/crc32.pl $(FIRMWARE_FILE) $(IMAGE_INFO_STRUCT_OFFSET))
+IMAGE_INFO_SIZE = $(strip $(shell if [ -f $(FIRMWARE_FILE) ]; then wc -c < $(FIRMWARE_FILE); else echo 0; fi))
+
+#==============================================================================
+# Add Image Information
+#==============================================================================
+IIDEFS = -DIMAGE_INFO_CHECKSUM=$(IMAGE_INFO_CHECKSUM)
+IIDEFS += -DIMAGE_INFO_SIZE=$(IMAGE_INFO_SIZE)
+
+CFLAGS += $(IIDEFS)
+
+    
+    

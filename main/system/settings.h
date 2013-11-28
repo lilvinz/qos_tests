@@ -1,0 +1,290 @@
+/*
+ * settings.h
+ *
+ * (c) Quantec Networks GmbH
+ *
+ *  Created on: 18.05.2010
+ *      Author:
+ */
+
+#ifndef SETTINGS_H
+#define SETTINGS_H
+
+
+// ATTENTION: Settings of firefly and sirius_r2 are harmonized! See wiki (http://wiki:8090/x/JoVQAQ) for details!
+/////////
+//Layout ID of Settings. If changed ALL settings will be set to defaults.
+//Use Major/Minor of current version.h if change in layout is neccessary.
+//e.g. 120L says that in 1.20 was a change in layout.
+#define SETTINGS_LAYOUT_ID  017L
+/////////
+
+#define SETTINGS_SETTING_SIZE sizeof(uint32_t)
+
+
+
+#define SETTINGS_CB_REGISTER_SIZE 20
+
+////////
+//Last entry of area which would not be touched if settings layout id changes.
+////
+#define SETTINGS_SAVE_AREA_LAST_SETTING 19
+
+typedef enum settings_group_e
+{
+    SETTINGS_GROUP_SYSTEM       = 0x0001,
+    SETTINGS_GROUP_MESH         = 0x0002,
+    SETTINGS_GROUP_TERMINAL     = 0x0004,
+    SETTINGS_GROUP_DIM          = 0x0008,
+    SETTINGS_GROUP_GLOOM        = 0x0010,
+    SETTINGS_GROUP_VISIBILITY   = 0x0020,
+    SETTINGS_GROUP_INDICATOR    = 0x0040,
+    SETTINGS_GROUP_ADVANCED     = 0x0080,
+    SETTINGS_GROUP_HEATER       = 0x0100,
+    SETTINGS_GROUP_ALL          = 0xFFFF
+
+} SETTINGS_GROUP_T;
+
+#define SETTINGS_GROUP_COUNT    9
+#define SETTINGS_GROUP_SIZE     10
+
+typedef enum settings_value_e
+{
+    SETTINGS_SYS_SPARE_0, //  0
+    SETTINGS_SYS_SYSTEMTYPE, //  1
+    SETTINGS_SYS_HARDWARETYPE, //  2
+    SETTINGS_SYS_SPARE_3, //  3
+    SETTINGS_SYS_SPARE_4, //  4
+    SETTINGS_SYS_SERIAL_NUMBER, //  5
+    SETTINGS_SYS_MESH_NWK_KEY_1, //  6
+    SETTINGS_SYS_MESH_NWK_KEY_2, //  7
+    SETTINGS_SYS_MESH_NWK_KEY_3, //  8
+    SETTINGS_SYS_MESH_NWK_KEY_4, //  9
+    SETTINGS_MESH_USE, // 10
+    SETTINGS_MESH_TYPE, // 11
+    SETTINGS_MESH_CHANNEL_MASK, // 12
+    SETTINGS_MESH_PANID, // 13
+    SETTINGS_MESH_TRANSMITTER_POWER, // 14
+    SETTINGS_MESH_BEACON_BROADCAST_INTERVAL, // 15
+    SETTINGS_MESH_NODE_TIMEOUT, // 16
+    SETTINGS_MESH_NODEINFO_BROADCAST_INTERVAL, // 17
+    SETTINGS_MESH_SPARE_8, // 18
+    SETTINGS_MESH_SPARE_9, // 19
+    SETTINGS_TERMINAL_BAUDRATE, // 20
+    SETTINGS_TERMINAL_TYPE, // 21
+    SETTINGS_TERMINAL_ECHO, // 22
+    SETTINGS_TERMINAL_TELNET, // 23
+    SETTINGS_TERMINAL_RS485_PORT2_FUNCTION, // 24
+    SETTINGS_TERMINAL_CONTROL_MODBUS_ON_OFF, // 25
+    SETTINGS_TERMINAL_CONTROL_MODBUS_DAY_NIGHT, // 26
+    SETTINGS_TERMINAL_CONTROL_MODBUS_REDUCTION, // 27
+    SETTINGS_TERMINAL_SPARE_8, // 28
+    SETTINGS_TERMINAL_SPARE_9, // 29
+    SETTINGS_BMM_ACTIVE_MODE, // 30
+    SETTINGS_GLOOM_LIGHT_CONSIDERATION, // 31
+    SETTINGS_DIM_LED_USE_COMPENSATION, // 32
+    SETTINGS_DIM_SPARE_3, // 33  // attention: this setting was used in release 1.20
+    SETTINGS_DIM_SPARE_4, // 34
+    SETTINGS_DIM_SPARE_5, // 35
+    SETTINGS_DIM_SPARE_6, // 36
+    SETTINGS_DIM_SPARE_7, // 37
+    SETTINGS_DIM_SPARE_8, // 38
+    SETTINGS_DIM_SPARE_9, // 39
+    SETTINGS_GLOOM_SENSOR_USE, // 40
+    SETTINGS_GLOOM_SPARE_1, // 41 // attention: this setting was there but not used till release 1.20
+    SETTINGS_GLOOM_LOCAL_EMA_FACTOR, // 42
+    SETTINGS_GLOOM_AVG_CALC_METHOD, // 43
+    SETTINGS_GLOOM_AVG_CALC_METHOD_GL, // 44
+    SETTINGS_GLOOM_SPARE_5, // 45
+    SETTINGS_GLOOM_SPARE_6, // 46
+    SETTINGS_GLOOM_SPARE_7, // 47
+    SETTINGS_GLOOM_SPARE_8, // 48
+    SETTINGS_GLOOM_SPARE_9, // 49
+    SETTINGS_VISIBILITY_SENSOR_TYPE, // 50
+    SETTINGS_VISIBILITY_CLUSTER_ID, // 51
+    SETTINGS_VISIBILITY_CLUSTER_ID_MASK, // 52
+    SETTINGS_VISIBILITY_HYSTERESIS, // 53
+    SETTINGS_VISIBILITY_SPARE_4, // 54
+    SETTINGS_VISIBILITY_SPARE_5, // 55
+    SETTINGS_VISIBILITY_SPARE_6, // 56
+    SETTINGS_VISIBILITY_SPARE_7, // 57
+    SETTINGS_VISIBILITY_SPARE_8, // 58
+    SETTINGS_VISIBILITY_SPARE_9, // 59
+    SETTINGS_INDICATOR_GLOOM, // 60
+    SETTINGS_INDICATOR_WARN_BITMASK, // 61
+    SETTINGS_INDICATOR_SPARE_2, // 62 // attention: this setting was used till release 1.20
+    SETTINGS_INDICATOR_BAD_LED_STOP, // 63
+    SETTINGS_INDICATOR_SPARE_4, // 64
+    SETTINGS_INDICATOR_SPARE_5, // 65
+    SETTINGS_INDICATOR_SPARE_6, // 66
+    SETTINGS_INDICATOR_SPARE_7, // 67
+    SETTINGS_INDICATOR_SPARE_8, // 68
+    SETTINGS_INDICATOR_SPARE_9, // 69
+    SETTINGS_ADVANCED_MESH_FIRMWARE_TX, // 70
+    SETTINGS_ADVANCED_FAIR_MODE, // 71
+    SETTINGS_ADVANCED_EMA_FACTOR, // 72
+    SETTINGS_ADVANCED_TOL_FACTOR, // 73
+    SETTINGS_ADVANCED_SWITCH_LED_ON_OFF_DELAY, // 74
+    SETTINGS_ADVANCED_MIN_GLOOM_TOLERANCE, // 75
+    SETTINGS_ADVANCED_MIN_NUM_RELIABLE_CL, // 76
+    SETTINGS_ADVANCED_KEEP_ON_MSG_TIMEOUT, // 77
+    SETTINGS_ADVANCED_SPARE_8, // 78
+    SETTINGS_ADVANCED_SPARE_9, // 79
+    SETTINGS_HEATER_USE_HEATER, // 80
+    SETTINGS_HEATER_ON_TEMPERATURE, // 81
+    SETTINGS_HEATER_HYSTERESIS, // 82
+    SETTINGS_HEATER_FAN_OFF_DELAY, // 83
+    SETTINGS_HEATER_MODE, // 84
+
+    SETTINGS_COUNT,
+} SETTINGS_VALUE_T;
+
+
+typedef enum
+{
+    SETTINGS_RS485_PORT2_FUNCTION_NONE,
+    SETTINGS_RS485_PORT2_FUNCTION_VISIBILITY,
+    SETTINGS_RS485_PORT2_FUNCTION_MODBUS,
+    SETTINGS_RS485_PORT2_FUNCTION_LIGHT_METER_VOLTCRAFT_LX_1108,
+    SETTINGS_RS485_PORT2_FUNCTION_GPS,
+    SETTINGS_RS485_PORT2_FUNCTION_MEASUREMENTS,
+    SETTINGS_RS485_PORT2_FUNCTION_SYNC
+} SETTINGS_RS485_PORT2_FUNCTION_T;
+
+typedef enum
+{
+    SETTINGS_TERMINAL_TYPE_RAW,
+    SETTINGS_TERMINAL_TYPE_ANSI,
+    SETTINGS_TERMINAL_TYPE_VT100,
+    SETTINGS_TERMINAL_TYPE_VT102,
+} SETTINGS_TERMINAL_TYPE_T;
+
+
+#define SETTINGS_FAIR_MODE                         (_settings_list_ram[SETTINGS_ADVANCED_FAIR_MODE])
+
+typedef enum settings_fair_modes_e
+{
+    SETTINGS_FAIR_MODE_DISABLED,  // Every value is used to calculate the ema
+    SETTINGS_FAIR_MODE_PASSIVE,   // runaway values are ignored for the ema
+    SETTINGS_FAIR_MODE_ACTIVE     // only the lowest value in a given period is used
+} SETTINGS_FAIR_MODES_T;
+
+typedef enum setting_mesh_fwtx_mode_e
+{
+    SETTINGS_MESH_FWTX_MODE_OFF,
+    SETTINGS_MESH_FWTX_MODE_ON,
+    SETTINGS_MESH_FWTX_MODE_ON_NOBC
+} SETTINGS_MESH_FWTX_MODE_T;
+
+typedef enum setting_visibility_sensor_type_e
+{
+    SETTINGS_VISIBILITY_SENSOR_TYPE_NONE,
+    SETTINGS_VISIBILITY_SENSOR_TYPE_VAISALA_PWD20,
+} SETTINGS_VISIBILITY_SENSOR_TYPE_T;
+
+typedef enum settings_indication_flags_e
+{
+    SETTINGS_INDICATION_GPS      = 0x01,
+    SETTINGS_INDICATION_SENS     = 0x02,
+    SETTINGS_INDICATION_VISI     = 0x04,
+    SETTINGS_INDICATION_MESH     = 0x08,
+    SETTINGS_INDICATION_PSU_BUFFERING = 0x10,
+    SETTINGS_INDICATION_PSU_COLLECTIVE = 0x20,
+#if 0
+    SETTINGS_INDICATION_PSU_BUFF_OR_ERR = 0x40,
+    SETTINGS_INDICATION_PSU_UPS_BAT_ERR = 0x80,
+    SETTINGS_INDICATION_PSU_VOLTAGE_ERR = 0x100,
+    SETTINGS_INDICATION_PSU_THERMAL_FUSE_ERR = 0x200,
+    SETTINGS_INDICATION_PSU_TEMPERATURE_ERR = 0x400,
+    SETTINGS_INDICATION_PSU_FAN_EOL = 0x800,
+    SETTINGS_INDICATION_PSU_FAN_FILTER_EOL = 0x1000,
+    SETTINGS_INDICATION_PSU_BATTERY_EOL = 0x2000
+#endif
+} SETTINGS_INDICATION_FLAGS_T;
+
+typedef enum settings_heater_mode_type_e
+{
+    SETTINGS_HEATER_MODE_LED_INTERLEAVE,
+    SETTINGS_HEATER_MODE_CONTINUOUS,
+} SETTINGS_HEATER_MODE_TYPE_T;
+
+typedef void ( SETTINGS_PRINT_HANDLER)(SETTINGS_VALUE_T setting);
+typedef bool( SETTINGS_SET_HANDLER)(SETTINGS_VALUE_T setting, const char *pValue);
+
+typedef enum
+{
+    UNSIGNED, SIGNED,
+} SETTINGS_TYPE_T;
+
+typedef struct settings_s
+{
+    SETTINGS_GROUP_T group;
+    const char *p_name;
+    SETTINGS_PRINT_HANDLER *p_print_handler_func;
+    uint8_t handler_arg;
+    SETTINGS_SET_HANDLER *p_set_handler_func;
+    uint32_t min;
+    uint32_t max;
+    uint32_t default_value;
+    SETTINGS_TYPE_T type;
+    bool LoadDefaults;
+} SETTINGS_T;
+
+#define SETTINGS_STRING_MAX_LEN 30
+
+typedef enum settings_string_e
+{
+    SETTINGS_STRING_SERIAL_NUMBER, //  0
+    SETTINGS_STRING_PASSWORD_1, //  1
+    SETTINGS_STRING_PASSWORD_2, //  2
+    SETTINGS_STRING___SPARE_3, //  3
+    SETTINGS_STRING___SPARE_4, //  4
+    SETTINGS_STRING_COUNT
+} SETTINGS_STRING_E;
+
+typedef void ( SETTINGS_STRING_PRINT_HANDLER)(SETTINGS_STRING_E setting);
+typedef bool( SETTINGS_STRING_SET_HANDLER)(SETTINGS_STRING_E setting,
+        const char *pValue);
+
+typedef struct settings_string_s
+{
+    const char *p_name;
+    SETTINGS_STRING_PRINT_HANDLER *p_print_handler_func;
+    uint8_t handler_arg;
+    SETTINGS_STRING_SET_HANDLER *p_set_handler_func;
+    bool LoadDefaults;
+} SETTINGS_STRING_T;
+
+
+typedef void (SettingsCallBackHandler_t)(SETTINGS_GROUP_T group_id);
+
+typedef struct
+{
+    SettingsCallBackHandler_t *pCallbackFunc;
+    uint16_t uGroupMask;
+} SETTINGS_GROUP_CHANGE_CALLBACK_T;
+
+
+extern const SETTINGS_T settings_list_flash[];
+extern const char* const p_settings_group_names[SETTINGS_GROUP_COUNT];
+extern unsigned long int _settings_list_ram[SETTINGS_COUNT];
+
+extern SETTINGS_STRING_T settings_string_list_flash[];
+extern char * _settings_string_list_ram[SETTINGS_STRING_COUNT];
+
+void SETTINGS_Load(SETTINGS_VALUE_T nsetting);
+void SETTINGS_Save(SETTINGS_VALUE_T nsetting);
+bool SETTINGS_Changed(SETTINGS_VALUE_T nsetting);
+void SETTINGS_LoadAll(void);
+void SETTINGS_SaveAll(void);
+void SETTINGS_Init(void);
+void SETTINGS_LoadDefault(SETTINGS_VALUE_T nsetting);
+void SETTINGS_LoadAllDefaults(void);
+void SETTINGS_FactoryDefaults(void);
+void SETTINGS_PrintValue(SETTINGS_VALUE_T nsetting);
+bool SETTINGS_SetValue(SETTINGS_VALUE_T nsetting, const char *pValue);
+bool SETTINGS_SetRaw(SETTINGS_VALUE_T nsetting, uint32_t Value);
+bool SETTINGS_RegisterGroupChangeCallback(SETTINGS_GROUP_CHANGE_CALLBACK_T *register_info);
+bool SETTINGS_IsNotDefault(SETTINGS_VALUE_T nsetting);
+
+#endif

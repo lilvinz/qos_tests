@@ -1,0 +1,31 @@
+#ifndef MESH_FW_H
+#define MESH_FW_H
+
+
+
+#define MESH_FW_INIT_TIMEOUT            500
+#define MESH_FW_HANDSHAKE_TIMEOUT       3000
+#define MESH_FW_UPDATE_TIMEOUT      1000
+
+#define MESH_FW_HANDSHAKE_INTERVAL  200
+
+enum
+{
+    MESH_FW_INIT,
+    MESH_FW_HANDSHAKE,
+    MESH_FW_UPDATE,
+    MESH_FW_DONE
+};
+
+typedef enum
+{
+    MESH_FW_MNG_NO_VALID_FIRMWARE,
+    MESH_FW_MNG_NO_BOOTLOADER,
+    MESH_FW_MNG_UPDATE_FAILED,
+    MESH_FW_MNG_UPDATE_OK,
+} MESH_FW_MNG_UPDATE_T;
+
+
+MESH_FW_MNG_UPDATE_T MESH_FirmwareUpdateStart(void);
+
+#endif

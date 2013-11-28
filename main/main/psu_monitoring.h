@@ -1,0 +1,151 @@
+/*
+ * psu_monitoring.h
+ *
+ * (c) Quantec Networks GmbH
+ *
+ *  Created on: 15.02.2013
+ *      Author: DHA
+ *
+ * Purpose:
+ * Provide system information of external power supply unit and monitoring functions.
+ *
+ */
+
+#ifndef PSU_MONITORING_H
+#define PSU_MONITORING_H
+
+#include "svwire.h"
+#include "lm75.h"
+
+#define PSU_MONITORING_NUM_SUPPORTED_BATTERIES  2
+// 300 s every 10 seconds a message should arrive
+// 3 different messages have to be received (protocol version 1)
+// so 5 minutes should be enough
+#define PSU_MONITORING_DATA_TIMEOUT_S 300
+#define PSU_MONITORING_GET_MUTEX_TIMEOUT_MS 100
+
+#define PSU_MONITORING_PSU_INFO_AVAILABLE_FLAG 0x01
+#define PSU_MONITORING_PSU_STATUS_AVAILABLE_FLAG 0x02
+#define PSU_MONITORING_PSU_SENSORS_AVAILABLE_FLAG 0x04
+#define PSU_MONITORING_PSU_FANINFO_AVAILABLE_FLAG 0x08
+#define PSU_MONITORING_PSU_BATTERYINFO_AVAILABLE_FLAG 0x10
+
+#define PSU_MONITORING_ALL_DATA_AVAILABLE_BM    (PSU_MONITORING_PSU_INFO_AVAILABLE_FLAG |\
+                                                 PSU_MONITORING_PSU_STATUS_AVAILABLE_FLAG |\
+                                                 PSU_MONITORING_PSU_SENSORS_AVAILABLE_FLAG |\
+                                                 PSU_MONITORING_PSU_FANINFO_AVAILABLE_FLAG |\
+                                                 PSU_MONITORING_PSU_BATTERYINFO_AVAILABLE_FLAG)
+
+typedef enum
+{
+    PSU_MONITORING_STATUS_NOT_AVAILABLE = -1,
+    PSU_MONITORING_STATUS_INIT = 0,
+    PSU_MONITORING_STATUS_AVAILABLE,
+    PSU_MONITORING_STATUS_MISSING,
+} PSU_MONITORING_STATUS_T;
+
+typedef struct
+{
+    uint32_t serial;
+    uint16_t hw_id;
+    uint16_t hw_revision;
+    uint16_t sw_version_major;
+    uint16_t sw_version_minor;
+} PSU_MONITORING_PSU_INFO_S;
+
+typedef struct
+{
+    SVWIRE_UPS_CONTROL_UPS_STATUS_T ups_status;
+    uint8_t ups_raw_status;
+    SVWIRE_UPS_CONTROL_BATTERY_STATUS_T ups_battery_status;
+    SVWIRE_DETECTOR_TEMPERATURE_RATING_T temperature_rating_system;
+    SVWIRE_DETECTOR_TEMPERATURE_FUSE_RATING_T temperature_fuse_rating;
+    SVWIRE_DETECTOR_VOLTAGE_RATING_T voltage_rating;
+    SVWIRE_DETECTOR_SERVICE_STATUS_T service_fan;
+    SVWIRE_DETECTOR_SERVICE_STATUS_T service_fan_filter;
+    SVWIRE_DETECTOR_SERVICE_STATUS_T service_battery_1;
+    SVWIRE_DETECTOR_SERVICE_STATUS_T service_battery_2;
+} PSU_MONITORING_PSU_STATUS_S;
+
+typedef struct
+{
+    TEMPERATURE_SENSOR_T temperature_sensor_system;
+    float supply_voltage;
+} PSU_MONITORING_PSU_SENSORS_S;
+
+typedef struct
+{
+    uint32_t timemeter_fan;
+    uint32_t timemeter_fan_filter;
+} PSU_MONITORING_PSU_FAN_INFO_S;
+
+typedef struct
+{
+    TEMPERATURE_SENSOR_T temperature_sensor_battery;
+    uint32_t timemeter_battery_total;
+    uint32_t timemeter_battery_hot;
+    SVWIRE_BATTERY_MANAGER_BATTERY_TIMEMETER_STATUS_T timemeter_battery_total_status;
+    SVWIRE_BATTERY_MANAGER_BATTERY_TIMEMETER_STATUS_T timemeter_battery_hot_status;
+} PSU_MONITORING_BATTERY_INFO_S;
+
+typedef enum
+{
+    PSU_MONITORING_FLAG_BIT_UPS = 0,
+    PSU_MONITORING_FLAG_BIT_UPS_BATTERY_STATUS,
+    PSU_MONITORING_FLAG_BIT_VOLTAGE,
+    PSU_MONITORING_FLAG_BIT_THERMAL_FUSE,
+    PSU_MONITORING_FLAG_BIT_SYSTEM_TEMPERATURE,
+    PSU_MONITORING_FLAG_BIT_FAN,
+    PSU_MONITORING_FLAG_BIT_FAN_FILTER,
+    PSU_MONITORING_FLAG_BIT_BATTERY_AGE,
+    PSU_MONITORING_FLAG_BIT_COUNT
+} PSU_MONITORING_FLAG_BIT_T;
+
+typedef enum
+{
+    PSU_MONITORING_STATUS_ERROR_CTR_UPS = 0,
+    PSU_MONITORING_STATUS_ERROR_CTR_UPS_BATTERY_STATUS,
+    PSU_MONITORING_STATUS_ERROR_CTR_VOLTAGE,
+    PSU_MONITORING_STATUS_ERROR_CTR_THERMAL_FUSE,
+    PSU_MONITORING_STATUS_ERROR_CTR_LAG_SYSTEM_TEMPERATURE,
+    PSU_MONITORING_STATUS_ERROR_CTR_FAN,
+    PSU_MONITORING_STATUS_ERROR_CTR_FAN_FILTER,
+    PSU_MONITORING_STATUS_ERROR_CTR_COUNT
+} PSU_MONITORING_STATUS_ERROR_CTR_T;
+
+typedef enum
+{
+    PSU_MONITORING_BAT_STATUS_IDX_BAT_1_AGE = 0,
+    PSU_MONITORING_BAT_STATUS_IDX_BAT_2_AGE,
+    PSU_MONITORING_BAT_STATUS_IDX_COUNT
+} PSU_MONITORING_BAT_STATUS_IDX_T;
+
+#define PSU_MONITORING_INTERNAL_ERROR_COUNT_MAX 100
+
+#define PSU_MONITORING_MIN_SVWIRE_VERSION_MAJOR 1
+#define PSU_MONITORING_MIN_SVWIRE_SW_VERSION_MINOR 10
+#define PSU_MONITORING_MIN_SVWIRE_SW_VERSION (((uint32_t) PSU_MONITORING_MIN_SVWIRE_VERSION_MAJOR << 16) | PSU_MONITORING_MIN_SVWIRE_SW_VERSION_MINOR)
+
+extern bool _b_psu_is_buffering;
+extern PSU_MONITORING_STATUS_T _psu_monitoring_status;
+
+void PSU_MONITORING_Set_PSU_Info(PSU_MONITORING_PSU_INFO_S *p_data);
+void PSU_MONITORING_Set_PSU_Status(PSU_MONITORING_PSU_STATUS_S *p_data);
+void PSU_MONITORING_Set_PSU_Sensors(PSU_MONITORING_PSU_SENSORS_S *p_data);
+void PSU_MONITORING_Set_PSU_FanInfo(PSU_MONITORING_PSU_FAN_INFO_S *p_data);
+void PSU_MONITORING_Set_PSU_BatteryInfo(uint8_t i_battery, PSU_MONITORING_BATTERY_INFO_S *p_data);
+bool PSU_MONITORING_Get_PSU_Info(PSU_MONITORING_PSU_INFO_S *p_data);
+bool PSU_MONITORING_Get_PSU_Status(PSU_MONITORING_PSU_STATUS_S *p_data);
+bool PSU_MONITORING_Get_PSU_Sensors(PSU_MONITORING_PSU_SENSORS_S *p_data);
+bool PSU_MONITORING_Get_PSU_FanInfo(PSU_MONITORING_PSU_FAN_INFO_S *p_data);
+bool PSU_MONITORING_Get_PSU_BatteryInfo(uint8_t i_battery, PSU_MONITORING_BATTERY_INFO_S *p_data);
+uint32_t PSU_MONITORING_Get_WarningFlags(void);
+
+void PSU_MONITORING_Create(void);
+void PSU_MONITORING_Lock(void);
+bool PSU_MONITORING_LockTimeout(portTickType xTicksToWait);
+void PSU_MONITORING_Unlock(void);
+
+void PSU_MONITORING_Init(void);
+void PSU_MONITORING_Tick(void);
+#endif
