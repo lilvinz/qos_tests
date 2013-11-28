@@ -1,9 +1,0 @@
-version
-init
-reset halt
-targets
-flash write_image erase main.bin 0x08000000 bin
-verify_image main.bin
-reset halt
-resume
-shutdown
