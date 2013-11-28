@@ -1,3 +1,7 @@
+build
+downloads
+tools
+
 code/main/system/local_texts_cpp.c
 code/main/system/local_texts_cpp.h
 code/main/system/local_texts_log.c
