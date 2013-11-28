@@ -5,6 +5,7 @@ code/main/system/local_texts_log.h
 code/main/system/local_texts_log_cpp.c
 code/main/system/local_texts_log_cpp.h
 
+.settings
 .cproject
 .project
 .metadata
