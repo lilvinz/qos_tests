@@ -22,3 +22,6 @@ $(TARGET_BIN): | $(BL_ELF) $(FW_BIN)
 $(TARGET_ELF): $(TARGET_BIN) FORCE
 	$(V0) @echo $(MSG_FLASH_IMG) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -I binary -O elf32-littlearm -B arm --set-start $(BL_ORIGIN) $(TARGET_BIN) $(TARGET_ELF)
+	
+# Add jtag targets (program and wipe)
+$(eval $(call JTAG_TEMPLATE,$(TARGET_BIN),$(EF_ORIGIN),$(EF_SIZE),$(OPENOCD_JTAG_CONFIG),$(OPENOCD_CONFIG)))

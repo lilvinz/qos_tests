@@ -197,8 +197,8 @@ define JTAG_TEMPLATE
 # Options for OpenOCD flash-programming
 # see openocd.pdf/openocd.texi for further information
 
-# if OpenOCD is in the $PATH just set OPENOCDEXE=openocd
-OOCD_EXE ?= openocd
+# if OpenOCD is in the $PATH just set OPENOCD=openocd
+OPENOCD ?= openocd
 
 # debug level
 OOCD_JTAG_SETUP  = -d0
@@ -214,7 +214,7 @@ OOCD_BOARD_RESET += -c "reset halt"
 .PHONY: program
 program: $(1)
 	@echo $(MSG_JTAG_PROGRAM) $$(call toprel, $$<)
-	$(V1) $(OOCD_EXE) \
+	$(V1) $(OPENOCD) \
 		$$(OOCD_JTAG_SETUP) \
 		$$(OOCD_BOARD_RESET) \
 		-c "flash write_image erase $$< $(2) bin" \
@@ -225,7 +225,7 @@ program: $(1)
 .PHONY: wipe
 wipe:
 	@echo $(MSG_JTAG_WIPE) wiping $(3) bytes starting from $(2)
-	$(V1) $(OOCD_EXE) \
+	$(V1) $(OPENOCD) \
 		$$(OOCD_JTAG_SETUP) \
 		$$(OOCD_BOARD_RESET) \
 		-c "flash erase_address pad $(2) $(3)" \

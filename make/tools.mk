@@ -140,23 +140,23 @@ astyle_clean:
 ###########################################################################################################
 
 ifeq ($(shell [ -d "$(ARM_SDK_DIR)" ] && echo "exists"), exists)
-    ARM_SDK_PREFIX := $(ARM_SDK_DIR)/bin/arm-none-eabi-
+    export ARM_SDK_PREFIX := $(ARM_SDK_DIR)/bin/arm-none-eabi-
 else
     # not installed, hope it's in the path...
-    ARM_SDK_PREFIX ?= arm-none-eabi-
+    export ARM_SDK_PREFIX ?= arm-none-eabi-
 endif
 
 ifeq ($(shell [ -d "$(OPENOCD_DIR)" ] && echo "exists"), exists)
-    OPENOCD := $(OPENOCD_DIR)/bin/openocd
+    export OPENOCD := $(OPENOCD_DIR)/bin/openocd
 else
     # not installed, hope it's in the path...
-    OPENOCD ?= openocd
+    export OPENOCD ?= openocd
 endif
 
 ifeq ($(shell [ -d "$(ASTYLE_DIR)" ] && echo "exists"), exists)
-    ASTYLE := $(ASTYLE_DIR)/bin/astyle
+    export ASTYLE := $(ASTYLE_DIR)/bin/astyle
 else
     # not installed, hope it's in the path...
-    ASTYLE ?= astyle
+    export ASTYLE ?= astyle
 endif
 
