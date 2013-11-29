@@ -10,7 +10,7 @@ export TARGETS_DIR := $(ROOT_DIR)/src/targets
 export TESTS_DIR := $(ROOT_DIR)/src/tests
 export TOOLS_DIR := $(ROOT_DIR)/tools
 export BUILD_DIR := $(ROOT_DIR)/build
-export DL_DIR=$(ROOT_DIR)/downloads
+export DL_DIR := $(ROOT_DIR)/downloads
 
 $(TOOLS_DIR):
 	$(V1) mkdir -p $@
@@ -111,8 +111,7 @@ all_clean:
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
 define FW_TEMPLATE
 .PHONY: $(1) fw_$(1)
-$(1): fw_$(1)_fw
-fw_$(1): fw_$(1)_fw
+fw_$(1): fw_$(1)_all
 
 fw_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/fw && \
@@ -133,8 +132,7 @@ endef
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
 define BL_TEMPLATE
 .PHONY: bl_$(1)
-bl_$(1): bl_$(1)_bin
-bl_$(1)_bino: bl_$(1)_bin
+bl_$(1): bl_$(1)_all
 
 bl_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/bl && \
@@ -154,7 +152,7 @@ endef
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
 define EF_TEMPLATE
 .PHONY: ef_$(1)
-ef_$(1): ef_$(1)_bin
+ef_$(1): ef_$(1)_all
 
 ef_$(1)_%: bl_$(1)_bin fw_$(1)_fw
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
@@ -174,7 +172,7 @@ endef
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
 define FT_TEMPLATE
 .PHONY: ft_$(1)
-ft_$(1): ef_$(1)_bin
+ft_$(1): ef_$(1)_all
 
 ft_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
@@ -295,7 +293,7 @@ all_ut_clean:
 # $(1) = Unit test name
 define UT_TEMPLATE
 .PHONY: ut_$(1)
-ut_$(1): ut_$(1)_elf
+ut_$(1): ut_$(1)_all
 
 ut_$(1)_%: $$(UT_OUT_DIR)
 	$(V1) mkdir -p $(UT_OUT_DIR)/$(1)
