@@ -13,6 +13,9 @@ LDFLAGS += -lpthread
 #
 #################################
 
+# Set up a default goal
+.DEFAULT_GOAL := all
+
 EXTRAINCDIRS += .
 ALLSRC := $(SRC) $(wildcard ./*.c)
 ALLCPPSRC := $(wildcard ./*.cpp) $(GTEST_DIR)/src/gtest_main.cc

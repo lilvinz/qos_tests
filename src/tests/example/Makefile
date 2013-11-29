@@ -1,9 +1,5 @@
 
-# Set up a default goal
-.DEFAULT_GOAL := all
-
-$(OUTDIR):
-	$(V1) [ -d $@ ] || mkdir -p $@
+include $(ROOT_DIR)/make/unittest.mk
 
 CFLAGS += -O0
 CFLAGS += -Wall -Werror -Wshadow
@@ -12,4 +8,3 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 
 CONLYFLAGS += -std=gnu99
 
-include $(ROOT_DIR)/make/unittest.mk

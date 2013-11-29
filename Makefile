@@ -122,6 +122,7 @@ help:
 
 .PHONY: all_clean
 all_clean:
+	$(V0) @echo " CLEAN       $$@"
 	$(V1) [ ! -d "$(BUILD_DIR)" ] || $(RM) -r "$(BUILD_DIR)"
 
 ##############################
@@ -148,7 +149,7 @@ fw_$(1)_%:
 .PHONY: $(1)_clean
 $(1)_clean: fw_$(1)_clean
 fw_$(1)_clean:
-	$(V0) @echo " CLEAN      $$@"
+	$(V0) @echo " CLEAN       $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/fw_$(1)
 endef
 
@@ -169,7 +170,7 @@ bl_$(1)_%:
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
-	$(V0) @echo " CLEAN      $$@"
+	$(V0) @echo " CLEAN       $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/bl_$(1)
 endef
 
@@ -190,7 +191,7 @@ ef_$(1)_%: bl_$(1) fw_$(1)
 
 .PHONY: ef_$(1)_clean
 ef_$(1)_clean:
-	$(V0) @echo " CLEAN      $$@"
+	$(V0) @echo " CLEAN       $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ef_$(1)
 endef
 
@@ -211,7 +212,7 @@ ft_$(1)_%: ef_$(1)
 
 .PHONY: ft_$(1)_clean
 ft_$(1)_clean:
-	$(V0) @echo " CLEAN      $$@"
+	$(V0) @echo " CLEAN       $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ft_$(1)
 endef
 
@@ -271,9 +272,8 @@ all_ef_clean: $(addsuffix _clean, $(EF_TARGETS))
 all_ft: $(FT_TARGETS)
 all_ft_clean: $(addsuffix _clean, $(FT_TARGETS))
 
-.PHONY: all all_clean
+.PHONY: all
 all: all_fw all_bl all_ef all_ft
-all_clean: all_fw_clean all_bl_clean all_ef_clean all_ft_clean
 
 # Expand the firmware rules
 $(foreach board, $(FW_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
@@ -310,7 +310,7 @@ all_ut_run: $(addsuffix _run, $(addprefix ut_, $(ALL_UNITTESTS)))
 
 .PHONY: all_ut_clean
 all_ut_clean:
-	$(V0) @echo " CLEAN      $@"
+	$(V0) @echo " CLEAN       $@"
 	$(V1) [ ! -d "$(UT_OUT_DIR)" ] || $(RM) -r "$(UT_OUT_DIR)"
 
 # $(1) = Unit test name
@@ -332,7 +332,7 @@ ut_$(1)_%:
 
 .PHONY: ut_$(1)_clean
 ut_$(1)_clean:
-	$(V0) @echo " CLEAN      $$@"
+	$(V0) @echo " CLEAN       $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ut_$(1)
 endef
 
