@@ -122,7 +122,7 @@ help:
 
 .PHONY: all_clean
 all_clean:
-	$(V0) @echo " CLEAN       $$@"
+	$(V0) @echo " CLEAN       $(BUILD_DIR)"
 	$(V1) [ ! -d "$(BUILD_DIR)" ] || $(RM) -r "$(BUILD_DIR)"
 
 ##############################
