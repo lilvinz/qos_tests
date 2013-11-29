@@ -1,4 +1,6 @@
 
+include $(ROOT_DIR)/make/firmware-defs.mk
+
 # Flags passed to the preprocessor.
 CPPFLAGS += -I$(GTEST_DIR)/include
 
@@ -27,6 +29,9 @@ $(eval $(call COMPILE_CPP_TEMPLATE, $(GTEST_DIR)/src/gtest-all.cc))
 
 $(eval $(call LINK_CPP_TEMPLATE,$(OUTDIR)/$(TARGET).elf,$(ALLOBJ) $(OUTDIR)/gtest-all.o))
 
+.PHONY: all
+all: elf
+
 .PHONY: elf
 elf: $(OUTDIR)/$(TARGET).elf
 
@@ -34,11 +39,11 @@ elf: $(OUTDIR)/$(TARGET).elf
 xml: $(OUTDIR)/$(TARGET).xml
 
 $(OUTDIR)/$(TARGET).xml: $(OUTDIR)/$(TARGET).elf
-	$(V0) @echo " TEST XML  $(MSG_EXTRA)  $(call toprel, $@)"
+	$(V0) @echo " TEST XML    $(MSG_EXTRA)  $(call toprel, $@)"
 	$(V1) $< --gtest_output=xml:$(OUTDIR)/$(TARGET).xml > /dev/null
 
 .PHONY: run
 run: $(OUTDIR)/$(TARGET).elf
-	$(V0) @echo " TEST RUN  $(MSG_EXTRA)  $(call toprel, $<)"
+	$(V0) @echo " TEST RUN    $(MSG_EXTRA)  $(call toprel, $<)"
 	$(V1) $<
 

@@ -13,13 +13,13 @@ export BUILD_DIR := $(ROOT_DIR)/build
 export DL_DIR := $(ROOT_DIR)/downloads
 
 $(TOOLS_DIR):
-	$(V1) mkdir -p $@
+	$(V1) [ -d $@ ] || mkdir -p $@
 
 $(BUILD_DIR):
-	$(V1) mkdir -p $@
+	$(V1) [ -d $@ ] || mkdir -p $@
 
 $(DL_DIR):
-	$(V1) mkdir -p $@
+	$(V1) [ -d $@ ] || mkdir -p $@
 
 # Decide on a verbosity level based on the V= parameter
 export AT := @
@@ -108,7 +108,7 @@ help:
 	@echo "     ut_<test>            - Build unit test <test>"
 	@echo "                            supported tests are ($(ALL_UNITTESTS))"
 	@echo "     ut_<test>_xml        - Run test and capture XML output into a file"
-	@echo "     ut_<test>_run        - Run test and dump XML output to console"
+	@echo "     ut_<test>_run        - Run test and dump output to console"
 	@echo
 	@echo "   [Misc]"
 	@echo "     astyle FILE=<name>   - Executes the astyle code formatter to reformat"
@@ -136,6 +136,7 @@ define FW_TEMPLATE
 fw_$(1): fw_$(1)_all
 
 fw_$(1)_%:
+	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/fw_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/fw && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -157,6 +158,7 @@ define BL_TEMPLATE
 bl_$(1): bl_$(1)_all
 
 bl_$(1)_%:
+	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/bl_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/bl && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -177,6 +179,7 @@ define EF_TEMPLATE
 ef_$(1): ef_$(1)_all
 
 ef_$(1)_%: bl_$(1) fw_$(1)
+	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ef_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -197,6 +200,7 @@ define FT_TEMPLATE
 ft_$(1): ft_$(1)_all
 
 ft_$(1)_%: ef_$(1)
+	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ft_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -295,9 +299,6 @@ $(foreach board, $(FT_BOARDS), $(eval $(call FT_TEMPLATE,$(board))))
 
 ALL_UNITTESTS := $(notdir $(wildcard $(TESTS_DIR)/*))
 
-$(UT_OUT_DIR):
-	$(V1) mkdir -p $@
-
 .PHONY: all_ut
 all_ut: $(addsuffix _elf, $(addprefix ut_, $(ALL_UNITTESTS)))
 
@@ -317,23 +318,22 @@ define UT_TEMPLATE
 .PHONY: ut_$(1)
 ut_$(1): ut_$(1)_all
 
-ut_$(1)_%: $$(UT_OUT_DIR)
-	$(V1) mkdir -p $(UT_OUT_DIR)/$(1)
+ut_$(1)_%:
+	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ut_$(1)
 	$(V1) cd $(TESTS_DIR)/$(1) && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
 		BUILD_PREFIX=ut \
 		TCHAIN_PREFIX="" \
 		TARGET=$(1) \
-		OUTDIR=$(BUILD_DIR)/fw_$(1) \
+		OUTDIR=$(BUILD_DIR)/ut_$(1) \
 		GTEST_DIR=$(GTEST_DIR) \
 		$$*
 
 .PHONY: ut_$(1)_clean
 ut_$(1)_clean:
-	$(V0) @echo " CLEAN      $(1)"
-	$(V1) [ ! -d "$(UT_OUT_DIR)/$(1)" ] || $(RM) -r "$(UT_OUT_DIR)/$(1)"
-
+	$(V0) @echo " CLEAN      $$@"
+	$(V1) $(RM) -r $(BUILD_DIR)/ut_$(1)
 endef
 
 # Expand the unittest rules
@@ -343,7 +343,7 @@ $(foreach ut, $(ALL_UNITTESTS), $(eval $(call UT_TEMPLATE,$(ut))))
 # output is interleaved with the rest of the make output.
 ifneq ($(strip $(filter all_ut_run,$(MAKECMDGOALS))),)
     .NOTPARALLEL:
-    $(info *NOTE*     Parallel make disabled by all_ut_run target so we have sane console output)
+    $(info *NOTE*       Parallel make disabled by all_ut_run target so we have sane console output)
 endif
 
 ##############################
