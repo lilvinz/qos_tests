@@ -10,7 +10,6 @@ OBJDUMP := $(TCHAIN_PREFIX)objdump
 SIZE := $(TCHAIN_PREFIX)size
 NM := $(TCHAIN_PREFIX)nm
 STRIP := $(TCHAIN_PREFIX)strip
-INSTALL := install
 RM := rm
 
 THUMB := -mthumb
@@ -26,37 +25,31 @@ endif
 
 # Add a board designator to the terse message text
 ifeq ($(ENABLE_MSG_EXTRA),yes)
-    MSG_EXTRA := [$(BUILD_TYPE)|$(BOARD_NAME)]
+    MSG_EXTRA := [$(BUILD_PREFIX)|$(BOARD_NAME)]
 else
     MSG_EXTRA :=
 endif
 
 # Define Messages
-# English
-MSG_FORMATERROR        = ${quote} Can not handle output-format${quote}
-MSG_MODINIT            = ${quote} MODINIT   $(MSG_EXTRA) ${quote}
-MSG_SIZE               = ${quote} SIZE      $(MSG_EXTRA) ${quote}
-MSG_LOAD_FILE          = ${quote} BIN/HEX   $(MSG_EXTRA) ${quote}
-MSG_BIN_OBJ            = ${quote} BINO      $(MSG_EXTRA) ${quote}
-MSG_STRIP_FILE         = ${quote} STRIP     $(MSG_EXTRA) ${quote}
-MSG_EXTENDED_LISTING   = ${quote} LIS       $(MSG_EXTRA) ${quote}
-MSG_SYMBOL_TABLE       = ${quote} NM        $(MSG_EXTRA) ${quote}
-MSG_LINKING_C          = ${quote} LDC       $(MSG_EXTRA) ${quote}
-MSG_LINKING_CPP        = ${quote} LDCPP     $(MSG_EXTRA) ${quote}
-MSG_COMPILING_THUMB    = ${quote} CC-THUMB  ${MSG_EXTRA} ${quote}
-MSG_COMPILING          = ${quote} CC        ${MSG_EXTRA} ${quote}
-MSG_COMPILINGCPP_THUMB = ${quote} CPP-THUMB $(MSG_EXTRA) ${quote}
-MSG_COMPILINGCPP       = ${quote} CPP       $(MSG_EXTRA) ${quote}
-MSG_ASSEMBLING_THUMB   = ${quote} AS-THUMB  $(MSG_EXTRA) ${quote}
-MSG_ASSEMBLING         = ${quote} AS        $(MSG_EXTRA) ${quote}
-MSG_CLEANING           = ${quote} CLEAN     $(MSG_EXTRA) ${quote}
-MSG_ASMFROMC_THUMB     = ${quote} ASC-THUMB $(MSG_EXTRA) ${quote}
-MSG_ASMFROMC           = ${quote} ASC       $(MSG_EXTRA) ${quote}
-MSG_INSTALLING         = ${quote} INSTALL   $(MSG_EXTRA) ${quote}
-MSG_FIRMWARE           = ${quote} FW        $(MSG_EXTRA) ${quote}
-MSG_FWINFO             = ${quote} FWINFO    $(MSG_EXTRA) ${quote}
-MSG_PADDING            = ${quote} PADDING   $(MSG_EXTRA) ${quote}
-MSG_FLASH_IMG          = ${quote} FLASH_IMG $(MSG_EXTRA) ${quote}
+MSG_SIZE               = ${quote} SIZE        $(MSG_EXTRA) ${quote}
+MSG_LOAD_FILE          = ${quote} BIN/HEX     $(MSG_EXTRA) ${quote}
+MSG_BIN_OBJ            = ${quote} BINO        $(MSG_EXTRA) ${quote}
+MSG_STRIP_FILE         = ${quote} STRIP       $(MSG_EXTRA) ${quote}
+MSG_EXTENDED_LISTING   = ${quote} LIS         $(MSG_EXTRA) ${quote}
+MSG_SYMBOL_TABLE       = ${quote} NM          $(MSG_EXTRA) ${quote}
+MSG_LINKING_C          = ${quote} LDC         $(MSG_EXTRA) ${quote}
+MSG_LINKING_CPP        = ${quote} LDCPP       $(MSG_EXTRA) ${quote}
+MSG_COMPILING_THUMB    = ${quote} CC-THUMB    ${MSG_EXTRA} ${quote}
+MSG_COMPILING          = ${quote} CC          ${MSG_EXTRA} ${quote}
+MSG_COMPILINGCPP_THUMB = ${quote} CPP-THUMB   $(MSG_EXTRA) ${quote}
+MSG_COMPILINGCPP       = ${quote} CPP         $(MSG_EXTRA) ${quote}
+MSG_ASSEMBLING_THUMB   = ${quote} AS-THUMB    $(MSG_EXTRA) ${quote}
+MSG_ASSEMBLING         = ${quote} AS          $(MSG_EXTRA) ${quote}
+MSG_CLEANING           = ${quote} CLEAN       $(MSG_EXTRA) ${quote}
+MSG_ASMFROMC_THUMB     = ${quote} ASC-THUMB   $(MSG_EXTRA) ${quote}
+MSG_ASMFROMC           = ${quote} ASC         $(MSG_EXTRA) ${quote}
+MSG_PADDING            = ${quote} PADDING     $(MSG_EXTRA) ${quote}
+MSG_FLASH_IMG          = ${quote} FLASH_IMG   $(MSG_EXTRA) ${quote}
 
 toprel = $(subst $(realpath $(ROOT_DIR))/,,$(abspath $(1)))
 
@@ -114,30 +107,6 @@ size: $(1)_size
 $(1)_size: $(1)
 	@echo $(MSG_SIZE) $$(call toprel, $$<)
 	$(V1) $(SIZE) -B $$<
-endef
-
-# firmware image template
-#  $(1) = path to bin file
-#  $(2) = boardtype in hex
-#  $(3) = board revision in hex
-define FW_TEMPLATE
-FORCE:
-
-$(1).firmwareinfo.c: $(1) $(ROOT_DIR)/make/templates/firmwareinfotemplate.c FORCE
-	@echo $(MSG_FWINFO) $$(call toprel, $$@)
-	$(V1) python $(ROOT_DIR)/make/scripts/version-info.py \
-		--path=$(ROOT_DIR) \
-		--template=$(ROOT_DIR)/make/templates/firmwareinfotemplate.c \
-		--outfile=$$@ \
-		--image=$(1) \
-		--type=$(2) \
-		--revision=$(3)
-
-$(eval $(call COMPILE_C_THUMB_TEMPLATE, $(1).firmwareinfo.c))
-
-$(OUTDIR)/$(notdir $(basename $(1))).fw : $(1) $(1).firmwareinfo.bin
-	@echo $(MSG_FIRMWARE) $$(call toprel, $$@)
-	$(V1) cat $(1) $(1).firmwareinfo.bin > $$@
 endef
 
 # Assemble: create object files from assembler source files.

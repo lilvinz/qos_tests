@@ -33,6 +33,28 @@ else ifeq ($(V), 0)
 else ifeq ($(V), 1)
 endif
 
+# Set build variant defaults
+export BUILD_TYPE ?= RELEASE_BUILD
+
+ifeq ($(BUILD_TYPE),DEBUG_BUILD)
+else ifeq ($(BUILD_TYPE),RELEASE_BUILD)
+else
+    $(error BUILD_TYPE is not set properly)
+endif
+
+# When building any of the "all_*" targets, tell all sub makefiles to display
+# additional details on each line of output to describe which build and target
+# that each line applies to.
+ifneq ($(strip $(filter all_%,$(MAKECMDGOALS))),)
+    export ENABLE_MSG_EXTRA := yes
+endif
+
+# When building more than one goal in a single make invocation, also
+# enable the extra context for each output line
+ifneq ($(word 2,$(MAKECMDGOALS)),)
+    export ENABLE_MSG_EXTRA := yes
+endif
+
 include $(ROOT_DIR)/make/tools.mk
 
 .PHONY: help
@@ -117,7 +139,7 @@ fw_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/fw && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
-		BUILD_TYPE=fw \
+		BUILD_PREFIX=fw \
 		OUTDIR=$(BUILD_DIR)/fw_$(1) \
 		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
@@ -138,7 +160,7 @@ bl_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/bl && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
-		BUILD_TYPE=bl \
+		BUILD_PREFIX=bl \
 		OUTDIR=$(BUILD_DIR)/bl_$(1) \
 		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
@@ -154,11 +176,11 @@ define EF_TEMPLATE
 .PHONY: ef_$(1)
 ef_$(1): ef_$(1)_all
 
-ef_$(1)_%: bl_$(1)_bin fw_$(1)_fw
+ef_$(1)_%: bl_$(1) fw_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
-		BUILD_TYPE=ef \
+		BUILD_PREFIX=ef \
 		OUTDIR=$(BUILD_DIR)/ef_$(1) \
 		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
@@ -172,13 +194,13 @@ endef
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
 define FT_TEMPLATE
 .PHONY: ft_$(1)
-ft_$(1): ef_$(1)_all
+ft_$(1): ft_$(1)_all
 
-ft_$(1)_%:
+ft_$(1)_%: ef_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
-		BUILD_TYPE=ft \
+		BUILD_PREFIX=ft \
 		OUTDIR=$(BUILD_DIR)/ft_$(1) \
 		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
@@ -227,7 +249,7 @@ FT_BOARDS := $(filter-out ,$(foreach board,$(notdir $(wildcard $(TARGETS_DIR)/*)
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
 BL_TARGETS := $(addprefix bl_, $(BL_BOARDS))
 EF_TARGETS := $(addprefix ef_, $(EF_BOARDS))
-FT_TARGETS := $(addprefix ft_, $(EF_BOARDS))
+FT_TARGETS := $(addprefix ft_, $(FT_BOARDS))
 
 .PHONY: all_fw all_fw_clean
 all_fw: $(FW_TARGETS)
@@ -300,7 +322,7 @@ ut_$(1)_%: $$(UT_OUT_DIR)
 	$(V1) cd $(TESTS_DIR)/$(1) && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
-		BUILD_TYPE=ut \
+		BUILD_PREFIX=ut \
 		TCHAIN_PREFIX="" \
 		TARGET=$(1) \
 		OUTDIR=$(BUILD_DIR)/fw_$(1) \
