@@ -309,9 +309,7 @@ all_ut_xml: $(addsuffix _xml, $(addprefix ut_, $(ALL_UNITTESTS)))
 all_ut_run: $(addsuffix _run, $(addprefix ut_, $(ALL_UNITTESTS)))
 
 .PHONY: all_ut_clean
-all_ut_clean:
-	$(V0) @echo " CLEAN       $@"
-	$(V1) [ ! -d "$(UT_OUT_DIR)" ] || $(RM) -r "$(UT_OUT_DIR)"
+all_ut_clean: $(addsuffix _clean, $(addprefix ut_, $(ALL_UNITTESTS)))
 
 # $(1) = Unit test name
 define UT_TEMPLATE
