@@ -179,7 +179,7 @@ define EF_TEMPLATE
 .PHONY: ef_$(1)
 ef_$(1): ef_$(1)_all
 
-ef_$(1)_%: bl_$(1) fw_$(1)
+ef_$(1)_%: bl_$(1)_% fw_$(1)_%
 	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ef_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
@@ -200,7 +200,7 @@ define FT_TEMPLATE
 .PHONY: ft_$(1)
 ft_$(1): ft_$(1)_all
 
-ft_$(1)_%: ef_$(1)
+ft_$(1)_%: ef_$(1)_%
 	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ft_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
@@ -244,11 +244,8 @@ all_$(1)_clean: $$(addsuffix _clean, $$(filter ef_$(1), $$(EF_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ft_$(1), $$(FT_TARGETS)))
 endef
 
-# Start out assuming that we'll build fw, bl, ef and ft for all boards
-FW_BOARDS := $(filter-out ,$(foreach board,$(notdir $(wildcard $(TARGETS_DIR)/*)),$(if $(wildcard $(TARGETS_DIR)/$(board)/fw/Makefile),$(board),)))
-BL_BOARDS := $(filter-out ,$(foreach board,$(notdir $(wildcard $(TARGETS_DIR)/*)),$(if $(wildcard $(TARGETS_DIR)/$(board)/bl/Makefile),$(board),)))
-EF_BOARDS := $(filter-out ,$(foreach board,$(notdir $(wildcard $(TARGETS_DIR)/*)),$(if $(wildcard $(TARGETS_DIR)/$(board)/ef/Makefile),$(board),)))
-FT_BOARDS := $(filter-out ,$(foreach board,$(notdir $(wildcard $(TARGETS_DIR)/*)),$(if $(wildcard $(TARGETS_DIR)/$(board)/ft/Makefile),$(board),)))
+# Include all board definitions from targets dir
+include $(ROOT_DIR)/src/targets/*/target-defs.mk
 
 # Generate the targets
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
