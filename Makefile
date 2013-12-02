@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := help
 
 # Set bash shell
-export SHELL := /bin/bash
+SHELL := /bin/bash
 
 # Set up some macros for common directories within the tree
 export ROOT_DIR := $(CURDIR)
@@ -122,7 +122,7 @@ help:
 
 .PHONY: all_clean
 all_clean:
-	$(V0) @echo " CLEAN       $(BUILD_DIR)"
+	$(V0) @echo " CLEAN        $(BUILD_DIR)"
 	$(V1) [ ! -d "$(BUILD_DIR)" ] || $(RM) -r "$(BUILD_DIR)"
 
 ##############################
@@ -149,7 +149,7 @@ fw_$(1)_%:
 .PHONY: $(1)_clean
 $(1)_clean: fw_$(1)_clean
 fw_$(1)_clean:
-	$(V0) @echo " CLEAN       $$@"
+	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/fw_$(1)
 endef
 
@@ -170,7 +170,7 @@ bl_$(1)_%:
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
-	$(V0) @echo " CLEAN       $$@"
+	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/bl_$(1)
 endef
 
@@ -179,7 +179,7 @@ define EF_TEMPLATE
 .PHONY: ef_$(1)
 ef_$(1): ef_$(1)_all
 
-ef_$(1)_%: bl_$(1)_% fw_$(1)_%
+ef_$(1)_%: bl_$(1) fw_$(1)
 	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ef_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
@@ -191,7 +191,7 @@ ef_$(1)_%: bl_$(1)_% fw_$(1)_%
 
 .PHONY: ef_$(1)_clean
 ef_$(1)_clean:
-	$(V0) @echo " CLEAN       $$@"
+	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ef_$(1)
 endef
 
@@ -200,7 +200,7 @@ define FT_TEMPLATE
 .PHONY: ft_$(1)
 ft_$(1): ft_$(1)_all
 
-ft_$(1)_%: ef_$(1)_%
+ft_$(1)_%: ef_$(1)
 	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ft_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
@@ -212,14 +212,14 @@ ft_$(1)_%: ef_$(1)_%
 
 .PHONY: ft_$(1)_clean
 ft_$(1)_clean:
-	$(V0) @echo " CLEAN       $$@"
+	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ft_$(1)
 endef
 
 # When building any of the "all_*" targets, tell all sub makefiles to display
 # additional details on each line of output to describe which build and target
 # that each line applies to.
-ifneq ($(strip $(filter all_%,$(MAKECMDGOALS))),)
+ifneq ($(strip $(filter all%,$(MAKECMDGOALS))),)
     export ENABLE_MSG_EXTRA := yes
 endif
 
@@ -327,7 +327,7 @@ ut_$(1)_%:
 
 .PHONY: ut_$(1)_clean
 ut_$(1)_clean:
-	$(V0) @echo " CLEAN       $$@"
+	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ut_$(1)
 endef
 

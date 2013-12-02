@@ -1,3 +1,6 @@
+# Set bash shell
+SHELL := /bin/bash
+
 # Toolchain prefix (i.e arm-elf- -> arm-elf-gcc.exe)
 TCHAIN_PREFIX ?= $(ARM_SDK_PREFIX)/arm-none-eabi-
 
@@ -20,36 +23,38 @@ ifeq (${result}, test)
     quote := '
 # This line is just to clear out the single quote above '
 else
-     quote :=
+     quote := 
 endif
 
 # Add a board designator to the terse message text
 ifeq ($(ENABLE_MSG_EXTRA),yes)
     MSG_EXTRA := [$(BUILD_PREFIX)|$(BOARD_NAME)]
 else
-    MSG_EXTRA :=
+    MSG_EXTRA := 
 endif
 
 # Define Messages
-MSG_SIZE               = ${quote} SIZE        $(MSG_EXTRA) ${quote}
-MSG_LOAD_FILE          = ${quote} BIN/HEX     $(MSG_EXTRA) ${quote}
-MSG_BIN_OBJ            = ${quote} BINO        $(MSG_EXTRA) ${quote}
-MSG_STRIP_FILE         = ${quote} STRIP       $(MSG_EXTRA) ${quote}
-MSG_EXTENDED_LISTING   = ${quote} LIS         $(MSG_EXTRA) ${quote}
-MSG_SYMBOL_TABLE       = ${quote} NM          $(MSG_EXTRA) ${quote}
-MSG_LINKING_C          = ${quote} LDC         $(MSG_EXTRA) ${quote}
-MSG_LINKING_CPP        = ${quote} LDCPP       $(MSG_EXTRA) ${quote}
-MSG_COMPILING_THUMB    = ${quote} CC-THUMB    ${MSG_EXTRA} ${quote}
-MSG_COMPILING          = ${quote} CC          ${MSG_EXTRA} ${quote}
-MSG_COMPILINGCPP_THUMB = ${quote} CPP-THUMB   $(MSG_EXTRA) ${quote}
-MSG_COMPILINGCPP       = ${quote} CPP         $(MSG_EXTRA) ${quote}
-MSG_ASSEMBLING_THUMB   = ${quote} AS-THUMB    $(MSG_EXTRA) ${quote}
-MSG_ASSEMBLING         = ${quote} AS          $(MSG_EXTRA) ${quote}
-MSG_CLEANING           = ${quote} CLEAN       $(MSG_EXTRA) ${quote}
-MSG_ASMFROMC_THUMB     = ${quote} ASC-THUMB   $(MSG_EXTRA) ${quote}
-MSG_ASMFROMC           = ${quote} ASC         $(MSG_EXTRA) ${quote}
-MSG_PADDING            = ${quote} PADDING     $(MSG_EXTRA) ${quote}
-MSG_FLASH_IMG          = ${quote} FLASH_IMG   $(MSG_EXTRA) ${quote}
+MSG_SIZE               = ${quote} SIZE        $(MSG_EXTRA)${quote}
+MSG_BIN_FILE           = ${quote} BIN         $(MSG_EXTRA)${quote}
+MSG_HEX_FILE           = ${quote} HEX         $(MSG_EXTRA)${quote}
+MSG_BIN_OBJ            = ${quote} BINO        $(MSG_EXTRA)${quote}
+MSG_STRIP_FILE         = ${quote} STRIP       $(MSG_EXTRA)${quote}
+MSG_EXTENDED_LISTING   = ${quote} LIS         $(MSG_EXTRA)${quote}
+MSG_SYMBOL_TABLE       = ${quote} NM          $(MSG_EXTRA)${quote}
+MSG_LINKING_C          = ${quote} LDC         $(MSG_EXTRA)${quote}
+MSG_LINKING_CPP        = ${quote} LDCPP       $(MSG_EXTRA)${quote}
+MSG_COMPILING_THUMB    = ${quote} CC-THUMB    ${MSG_EXTRA}${quote}
+MSG_COMPILING          = ${quote} CC          ${MSG_EXTRA}${quote}
+MSG_COMPILINGCPP_THUMB = ${quote} CPP-THUMB   $(MSG_EXTRA)${quote}
+MSG_COMPILINGCPP       = ${quote} CPP         $(MSG_EXTRA)${quote}
+MSG_ASSEMBLING_THUMB   = ${quote} AS-THUMB    $(MSG_EXTRA)${quote}
+MSG_ASSEMBLING         = ${quote} AS          $(MSG_EXTRA)${quote}
+MSG_CLEANING           = ${quote} CLEAN       $(MSG_EXTRA)${quote}
+MSG_ASMFROMC_THUMB     = ${quote} ASC-THUMB   $(MSG_EXTRA)${quote}
+MSG_ASMFROMC           = ${quote} ASC         $(MSG_EXTRA)${quote}
+MSG_PADDING            = ${quote} PADDING     $(MSG_EXTRA)${quote}
+MSG_FLASH_IMG          = ${quote} FLASH_IMG   $(MSG_EXTRA)${quote}
+MSG_SYMBOL_TABLE       = ${quote} SYM         $(MSG_EXTRA)${quote}
 
 toprel = $(subst $(realpath $(ROOT_DIR))/,,$(abspath $(1)))
 
@@ -60,26 +65,21 @@ gccversion :
 
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
-	@echo $(MSG_LOAD_FILE) $(call toprel, $@)
+	$(V0) @echo $(MSG_HEX_FILE) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -O ihex $< $@
-
-# Create stripped output file (.elf.stripped) from ELF output file.
-%.elf.stripped: %.elf
-	@echo $(MSG_STRIP_FILE) $(call toprel, $@)
-	$(V1) $(STRIP) --strip-unneeded $< -o $@
 
 # Create final output file (.bin) from ELF output file.
 %.bin: %.elf
-	@echo $(MSG_LOAD_FILE) $(call toprel, $@)
+	$(V0) @echo $(MSG_BIN_FILE) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -O binary $< $@
 
 %.bin: %.o
-	@echo $(MSG_LOAD_FILE) $(call toprel, $@)
+	$(V0) @echo $(MSG_LOAD_FILE) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -O binary $< $@
 
 replace_special_chars = $(subst @,_,$(subst :,_,$(subst -,_,$(subst .,_,$(subst /,_,$1)))))
 %.bin.o: %.bin
-	@echo $(MSG_BIN_OBJ) $(call toprel, $@)
+	$(V0) @echo $(MSG_BIN_OBJ) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -I binary -O elf32-littlearm --binary-architecture arm \
 		--rename-section .data=.rodata,alloc,load,readonly,data,contents \
 		--wildcard \
@@ -91,13 +91,24 @@ replace_special_chars = $(subst @,_,$(subst :,_,$(subst -,_,$(subst .,_,$(subst 
 # Create extended listing file/disassambly from ELF output file.
 # using objdump testing: option -C
 %.lss: %.elf
-	@echo $(MSG_EXTENDED_LISTING) $(call toprel, $@)
+	$(V0) @echo $(MSG_EXTENDED_LISTING) $(call toprel, $@)
 	$(V1) $(OBJDUMP) -h -S -C -r $< > $@
-
+	
 # Create a symbol table from ELF output file.
 %.sym: %.elf
-	@echo $(MSG_SYMBOL_TABLE) $(call toprel, $@)
+	$(V0) @echo $(MSG_SYMBOL_TABLE) $(call toprel, $@)
 	$(V1) $(NM) -n $< > $@
+	$(V1) if [ ! "`grep malloc $@`" == "" ]; then \
+		echo "using malloc is not allowed!"; \
+		$(RM) $@; \
+		exit -1; \
+	fi
+
+# Target: clean project.
+.PHONY: clean
+clean:
+	$(V0) @echo $(MSG_CLEANING)
+	$(V1) $(RM) -r $(OUTDIR)
 
 define SIZE_TEMPLATE
 .PHONY: size
@@ -105,63 +116,63 @@ size: $(1)_size
 
 .PHONY: $(1)_size
 $(1)_size: $(1)
-	@echo $(MSG_SIZE) $$(call toprel, $$<)
+	$(V0) @echo $(MSG_SIZE) $$(call toprel, $$<)
 	$(V1) $(SIZE) -B $$<
 endef
 
 # Assemble: create object files from assembler source files.
 define ASSEMBLE_THUMB_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1)
-	@echo $(MSG_ASSEMBLING_THUMB) $$(call toprel, $$<)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+	$(V0) @echo $(MSG_ASSEMBLING_THUMB) $$(call toprel, $$<)
 	$(V1) $(CC) $(THUMB) -c $$(ASFLAGS) $$< -o $$@
 endef
 
 # Assemble: create object files from assembler source files.
 define ASSEMBLE_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1)
-	@echo $(MSG_ASSEMBLING) $$(call toprel, $$<)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+	$(V0) @echo $(MSG_ASSEMBLING) $$(call toprel, $$<)
 	$(V1) $(CC) -c $$(ASFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C source files.
 define COMPILE_C_THUMB_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1)
-	@echo $(MSG_COMPILING_THUMB) $$(call toprel, $$<)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+	$(V0) @echo $(MSG_COMPILING_THUMB) $$(call toprel, $$<)
 	$(V1) $(CC) $(THUMB) -c $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C source files.
 define COMPILE_C_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1)
-	@echo $(MSG_COMPILING) $$(call toprel, $$<)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+	$(V0) @echo $(MSG_COMPILING) $$(call toprel, $$<)
 	$(V1) $(CC) -c $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C++ source files.
 define COMPILE_CPP_THUMB_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1)
-	@echo $(MSG_COMPILINGCPP_THUMB) $$(call toprel, $$<)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+	$(V0) @echo $(MSG_COMPILINGCPP_THUMB) $$(call toprel, $$<)
 	$(V1) $(CPP) $(THUMB) -c $$(CFLAGS) $$(CPPFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C++ source files.
 define COMPILE_CPP_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1)
-	@echo $(MSG_COMPILINGCPP) $$(call toprel, $$<)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+	$(V0) @echo $(MSG_COMPILINGCPP) $$(call toprel, $$<)
 	$(V1) $(CPP) -c $$(CFLAGS) $$(CPPFLAGS) $$< -o $$@
 endef
 
 # Compile: create assembler files from C source files.
 define PARTIAL_COMPILE_THUMB_TEMPLATE
 $($(1):.c=.s) : %.s : %.c
-	@echo $(MSG_ASMFROMC_THUMB) $$(call toprel, $$<)
+	$(V0) @echo $(MSG_ASMFROMC_THUMB) $$(call toprel, $$<)
 	$(V1) $(CC) $(THUMB) -S $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
 # Compile: create assembler files from C source files.
 define PARTIAL_COMPILE_TEMPLATE
 $($(1):.c=.s) : %.s : %.c
-	@echo $(MSG_ASMFROMC) $$(call toprel, $$<)
+	$(V0) @echo $(MSG_ASMFROMC) $$(call toprel, $$<)
 	$(V1) $(CC) -S $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
@@ -172,7 +183,7 @@ define LINK_C_TEMPLATE
 .SECONDARY : $(1)
 .PRECIOUS : $(2)
 $(1):  $(2)
-	@echo $(MSG_LINKING_C) $$(call toprel, $$@)
+	$(V0) @echo $(MSG_LINKING_C) $$(call toprel, $$@)
 	$(V1) $(CC) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef
 
@@ -183,7 +194,7 @@ define LINK_CPP_TEMPLATE
 .SECONDARY : $(1)
 .PRECIOUS : $(2)
 $(1):  $(2)
-	@echo $(MSG_LINKING_CPP) $$(call toprel, $$@)
+	$(V0) @echo $(MSG_LINKING_CPP) $$(call toprel, $$@)
 	$(V1) $(CPP) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef
 
@@ -213,7 +224,7 @@ OOCD_BOARD_RESET += -c "reset halt"
 
 .PHONY: program
 program: $(1)
-	@echo $(MSG_JTAG_PROGRAM) $$(call toprel, $$<)
+	$(V0) @echo $(MSG_JTAG_PROGRAM) $$(call toprel, $$<)
 	$(V1) $(OPENOCD) \
 		$$(OOCD_JTAG_SETUP) \
 		$$(OOCD_BOARD_RESET) \
@@ -224,7 +235,7 @@ program: $(1)
 
 .PHONY: wipe
 wipe:
-	@echo $(MSG_JTAG_WIPE) wiping $(3) bytes starting from $(2)
+	$(V0) @echo $(MSG_JTAG_WIPE) wiping $(3) bytes starting from $(2)
 	$(V1) $(OPENOCD) \
 		$$(OOCD_JTAG_SETUP) \
 		$$(OOCD_BOARD_RESET) \
