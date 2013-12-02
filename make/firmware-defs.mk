@@ -66,16 +66,16 @@ gccversion :
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
 	$(V0) @echo $(MSG_HEX_FILE) $(call toprel, $@)
-	$(V1) $(OBJCOPY) -O ihex $< $@
+	$(V1) $(OBJCOPY) --gap-fill=0xff -O ihex $< $@
 
 # Create final output file (.bin) from ELF output file.
 %.bin: %.elf
 	$(V0) @echo $(MSG_BIN_FILE) $(call toprel, $@)
-	$(V1) $(OBJCOPY) -O binary $< $@
+	$(V1) $(OBJCOPY) --gap-fill=0xff -O binary $< $@
 
 %.bin: %.o
 	$(V0) @echo $(MSG_LOAD_FILE) $(call toprel, $@)
-	$(V1) $(OBJCOPY) -O binary $< $@
+	$(V1) $(OBJCOPY) --gap-fill=0xff -O binary $< $@
 
 replace_special_chars = $(subst @,_,$(subst :,_,$(subst -,_,$(subst .,_,$(subst /,_,$1)))))
 %.bin.o: %.bin
