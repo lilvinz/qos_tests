@@ -1,13 +1,6 @@
-build
-downloads
-tools
-
-local_texts_cpp.c
-local_texts_cpp.h
-local_texts_log.c
-local_texts_log.h
-local_texts_log_cpp.c
-local_texts_log_cpp.h
+/build
+/downloads
+/tools
 
 .settings
 .cproject
