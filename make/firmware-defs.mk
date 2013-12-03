@@ -55,6 +55,9 @@ MSG_ASMFROMC           = ${quote} ASC         $(MSG_EXTRA)${quote}
 MSG_PADDING            = ${quote} PADDING     $(MSG_EXTRA)${quote}
 MSG_FLASH_IMG          = ${quote} FLASH_IMG   $(MSG_EXTRA)${quote}
 MSG_SYMBOL_TABLE       = ${quote} SYM         $(MSG_EXTRA)${quote}
+MSG_ENCRYPT            = ${quote} ENCRYPT     $(MSG_EXTRA)${quote}
+MSG_IMAGE_INFO         = ${quote} IMAGE-INFO  $(MSG_EXTRA)${quote}
+MSG_LOG_TEXTS          = ${quote} LOG-TEXTS   $(MSG_EXTRA)${quote}
 
 toprel = $(subst $(realpath $(ROOT_DIR))/,,$(abspath $(1)))
 
@@ -110,6 +113,10 @@ clean:
 	$(V0) @echo $(MSG_CLEANING)
 	$(V1) $(RM) -r $(OUTDIR)
 
+# Target: create output dir
+$(OUTDIR):
+	$(V1) mkdir -p $@
+
 define SIZE_TEMPLATE
 .PHONY: size
 size: $(1)_size
@@ -122,49 +129,49 @@ endef
 
 # Assemble: create object files from assembler source files.
 define ASSEMBLE_THUMB_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_ASSEMBLING_THUMB) $$(call toprel, $$<)
 	$(V1) $(CC) $(THUMB) -c $$(ASFLAGS) $$< -o $$@
 endef
 
 # Assemble: create object files from assembler source files.
 define ASSEMBLE_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_ASSEMBLING) $$(call toprel, $$<)
 	$(V1) $(CC) -c $$(ASFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C source files.
 define COMPILE_C_THUMB_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_COMPILING_THUMB) $$(call toprel, $$<)
 	$(V1) $(CC) $(THUMB) -c $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C source files.
 define COMPILE_C_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_COMPILING) $$(call toprel, $$<)
 	$(V1) $(CC) -c $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C++ source files.
 define COMPILE_CPP_THUMB_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_COMPILINGCPP_THUMB) $$(call toprel, $$<)
 	$(V1) $(CPP) $(THUMB) -c $$(CFLAGS) $$(CPPFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C++ source files.
 define COMPILE_CPP_TEMPLATE
-$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2)
+$(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_COMPILINGCPP) $$(call toprel, $$<)
 	$(V1) $(CPP) -c $$(CFLAGS) $$(CPPFLAGS) $$< -o $$@
 endef
 
 # Compile: create assembler files from C source files.
 define PARTIAL_COMPILE_THUMB_TEMPLATE
-$($(1):.c=.s) : %.s : %.c
+$($(1):.c=.s) : %.s : %.c | $(OUTDIR)
 	$(V0) @echo $(MSG_ASMFROMC_THUMB) $$(call toprel, $$<)
 	$(V1) $(CC) $(THUMB) -S $$(CFLAGS) $$(CONLYFLAGS) $$< -o $$@
 endef
@@ -182,7 +189,7 @@ endef
 define LINK_C_TEMPLATE
 .SECONDARY : $(1)
 .PRECIOUS : $(2)
-$(1):  $(2)
+$(1):  $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_LINKING_C) $$(call toprel, $$@)
 	$(V1) $(CC) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef
@@ -193,7 +200,7 @@ endef
 define LINK_CPP_TEMPLATE
 .SECONDARY : $(1)
 .PRECIOUS : $(2)
-$(1):  $(2)
+$(1):  $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_LINKING_CPP) $$(call toprel, $$@)
 	$(V1) $(CPP) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef

@@ -13,13 +13,13 @@ export BUILD_DIR := $(ROOT_DIR)/build
 export DL_DIR := $(ROOT_DIR)/downloads
 
 $(TOOLS_DIR):
-	$(V1) [ -d $@ ] || mkdir -p $@
+	$(V1) mkdir -p $@
 
 $(BUILD_DIR):
-	$(V1) [ -d $@ ] || mkdir -p $@
+	$(V1) mkdir -p $@
 
 $(DL_DIR):
-	$(V1) [ -d $@ ] || mkdir -p $@
+	$(V1) mkdir -p $@
 
 # Decide on a verbosity level based on the V= parameter
 export AT := @
@@ -137,7 +137,6 @@ define FW_TEMPLATE
 fw_$(1): fw_$(1)_all
 
 fw_$(1)_%:
-	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/fw_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/fw && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -159,7 +158,6 @@ define BL_TEMPLATE
 bl_$(1): bl_$(1)_all
 
 bl_$(1)_%:
-	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/bl_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/bl && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -180,7 +178,6 @@ define EF_TEMPLATE
 ef_$(1): ef_$(1)_all
 
 ef_$(1)_%: bl_$(1) fw_$(1)
-	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ef_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -201,7 +198,6 @@ define FT_TEMPLATE
 ft_$(1): ft_$(1)_all
 
 ft_$(1)_%: ef_$(1)
-	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ft_$(1)
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -314,7 +310,6 @@ define UT_TEMPLATE
 ut_$(1): ut_$(1)_all
 
 ut_$(1)_%:
-	$(V1) [ -d $(BUILD_DIR)/ut_$(1) ] || mkdir -p $(BUILD_DIR)/ut_$(1)
 	$(V1) cd $(TESTS_DIR)/$(1) && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \

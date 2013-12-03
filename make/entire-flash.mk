@@ -13,13 +13,13 @@ FORCE:
 
 # force this target as FW_ORIGIN could have changed
 $(TARGET_BIN): FORCE
-$(TARGET_BIN): | $(BL_ELF) $(FW_BIN)
+$(TARGET_BIN): | $(BL_ELF) $(FW_BIN) $(OUTDIR)
 	$(V0) @echo $(MSG_PADDING) $(call toprel, $@)
 	$(V1) $(OBJCOPY) --pad-to=$(FW_ORIGIN) --gap-fill=0xff -O binary $(BL_ELF) $(TARGET_BIN)
 	$(V1) cat $(FW_BIN) >> $(TARGET_BIN)
 
 # force this target as BL_ORIGIN could have changed
-$(TARGET_ELF): $(TARGET_BIN) FORCE
+$(TARGET_ELF): $(TARGET_BIN) FORCE | $(OUTDIR)
 	$(V0) @echo $(MSG_FLASH_IMG) $(call toprel, $@)
 	$(V1) $(OBJCOPY) -I binary -O elf32-littlearm -B arm --set-start $(BL_ORIGIN) $(TARGET_BIN) $(TARGET_ELF)
 	
