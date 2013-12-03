@@ -28,7 +28,7 @@ endif
 
 # Add a board designator to the terse message text
 ifeq ($(ENABLE_MSG_EXTRA),yes)
-    MSG_EXTRA := [$(BUILD_PREFIX)|$(BOARD_NAME)]
+    MSG_EXTRA := [$(BUILD_PREFIX)|$(shell printf '%-14s' $(BOARD_NAME))]
 else
     MSG_EXTRA := 
 endif
