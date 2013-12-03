@@ -251,3 +251,19 @@ wipe:
 		-c "shutdown"
 endef
 
+#---------------- vcs environment ----------------
+VCS_REVISION := $(shell git rev-parse --short=10 HEAD)
+ifeq ($(GIT_BRANCH),)
+    # try to get remote tracking branch
+    VCS_PATH := $(shell git rev-parse --symbolic-full-name --abbrev-ref @{u} 2> /dev/null)
+    # if that failed, get local branch
+    ifeq ($(VCS_PATH),@{u})
+        VCS_PATH := $(shell git rev-parse --abbrev-ref HEAD)
+    endif
+else
+    VCS_PATH := $(GIT_BRANCH)
+endif
+GIT_CHECK_DIRTY := $(shell git diff)
+ifneq ($(GIT_CHECK_DIRTY),)
+    VCS_PATH := $(join $(VCS_PATH),+)
+endif
