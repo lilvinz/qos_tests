@@ -34,7 +34,7 @@ else ifeq ($(V), 1)
 endif
 
 # Set build variant defaults
-export BUILD_TYPE ?= RELEASE_BUILD
+export BUILD_TYPE ?= DEBUG_BUILD
 
 ifeq ($(BUILD_TYPE),DEBUG_BUILD)
 else ifeq ($(BUILD_TYPE),RELEASE_BUILD)
