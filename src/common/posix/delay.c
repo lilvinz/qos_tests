@@ -20,7 +20,7 @@ uint32_t Delay_GetRaw(void)
 {
     struct timespec tp;
     clock_gettime(CLOCK_REALTIME, &tp);
-    return (uint32_t)(tp.tv_sec * 1000 * 1000 + tp.tv_nsec);
+    return (uint32_t)(tp.tv_sec * 1000 * 1000 * 1000 + tp.tv_nsec);
 }
 
 /**
