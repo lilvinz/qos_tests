@@ -17,7 +17,7 @@ LDFLAGS += -lpthread
 .DEFAULT_GOAL := all
 
 EXTRAINCDIRS += .
-ALLSRC := $(SRC) $(wildcard ./*.c)
+ALLSRC := $(CSRC) $(wildcard ./*.c)
 ALLCPPSRC := $(wildcard ./*.cpp) $(GTEST_DIR)/src/gtest_main.cc
 ALLSRCBASE := $(notdir $(basename $(ALLSRC) $(ALLCPPSRC)))
 ALLOBJ := $(addprefix $(OUTDIR)/, $(addsuffix .o, $(ALLSRCBASE)))
@@ -42,11 +42,11 @@ elf: $(OUTDIR)/$(TARGET).elf
 xml: $(OUTDIR)/$(TARGET).xml
 
 $(OUTDIR)/$(TARGET).xml: $(OUTDIR)/$(TARGET).elf
-	$(V0) @echo " TEST XML    $(MSG_EXTRA)  $(call toprel, $@)"
+	$(V0) @echo " TEST XML     $(MSG_EXTRA)$(call toprel, $@)"
 	$(V1) $< --gtest_output=xml:$(OUTDIR)/$(TARGET).xml > /dev/null || true
 
 .PHONY: run
 run: $(OUTDIR)/$(TARGET).elf
-	$(V0) @echo " TEST RUN    $(MSG_EXTRA)  $(call toprel, $<)"
+	$(V0) @echo " TEST RUN     $(MSG_EXTRA)$(call toprel, $<)"
 	$(V1) $< || true
 
