@@ -7,6 +7,10 @@
 
 #include "irq.h"
 #include <stdint.h>
+#if defined(FREERTOS)
+#include "FreeRTOS.h"
+#include "task.h"
+#endif
 
 /* The nesting counter ensures, that interrupts won't be enabled so long nested functions disable them */
 static uint32_t nested_ctr;
@@ -17,6 +21,10 @@ static uint32_t nested_ctr;
 */
 bool IRQ_Disable(void)
 {
+#if defined(FREERTOS)
+    vTaskSuspendAll();
+#endif
+
     ++nested_ctr;
 
     return true;
@@ -38,6 +46,14 @@ bool IRQ_Enable(void)
 
     /* Decrease nesting level */
     --nested_ctr;
+
+    /* Set back previous priority once nested level reached 0 again */
+    if (nested_ctr == 0)
+    {
+#if defined(FREERTOS)
+        xTaskResumeAll();
+#endif
+    }
 
     return true;
 }
