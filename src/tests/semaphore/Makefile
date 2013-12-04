@@ -2,7 +2,7 @@
 # Set up a default goal
 .DEFAULT_GOAL := all
 
-include $(ROOT_DIR)/src/common/posix/library.mk
+include $(ROOT_DIR)/src/hal/posix/library.mk
 
 CFLAGS += -O0
 CFLAGS += -Wall -Werror -Wshadow
