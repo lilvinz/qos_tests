@@ -101,11 +101,6 @@ replace_special_chars = $(subst @,_,$(subst :,_,$(subst -,_,$(subst .,_,$(subst 
 %.sym: %.elf
 	$(V0) @echo $(MSG_SYMBOL_TABLE) $(call toprel, $@)
 	$(V1) $(NM) -n $< > $@
-	$(V1) if [ ! "`grep malloc $@`" == "" ]; then \
-		echo "using malloc is not allowed!"; \
-		$(RM) $@; \
-		exit -1; \
-	fi
 
 # Target: clean project.
 .PHONY: clean
