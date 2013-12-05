@@ -11,4 +11,6 @@ CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 
 CONLYFLAGS += -std=gnu99
 
+LDFLAGS += -lrt
+
 include $(ROOT_DIR)/make/unittest.mk
