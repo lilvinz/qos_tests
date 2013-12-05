@@ -52,6 +52,7 @@ openocd_install: openocd_clean
 	$(V1) mkdir -p "$(OPENOCD_DIR)"
 	$(V1) ( \
 	    cd $(OPENOCD_BUILD_DIR) ; \
+	    git apply $(ROOT_DIR)/make/openocd/patchset/0001-freertos-configured-for-v7.6.0-MPU.patch ; \
 	    ./bootstrap ; \
 	    ./configure  $(OPENOCD_OPTIONS) ; \
 	    $(MAKE) ; \
