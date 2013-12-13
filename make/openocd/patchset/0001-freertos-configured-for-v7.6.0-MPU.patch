@@ -1,15 +1,15 @@
-From 7a7f8a109eb201e9194a40c67f8a6137cb22c9d7 Mon Sep 17 00:00:00 2001
+From 369c3c019916c6a25647821dee6ced4f59fed17a Mon Sep 17 00:00:00 2001
 From: Vincent Kessler <lilvinz@nscit.com>
-Date: Thu, 5 Dec 2013 07:20:43 +0100
-Subject: [PATCH] freertos: configured for v7.6.0 + MPU
+Date: Fri, 13 Dec 2013 09:07:23 +0100
+Subject: [PATCH] freertos: configured for v7.6.0 MPU
 
 ---
- src/rtos/FreeRTOS.c                | 139 +++++++++++++++++++------------------
+ src/rtos/FreeRTOS.c                | 143 +++++++++++++++++++------------------
  src/rtos/rtos_standard_stackings.c | 108 ++++++++++++++--------------
- 2 files changed, 127 insertions(+), 120 deletions(-)
+ 2 files changed, 129 insertions(+), 122 deletions(-)
 
 diff --git a/src/rtos/FreeRTOS.c b/src/rtos/FreeRTOS.c
-index a8f874f..db1d8e6 100644
+index a8f874f..4d44ee0 100644
 --- a/src/rtos/FreeRTOS.c
 +++ b/src/rtos/FreeRTOS.c
 @@ -34,6 +34,7 @@
@@ -37,39 +37,43 @@ index a8f874f..db1d8e6 100644
  	const struct rtos_register_stacking *stacking_info_cm3;
  	const struct rtos_register_stacking *stacking_info_cm3_pad;
  	const struct rtos_register_stacking *stacking_info_cm4f;
-@@ -60,12 +61,12 @@ const struct FreeRTOS_params FreeRTOS_params_list[] = {
+@@ -59,13 +60,13 @@ const struct FreeRTOS_params FreeRTOS_params_list[] = {
+ 	{
  	"cortex_m",			/* target_name */
  	4,						/* thread_count_width; */
- 	4,						/* pointer_width; */
+-	4,						/* pointer_width; */
 -	16,						/* list_next_offset; */
 -	20,						/* list_width; */
 -	8,						/* list_elem_next_offset; */
 -	12,						/* list_elem_content_offset */
-+	24,						/* list_width; */
++	4,						/* sizeof(void*) */
++	20,						/* sizeof(xList) */
  	0,						/* thread_stack_offset; */
 -	52,						/* thread_name_offset; */
 +	4,						/* xList_pxIndex_offset */
-+	16,						/* xListItem_pvOwner_offset */
-+	8,						/* xListItem_pxNext_offset */
-+	96,						/* tskTCB_pcTaskName_offset */
++	12,						/* xListItem_pvOwner_offset */
++	4,						/* xListItem_pxNext_offset */
++	84,						/* tskTCB_pcTaskName_offset */
  	&rtos_standard_Cortex_M3_stacking,			/* stacking_m3_info */
  	&rtos_standard_Cortex_M3_stacking_pad,		/* stacking_m3_info_pad */
  	&rtos_standard_Cortex_M4F_stacking,			/* stacking_m4f_info */
-@@ -77,12 +78,12 @@ const struct FreeRTOS_params FreeRTOS_params_list[] = {
+@@ -76,13 +77,13 @@ const struct FreeRTOS_params FreeRTOS_params_list[] = {
+ 	{
  	"hla_target",			/* target_name */
  	4,						/* thread_count_width; */
- 	4,						/* pointer_width; */
+-	4,						/* pointer_width; */
 -	16,						/* list_next_offset; */
 -	20,						/* list_width; */
 -	8,						/* list_elem_next_offset; */
 -	12,						/* list_elem_content_offset */
-+	24,						/* list_width; */
++	4,						/* sizeof(void*) */
++	20,						/* sizeof(xList) */
  	0,						/* thread_stack_offset; */
 -	52,						/* thread_name_offset; */
 +	4,						/* xList_pxIndex_offset */
-+	16,						/* xListItem_pvOwner_offset */
-+	8,						/* xListItem_pxNext_offset */
-+	96,						/* tskTCB_pcTaskName_offset */
++	12,						/* xListItem_pvOwner_offset */
++	4,						/* xListItem_pxNext_offset */
++	84,						/* tskTCB_pcTaskName_offset */
  	&rtos_standard_Cortex_M3_stacking,			/* stacking_m3_info */
  	&rtos_standard_Cortex_M3_stacking_pad,		/* stacking_m3_info_pad */
  	&rtos_standard_Cortex_M4F_stacking,			/* stacking_m4f_info */
