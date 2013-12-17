@@ -2,8 +2,8 @@
 # Set up a default goal
 .DEFAULT_GOAL := all
 
-# HAL
-include $(ROOT_DIR)/src/hal/posix/library.mk
+# Format
+include $(ROOT_DIR)/src/lib/format/library_with_float.mk
 
 CFLAGS += -O0
 CFLAGS += -Wall -Werror -Wshadow
