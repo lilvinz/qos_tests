@@ -2,6 +2,7 @@
 # Set up a default goal
 .DEFAULT_GOAL := all
 
+# HAL
 include $(ROOT_DIR)/src/hal/posix/library.mk
 
 CFLAGS += -O0
