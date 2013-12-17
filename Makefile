@@ -315,7 +315,7 @@ ut_$(1)_%:
 		BOARD_NAME=$(1) \
 		BUILD_PREFIX=ut \
 		TCHAIN_PREFIX="" \
-		TARGET=$(1) \
+		TARGET=ut_$(1) \
 		OUTDIR=$(BUILD_DIR)/ut_$(1) \
 		GTEST_DIR=$(GTEST_DIR) \
 		$$*
