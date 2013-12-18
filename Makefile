@@ -38,6 +38,7 @@ export BUILD_TYPE ?= DEBUG_BUILD
 
 ifeq ($(BUILD_TYPE),DEBUG_BUILD)
 else ifeq ($(BUILD_TYPE),RELEASE_BUILD)
+    export NDEBUG := 1
 else
     $(error BUILD_TYPE is not set properly)
 endif
