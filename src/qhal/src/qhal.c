@@ -50,6 +50,9 @@ void qhalInit(void)
 #if HAL_USE_FLASH_JEDEC_SPI || defined(__DOXYGEN__)
     fjsInit();
 #endif
+#if HAL_USE_FLASH_PARTITION || defined(__DOXYGEN__)
+    fpartInit();
+#endif
 }
 
 /** @} */

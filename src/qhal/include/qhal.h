@@ -30,6 +30,7 @@
 /* Complex drivers.*/
 #include "qserial_485.h"
 #include "qflash_jedec_spi.h"
+#include "qflash_partition.h"
 
 /*===========================================================================*/
 /* External declarations.                                                    */
