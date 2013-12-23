@@ -47,6 +47,9 @@ void qhalInit(void)
 #if HAL_USE_SERIAL_485 || defined(__DOXYGEN__)
     sd485Init();
 #endif
+#if HAL_USE_FLASH_JEDEC_SPI || defined(__DOXYGEN__)
+    fjsInit();
+#endif
 }
 
 /** @} */
