@@ -48,11 +48,12 @@ typedef struct
     /* Reads one or more bytes crossing sectors when required.*/            \
     bool_t (*read)(void *instance, uint32_t startaddr,                      \
             uint32_t n, uint8_t *buffer);                                   \
-    /* Writes one or more bytes up to one sector.*/                         \
+    /* Writes one or more bytes crossing sectors when required.*/           \
     bool_t (*write)(void *instance, uint32_t startaddr,                     \
             uint32_t n, const uint8_t *buffer);                             \
-    /* Erase one sector.*/                                                  \
-    bool_t (*erase)(void *instance, uint32_t startaddr);                    \
+    /* Erase one or more sectors.*/                                         \
+    bool_t (*erase)(void *instance, uint32_t startaddr,                     \
+            uint32_t n);                                                    \
     /* Write / erase operations synchronization.*/                          \
     bool_t (*sync)(void *instance);                                         \
     /* Obtains info about the media.*/                                      \
@@ -117,12 +118,12 @@ typedef struct
                                (((ip)->state) == FLASH_ERASING))
 
 /**
- * @brief   Reads one or bytes.
+ * @brief   Reads one or more bytes crossing sectors when required.
  *
  * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
  * @param[in] startaddr first address to read
- * @param[out] buf      pointer to the read buffer
  * @param[in] n         number of bytes to read
+ * @param[out] buffer   pointer to the read buffer
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -130,16 +131,16 @@ typedef struct
  *
  * @api
  */
-#define flashRead(ip, startaddr, buf, n)                                      \
-    ((ip)->vmt->read(ip, startaddr, buf, n))
+#define flashRead(ip, startaddr, n, buffer)                                   \
+    ((ip)->vmt->read(ip, startaddr, n, buffer))
 
 /**
- * @brief   Writes one or more bytes.
+ * @brief   Writes one or more bytes crossing sectors when required.
  *
  * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
  * @param[in] startaddr first address to write
- * @param[out] buf      pointer to the write buffer
  * @param[in] n         number of bytes to write
+ * @param[out] buffer   pointer to the write buffer
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -147,15 +148,15 @@ typedef struct
  *
  * @api
  */
-#define flashWrite(ip, startaddr, buf, n)                                     \
-    ((ip)->vmt->write(ip, startaddr, buf, n))
+#define flashWrite(ip, startaddr, n, buffer)                                  \
+    ((ip)->vmt->write(ip, startaddr, n, buffer))
 
 /**
  * @brief   Erases one or more sectors.
  *
  * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
- * @param[in] startblk  address of first sector to erase
- * @param[in] n         number of bytes to erase in multiples of sector size
+ * @param[in] startaddr address of sector to erase
+ * @param[in] n         number of bytes to erase
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.

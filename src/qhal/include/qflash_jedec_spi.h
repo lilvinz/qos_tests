@@ -66,6 +66,10 @@ typedef struct
      */
     uint32_t      sector_num;
     /**
+     * @brief Maximum amount of data programmable through page program command.
+     */
+    uint32_t      page_size;
+    /**
      * @brief Number of address bytes used in commands.
      */
     uint8_t       addrbytes_num;
@@ -132,7 +136,8 @@ extern "C" {
     void fjsStop(FlashJedecSPIDriver* fjsp);
     bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, uint8_t *buffer);
     bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, const uint8_t *buffer);
-    bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr);
+    bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n);
+    bool_t fjsMassErase(FlashJedecSPIDriver* fjsp);
     bool_t fjsSync(FlashJedecSPIDriver* fjsp);
     bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, FlashDeviceInfo* fdip);
     bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp);
