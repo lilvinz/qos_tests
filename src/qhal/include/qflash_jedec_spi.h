@@ -111,10 +111,6 @@ typedef struct
     * @brief Current configuration data.
     */
     const FlashJedecSPIConfig       *config;
-    /***
-    * @brief Addresses use blocks instead of bytes.
-    */
-    bool_t                block_addresses;
 } FlashJedecSPIDriver;
 
 /*===========================================================================*/

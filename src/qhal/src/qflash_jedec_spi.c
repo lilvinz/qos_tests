@@ -195,7 +195,6 @@ void fjsObjectInit(FlashJedecSPIDriver* fjsp)
     fjsp->vmt = &flash_jedec_spi_vmt;
     fjsp->state = FLASH_STOP;
     fjsp->config = NULL;
-    fjsp->block_addresses = FALSE;
 }
 
 /**
