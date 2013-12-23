@@ -230,7 +230,6 @@ void fjsStop(FlashJedecSPIDriver* fjsp)
     chDbgAssert((fjsp->state == FLASH_STOP) || (fjsp->state == FLASH_READY),
             "fjsStop(), #1", "invalid state");
 
-    spiStop(fjsp->config->spip);
     fjsp->state = FLASH_STOP;
 }
 
