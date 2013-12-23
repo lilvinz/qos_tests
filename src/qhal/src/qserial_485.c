@@ -95,10 +95,8 @@ static const struct Serial485DriverVMT vmt =
 /**
  * @brief   Notification of data inserted into the output queue.
  */
-static uint32_t ionotify;
 static void onotify(GenericQueue* qp)
 {
-    ++ionotify;
     chDbgCheck(qp != NULL, "onotify");
 
     Serial485Driver* sd485p = chQGetLink(qp);
@@ -256,10 +254,8 @@ void sd485Stop(Serial485Driver *sd485p)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-static uint32_t isd485EndOfTx1I;
 void sd485EndOfTx1I(UARTDriver* uartp)
 {
-    ++isd485EndOfTx1I;
     chDbgCheck(uartp != NULL, "sd485EndOfTx1I");
 
     Serial485Driver* sd485p = (Serial485Driver*)uartp->uldp;
@@ -290,10 +286,8 @@ void sd485EndOfTx1I(UARTDriver* uartp)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-static uint32_t isd485EndOfTx2I;
 void sd485EndOfTx2I(UARTDriver* uartp)
 {
-    ++isd485EndOfTx2I;
     chDbgCheck(uartp != NULL, "sd485EndOfTx2I");
 
     Serial485Driver* sd485p = (Serial485Driver*)uartp->uldp;
@@ -321,10 +315,8 @@ void sd485EndOfTx2I(UARTDriver* uartp)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-static uint32_t isd485EndOfRxI;
 void sd485EndOfRxI(UARTDriver* uartp)
 {
-    ++isd485EndOfRxI;
     chDbgCheck(uartp != NULL, "sd485EndOfRxI");
 
     Serial485Driver* sd485p = (Serial485Driver*)uartp->uldp;
@@ -359,10 +351,8 @@ void sd485EndOfRxI(UARTDriver* uartp)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-static uint32_t isd485ErrorI;
 void sd485ErrorI(UARTDriver* uartp, uartflags_t e)
 {
-    ++isd485ErrorI;
     chDbgCheck(uartp != NULL, "sd485ErrorI");
 
     Serial485Driver* sd485p = (Serial485Driver*)uartp->uldp;
