@@ -188,8 +188,7 @@ bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, uint8_
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC FAST_READ command
-    uint8_t out[] =
+    const uint8_t out[] =
     {
         FLASH_JEDEC_FAST_READ,
         (startaddr >> 24) & 0xff,
@@ -253,8 +252,7 @@ bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, const
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC PP command
-    uint8_t out[] =
+    const uint8_t out[] =
     {
         FLASH_JEDEC_PP,
         (startaddr >> 24) & 0xff,
@@ -316,10 +314,9 @@ bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr)
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC ERASE command
-    uint8_t out[] =
+    const uint8_t out[] =
     {
-        fjsp->config->sector_erase,
+        fjsp->config->sector_erase, /* Erase command is chip specific. */
         (startaddr >> 24) & 0xff,
         (startaddr >> 16) & 0xff,
         (startaddr >> 8) & 0xff,
@@ -364,7 +361,6 @@ bool_t fjsSync(FlashJedecSPIDriver* fjsp)
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC RDSR command
     static const uint8_t out[] =
     {
         FLASH_JEDEC_RDSR,
@@ -420,10 +416,9 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, FlashDeviceInfo* fdip)
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC RDID command
     static const uint8_t out[] =
     {
-        0x9f,
+        FLASH_JEDEC_RDID,
     };
     spiSend(fjsp->config->spip, NELEMS(out), out);
 
@@ -435,6 +430,92 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, FlashDeviceInfo* fdip)
     spiReceive(fjsp->config->spip, NELEMS(fdip->identification) - 1, fdip->identification + 1);
 
     spiUnselect(fjsp->config->spip);
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unlocks the whole chip.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck(fjsp != NULL, "fjsWriteUnlock");
+    chDbgAssert(fjsp->state >= FLASH_READY, "fjsWriteUnlock(), #1",
+            "invalid state");
+
+    if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
+        return CH_FAILED;
+
+    spiSelect(fjsp->config->spip);
+
+    static const uint8_t out[] =
+    {
+        FLASH_JEDEC_WRSR,
+        0x00,
+    };
+
+    /* command byte */
+    spiSend(fjsp->config->spip, NELEMS(out), out);
+
+    /* address bytes */
+    spiSend(fjsp->config->spip, fjsp->config->addrbytes_num,
+            &out[1 + (4 - fjsp->config->addrbytes_num)]);
+
+    spiUnselect(fjsp->config->spip);
+
+    if (flash_jedec_spi_write_disable(fjsp) != CH_SUCCESS)
+        return CH_FAILED;
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write locks the whole chip.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t fjsWriteLock(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck(fjsp != NULL, "fjsWriteLock");
+    chDbgAssert(fjsp->state >= FLASH_READY, "fjsWriteLock(), #1",
+            "invalid state");
+
+    if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
+        return CH_FAILED;
+
+    spiSelect(fjsp->config->spip);
+
+    static const uint8_t out[] =
+    {
+        FLASH_JEDEC_WRSR,
+        0x3c, /* set BP0 ... BP3 */
+    };
+
+    /* command byte */
+    spiSend(fjsp->config->spip, NELEMS(out), out);
+
+    /* address bytes */
+    spiSend(fjsp->config->spip, fjsp->config->addrbytes_num,
+            &out[1 + (4 - fjsp->config->addrbytes_num)]);
+
+    spiUnselect(fjsp->config->spip);
+
+    if (flash_jedec_spi_write_disable(fjsp) != CH_SUCCESS)
+        return CH_FAILED;
 
     return CH_SUCCESS;
 }

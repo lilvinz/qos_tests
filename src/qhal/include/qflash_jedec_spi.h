@@ -135,6 +135,8 @@ extern "C" {
     bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr);
     bool_t fjsSync(FlashJedecSPIDriver* fjsp);
     bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, FlashDeviceInfo* fdip);
+    bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp);
+    bool_t fjsWriteLock(FlashJedecSPIDriver* fjsp);
 #ifdef __cplusplus
 }
 #endif
