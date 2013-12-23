@@ -186,7 +186,7 @@ void fjsInit(void)
 /**
  * @brief   Initializes an instance.
  *
- * @param[out] fjsp         pointer to the @p FlashJedecSPIDriver object
+ * @param[out] fjsp     pointer to the @p FlashJedecSPIDriver object
  *
  * @init
  */
@@ -335,7 +335,7 @@ bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, const
 }
 
 /**
- * @brief   Erases a one or more sectors.
+ * @brief   Erases one or more sectors.
  *
  * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
  * @param[in] startaddr address within to be erased sector
