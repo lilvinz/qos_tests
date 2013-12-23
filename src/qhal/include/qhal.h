@@ -21,6 +21,7 @@
 #include "qhalconf.h"
 
 /* Abstract interfaces.*/
+#include "qio_flash.h"
 
 /* Shared headers.*/
 
@@ -28,6 +29,7 @@
 
 /* Complex drivers.*/
 #include "qserial_485.h"
+#include "qflash_jedec_spi.h"
 
 /*===========================================================================*/
 /* External declarations.                                                    */
@@ -36,7 +38,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void qhalInit(void);
+    void qhalInit(void);
 #ifdef __cplusplus
 }
 #endif
