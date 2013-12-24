@@ -298,6 +298,9 @@ bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, uint8_
 
     spiUnselect(fjsp->config->spip);
 
+    /* Read operation finished.*/
+    fjsp->state = FLASH_READY;
+
     return CH_SUCCESS;
 }
 
