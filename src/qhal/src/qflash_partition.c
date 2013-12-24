@@ -74,6 +74,13 @@ void fpartObjectInit(FlashPartitionDriver* fpartp)
     fpartp->vmt = &flash_partition_vmt;
     fpartp->state = FLASH_STOP;
     fpartp->config = NULL;
+#if FLASH_PARTITION_USE_MUTUAL_EXCLUSION
+#if CH_USE_MUTEXES
+    chMtxInit(&fpartp->mutex);
+#else
+    chSemInit(&fpartp->semaphore, 1);
+#endif
+#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 }
 
 /**
