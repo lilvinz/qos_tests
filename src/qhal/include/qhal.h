@@ -31,6 +31,7 @@
 #include "qserial_485.h"
 #include "qflash_jedec_spi.h"
 #include "qflash_partition.h"
+#include "qflash_file.h"
 
 /*===========================================================================*/
 /* External declarations.                                                    */
