@@ -68,7 +68,7 @@ typedef struct
     /**
     * @brief SPI driver associated to this Flash JEDEC driver.
     */
-    SPIDriver     *spip;
+    SPIDriver*    spip;
     /**
      * @brief Smallest erasable sector size in bytes.
      */
@@ -98,7 +98,7 @@ typedef struct
     _base_flash_device_methods
 
 /**
- * @extends BaseFLashDeviceVMT
+ * @extends BaseFlashDeviceVMT
  *
  * @brief   @p FlashJedecSPIDriver virtual methods table.
  */
@@ -108,7 +108,7 @@ struct FlashJedecSPIDriverVMT
 };
 
 /**
- * @extends BaseFLashDevice
+ * @extends BaseFlashDevice
  *
  * @brief   Structure representing a FLASH JEDEC over SPI driver.
  */
@@ -117,12 +117,12 @@ typedef struct
     /**
     * @brief Virtual Methods Table.
     */
-    const struct FlashJedecSPIDriverVMT *vmt;
+    const struct FlashJedecSPIDriverVMT* vmt;
     _base_flash_device_data
     /**
     * @brief Current configuration data.
     */
-    const FlashJedecSPIConfig       *config;
+    const FlashJedecSPIConfig*           config;
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES || defined(__DOXYGEN__)
     /**

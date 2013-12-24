@@ -52,7 +52,7 @@ typedef struct
     /**
     * @brief Flash driver associated to this partition.
     */
-    BaseFlashDevice     *flashp;
+    BaseFlashDevice*    flashp;
     /**
      * @brief Offset in sectors.
      */
@@ -70,7 +70,7 @@ typedef struct
     _base_flash_device_methods
 
 /**
- * @extends BaseFLashDeviceVMT
+ * @extends BaseFlashDeviceVMT
  *
  * @brief   @p FlashPartitionDriver virtual methods table.
  */
@@ -80,7 +80,7 @@ struct FlashPartitionDriverVMT
 };
 
 /**
- * @extends BaseFLashDevice
+ * @extends BaseFlashDevice
  *
  * @brief   Structure representing a FLASH JEDEC over SPI driver.
  */
@@ -89,24 +89,24 @@ typedef struct
     /**
     * @brief Virtual Methods Table.
     */
-    const struct FlashPartitionDriverVMT *vmt;
+    const struct FlashPartitionDriverVMT* vmt;
     _base_flash_device_data
     /**
     * @brief Current configuration data.
     */
-    const FlashPartitionConfig           *config;
+    const FlashPartitionConfig*           config;
     /**
     * @brief Device info of underlying flash device.
     */
-    FlashDeviceInfo                      llfdi;
+    FlashDeviceInfo                       llfdi;
 #if FLASH_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES || defined(__DOXYGEN__)
     /**
      * @brief Mutex protecting the device.
      */
-    Mutex                                mutex;
+    Mutex                                 mutex;
 #elif CH_USE_SEMAPHORES
-    Semaphore                            semaphore;
+    Semaphore                             semaphore;
 #endif
 #endif /* FLASH_PARTITION_USE_MUTUAL_EXCLUSION */
 } FlashPartitionDriver;
