@@ -1,10 +1,10 @@
 /**
- * @file    io_flash.h
+ * @file    qio_flash.h
  * @brief   I/O flash devices access.
  * @details This header defines an abstract interface useful to access generic
  *          I/O flash devices in a standardized way.
  *
- * @addtogroup IO_FLASH
+ * @addtogroup QIO_FLASH
  * @details This module defines an abstract interface for accessing generic
  *          flash devices.<br>
  *          Note that no code is present, just abstract interfaces-like
@@ -28,7 +28,7 @@ typedef enum
     FLASH_READY = 2,                  /**< Device ready.                      */
     FLASH_READING = 3,                /**< Read operation in progress.        */
     FLASH_WRITING = 4,                /**< Write operation in progress.       */
-    FLASH_ERASING = 5,               /**< Erase operation in progress.       */
+    FLASH_ERASING = 5,                /**< Erase operation in progress.       */
 } flashstate_t;
 
 /**
