@@ -105,6 +105,11 @@ help:
 	@echo "                            supported boards are ($(FT_BOARDS))"
 	@echo "     ft_<board>_clean     - Remove flashtool package for <board>"
 	@echo
+	@echo "   [Simulation]"
+	@echo "     sim_<board>          - Build simulation app for <board>"
+	@echo "                            supported boards are ($(SIM_BOARDS))"
+	@echo "     sim_<board>_clean    - Remove simulation app for <board>"
+	@echo
 	@echo "   [Unittests]"
 	@echo "     ut_<test>            - Build unit test <test>"
 	@echo "                            supported tests are ($(ALL_UNITTESTS))"
@@ -213,6 +218,27 @@ ft_$(1)_clean:
 	$(V1) $(RM) -r $(BUILD_DIR)/ft_$(1)
 endef
 
+# $(1) = Canonical board name all in lower case (e.g. discoveryf4)
+define SIM_TEMPLATE
+.PHONY: $(1) sim_$(1)
+sim_$(1): sim_$(1)_all
+
+sim_$(1)_%:
+	$(V1) cd $(TARGETS_DIR)/$(1)/sim && \
+		$$(MAKE) -r --no-print-directory \
+		BOARD_NAME=$(1) \
+		BUILD_PREFIX=sim \
+		OUTDIR=$(BUILD_DIR)/sim_$(1) \
+		TCHAIN_PREFIX= \
+		$$*
+
+.PHONY: $(1)_clean
+$(1)_clean: sim_$(1)_clean
+sim_$(1)_clean:
+	$(V0) @echo " CLEAN        $$@"
+	$(V1) $(RM) -r $(BUILD_DIR)/sim_$(1)
+endef
+
 # When building any of the "all_*" targets, tell all sub makefiles to display
 # additional details on each line of output to describe which build and target
 # that each line applies to.
@@ -233,12 +259,14 @@ all_$(1): $$(filter fw_$(1), $$(FW_TARGETS))
 all_$(1): $$(filter bl_$(1), $$(BL_TARGETS))
 all_$(1): $$(filter ef_$(1), $$(EF_TARGETS))
 all_$(1): $$(filter ft_$(1), $$(FT_TARGETS))
+all_$(1): $$(filter sim_$(1), $$(SIM_TARGETS))
 
 .PHONY: all_$(1)_clean
 all_$(1)_clean: $$(addsuffix _clean, $$(filter fw_$(1), $$(FW_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter bl_$(1), $$(BL_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ef_$(1), $$(EF_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ft_$(1), $$(FT_TARGETS)))
+all_$(1)_clean: $$(addsuffix _clean, $$(filter sim_$(1), $$(SIM_TARGETS)))
 endef
 
 # Include all board definitions from targets dir
@@ -249,6 +277,7 @@ FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
 BL_TARGETS := $(addprefix bl_, $(BL_BOARDS))
 EF_TARGETS := $(addprefix ef_, $(EF_BOARDS))
 FT_TARGETS := $(addprefix ft_, $(FT_BOARDS))
+SIM_TARGETS := $(addprefix sim_, $(SIM_BOARDS))
 
 .PHONY: all_fw all_fw_clean
 all_fw: $(FW_TARGETS)
@@ -266,8 +295,12 @@ all_ef_clean: $(addsuffix _clean, $(EF_TARGETS))
 all_ft: $(FT_TARGETS)
 all_ft_clean: $(addsuffix _clean, $(FT_TARGETS))
 
+.PHONY: all_sim all_sim_clean
+all_sim: $(SIM_TARGETS)
+all_sim_clean: $(addsuffix _clean, $(SIM_TARGETS))
+
 .PHONY: all
-all: all_fw all_bl all_ef all_ft
+all: all_fw all_bl all_ef all_ft all_sim
 
 # Expand the firmware rules
 $(foreach board, $(FW_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
@@ -284,6 +317,10 @@ $(foreach board, $(EF_BOARDS), $(eval $(call EF_TEMPLATE,$(board))))
 # Expand the flashtool rules
 $(foreach board, $(FT_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
 $(foreach board, $(FT_BOARDS), $(eval $(call FT_TEMPLATE,$(board))))
+
+# Expand the simulation rules
+$(foreach board, $(SIM_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
+$(foreach board, $(SIM_BOARDS), $(eval $(call SIM_TEMPLATE,$(board))))
 
 ##############################
 #
