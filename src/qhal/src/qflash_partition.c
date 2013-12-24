@@ -36,6 +36,10 @@ static const struct FlashPartitionDriverVMT flash_partition_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))fpartWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))fpartErase,
     .sync = (bool_t (*)(void*))fpartSync,
+#if FLASH_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+    .acquire = (bool_t (*)(void*))fpartAcquireBus,
+    .release = (bool_t (*)(void*))fpartReleaseBus,
+#endif
     .get_info = (bool_t (*)(void*, FlashDeviceInfo *))fpartGetInfo,
 };
 
@@ -243,6 +247,57 @@ bool_t fpartGetInfo(FlashPartitionDriver* fpartp, FlashDeviceInfo* fdip)
 
     return CH_SUCCESS;
 }
+
+#if FLASH_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+/**
+ * @brief   Gains exclusive access to the flash device.
+ * @details This function tries to gain ownership to the flash device, if the
+ *          device is already being used then the invoking thread is queued.
+ * @pre     In order to use this function the option
+ *          @p FLASH_PARTITION_USE_MUTUAL_EXCLUSION must be enabled.
+ *
+ * @param[in] fpartp    pointer to the @p FlashPartitionDriver object
+ *
+ * @api
+ */
+void fpartAcquireBus(FlashPartitionDriver* fpartp)
+{
+    chDbgCheck(fpartp != NULL, "fpartAcquireBus");
+
+#if CH_USE_MUTEXES
+    chMtxLock(&fpartp->mutex);
+#elif CH_USE_SEMAPHORES
+    chSemWait(&fpartp->semaphore);
+#endif
+
+    /* Lock the underlying device as well */
+    flashAcquire(fpartp->config->flashp);
+}
+
+/**
+ * @brief   Releases exclusive access to the flash device.
+ * @pre     In order to use this function the option
+ *          @p ADC_USE_MUTUAL_EXCLUSION must be enabled.
+ *
+ * @param[in] fpartp    pointer to the @p FlashPartitionDriver object
+ *
+ * @api
+ */
+void fpartReleaseBus(FlashPartitionDriver* fpartp)
+{
+    chDbgCheck(fpartp != NULL, "fpartReleaseBus");
+
+#if CH_USE_MUTEXES
+    (void)fpartp;
+    chMtxUnlock();
+#elif CH_USE_SEMAPHORES
+    chSemSignal(&fpartp->semaphore);
+#endif
+
+    /* Release the underlying device as well */
+    flashRelease(fpartp->config->flashp);
+}
+#endif /* FLASH_PARTITION_USE_MUTUAL_EXCLUSION */
 
 #endif /* HAL_USE_FLASH_PARTITION */
 

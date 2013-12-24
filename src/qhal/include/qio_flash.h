@@ -44,26 +44,30 @@ typedef struct
 /**
  * @brief   @p BaseFlashDevice specific methods.
  */
-#define _base_flash_device_methods                                          \
-    /* Reads one or more bytes crossing sectors when required.*/            \
-    bool_t (*read)(void *instance, uint32_t startaddr,                      \
-            uint32_t n, uint8_t *buffer);                                   \
-    /* Writes one or more bytes crossing sectors when required.*/           \
-    bool_t (*write)(void *instance, uint32_t startaddr,                     \
-            uint32_t n, const uint8_t *buffer);                             \
-    /* Erase one or more sectors.*/                                         \
-    bool_t (*erase)(void *instance, uint32_t startaddr,                     \
-            uint32_t n);                                                    \
-    /* Write / erase operations synchronization.*/                          \
-    bool_t (*sync)(void *instance);                                         \
-    /* Obtains info about the media.*/                                      \
+#define _base_flash_device_methods                                            \
+    /* Reads one or more bytes crossing sectors when required.*/              \
+    bool_t (*read)(void *instance, uint32_t startaddr,                        \
+            uint32_t n, uint8_t *buffer);                                     \
+    /* Writes one or more bytes crossing sectors when required.*/             \
+    bool_t (*write)(void *instance, uint32_t startaddr,                       \
+            uint32_t n, const uint8_t *buffer);                               \
+    /* Erase one or more sectors.*/                                           \
+    bool_t (*erase)(void *instance, uint32_t startaddr,                       \
+            uint32_t n);                                                      \
+    /* Write / erase operations synchronization.*/                            \
+    bool_t (*sync)(void *instance);                                           \
+    /* Acquire device if supported by underlying driver.*/                    \
+    bool_t (*acquire)(void *instance);                                        \
+    /* Release device if supported by underlying driver.*/                    \
+    bool_t (*release)(void *instance);                                        \
+    /* Obtains info about the media.*/                                        \
     bool_t (*get_info)(void *instance, FlashDeviceInfo *bdip);
 
 /**
  * @brief   @p BaseFlashDevice specific data.
  */
-#define _base_flash_device_data                                             \
-    /* Driver state.*/                                                      \
+#define _base_flash_device_data                                               \
+    /* Driver state.*/                                                        \
     flashstate_t            state;
 
 /**
@@ -179,6 +183,38 @@ typedef struct
  * @api
  */
 #define flashSync(ip) ((ip)->vmt->sync(ip))
+
+/**
+ * @brief   Acquires device for exclusive access.
+ *
+ * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define flashAcquire(ip) {                                                    \
+    if (((ip)->vmt->acquire) != NULL)                                         \
+        ((ip)->vmt->acquire)(ip);                                             \
+}
+
+/**
+ * @brief   Releases exclusive access from device.
+ *
+ * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define flashRelease(ip) {                                                    \
+    if (((ip)->vmt->release) != NULL)                                         \
+        ((ip)->vmt->release)(ip);                                             \
+}
 
 /**
  * @brief   Returns a media information structure.

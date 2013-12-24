@@ -43,6 +43,10 @@ static const struct FlashJedecSPIDriverVMT flash_jedec_spi_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))fjsWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))fjsErase,
     .sync = (bool_t (*)(void*))fjsSync,
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+    .acquire = (bool_t (*)(void*))fjsAcquireBus,
+    .release = (bool_t (*)(void*))fjsReleaseBus,
+#endif
     .get_info = (bool_t (*)(void*, FlashDeviceInfo *))fjsGetInfo,
 };
 
@@ -195,6 +199,13 @@ void fjsObjectInit(FlashJedecSPIDriver* fjsp)
     fjsp->vmt = &flash_jedec_spi_vmt;
     fjsp->state = FLASH_STOP;
     fjsp->config = NULL;
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION
+#if CH_USE_MUTEXES
+    chMtxInit(&fjsp->mutex);
+#else
+    chSemInit(&fjsp->semaphore, 1);
+#endif
+#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 }
 
 /**
@@ -597,6 +608,61 @@ bool_t fjsWriteLock(FlashJedecSPIDriver* fjsp)
 
     return CH_SUCCESS;
 }
+
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+/**
+ * @brief   Gains exclusive access to the flash device.
+ * @details This function tries to gain ownership to the flash device, if the
+ *          device is already being used then the invoking thread is queued.
+ * @pre     In order to use this function the option
+ *          @p FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION must be enabled.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ *
+ * @api
+ */
+void fjsAcquireBus(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck(fjsp != NULL, "fjsAcquireBus");
+
+#if CH_USE_MUTEXES
+    chMtxLock(&fjsp->mutex);
+#elif CH_USE_SEMAPHORES
+    chSemWait(&fjsp->semaphore);
+#endif
+
+#if SPI_USE_MUTUAL_EXCLUSION
+    /* Acquire the underlying device as well */
+    spiAcquireBus(fjsp->config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
+}
+
+/**
+ * @brief   Releases exclusive access to the flash device.
+ * @pre     In order to use this function the option
+ *          @p FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION must be enabled.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ *
+ * @api
+ */
+void fjsReleaseBus(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck(fjsp != NULL, "fjsReleaseBus");
+
+#if CH_USE_MUTEXES
+    (void)fjsp;
+    chMtxUnlock();
+#elif CH_USE_SEMAPHORES
+    chSemSignal(&fjsp->semaphore);
+#endif
+
+#if SPI_USE_MUTUAL_EXCLUSION
+    /* Release the underlying device as well */
+    spiReleaseBus(fjsp->config->spip);
+#endif /* SPI_USE_MUTUAL_EXCLUSION */
+}
+#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 
 #endif /* HAL_USE_FLASH_JEDEC_SPI */
 

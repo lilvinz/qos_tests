@@ -31,8 +31,16 @@
  *          This option is recommended also if the SPI driver does not
  *          use a DMA channel and heavily loads the CPU.
  */
-#if !defined(FLASH_JEDEC_NICE_WAITING) || defined(__DOXYGEN__)
-#define FLASH_JEDEC_NICE_WAITING            TRUE
+#if !defined(FLASH_JEDEC_SPI_NICE_WAITING) || defined(__DOXYGEN__)
+#define FLASH_JEDEC_SPI_NICE_WAITING             TRUE
+#endif
+
+/**
+ * @brief   Enables the @p fjsAcquireBus() and @p fjsReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION     TRUE
 #endif
 /** @} */
 
@@ -42,6 +50,10 @@
 
 #if !HAL_USE_SPI || !SPI_USE_WAIT
 #error "FLASH_JEDEC_SPI driver requires HAL_USE_SPI and SPI_USE_WAIT"
+#endif
+
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION && !CH_USE_MUTEXES && !CH_USE_SEMAPHORES
+#error "FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION requires CH_USE_MUTEXES and/or CH_USE_SEMAPHORES"
 #endif
 
 /*===========================================================================*/
@@ -111,6 +123,16 @@ typedef struct
     * @brief Current configuration data.
     */
     const FlashJedecSPIConfig       *config;
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+#if CH_USE_MUTEXES || defined(__DOXYGEN__)
+    /**
+     * @brief Mutex protecting the device.
+     */
+    Mutex                                mutex;
+#elif CH_USE_SEMAPHORES
+    Semaphore                            semaphore;
+#endif
+#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 } FlashJedecSPIDriver;
 
 /*===========================================================================*/
@@ -138,6 +160,10 @@ extern "C" {
     bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, FlashDeviceInfo* fdip);
     bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp);
     bool_t fjsWriteLock(FlashJedecSPIDriver* fjsp);
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+    void fjsAcquireBus(FlashJedecSPIDriver* fjsp);
+    void fjsReleaseBus(FlashJedecSPIDriver* fjsp);
+#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 #ifdef __cplusplus
 }
 #endif

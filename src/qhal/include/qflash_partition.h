@@ -19,9 +19,26 @@
 /* Driver pre-compile time settings.                                         */
 /*===========================================================================*/
 
+/**
+ * @name    FLASH_PARTITION configuration options
+ * @{
+ */
+/**
+ * @brief   Enables the @p fpartAcquireBus() and @p fpartReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(FLASH_PARTITION_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define FLASH_PARTITION_USE_MUTUAL_EXCLUSION     TRUE
+#endif
+/** @} */
+
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
+
+#if FLASH_PARTITION_USE_MUTUAL_EXCLUSION && !CH_USE_MUTEXES && !CH_USE_SEMAPHORES
+#error "FLASH_PARTITION_USE_MUTUAL_EXCLUSION requires CH_USE_MUTEXES and/or CH_USE_SEMAPHORES"
+#endif
 
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
@@ -39,11 +56,11 @@ typedef struct
     /**
      * @brief Offset in sectors.
      */
-    uint32_t      sector_offset;
+    uint32_t            sector_offset;
     /**
      * @brief Total number of sectors.
      */
-    uint32_t      sector_num;
+    uint32_t            sector_num;
 } FlashPartitionConfig;
 
 /**
@@ -77,11 +94,21 @@ typedef struct
     /**
     * @brief Current configuration data.
     */
-    const FlashPartitionConfig       *config;
+    const FlashPartitionConfig           *config;
     /**
     * @brief Device info of underlying flash device.
     */
-    FlashDeviceInfo                  llfdi;
+    FlashDeviceInfo                      llfdi;
+#if FLASH_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+#if CH_USE_MUTEXES || defined(__DOXYGEN__)
+    /**
+     * @brief Mutex protecting the device.
+     */
+    Mutex                                mutex;
+#elif CH_USE_SEMAPHORES
+    Semaphore                            semaphore;
+#endif
+#endif /* FLASH_PARTITION_USE_MUTUAL_EXCLUSION */
 } FlashPartitionDriver;
 
 /*===========================================================================*/
@@ -106,6 +133,10 @@ extern "C" {
     bool_t fpartErase(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n);
     bool_t fpartSync(FlashPartitionDriver* fpartp);
     bool_t fpartGetInfo(FlashPartitionDriver* fpartp, FlashDeviceInfo* fdip);
+#if FLASH_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
+    void fpartAcquireBus(FlashPartitionDriver* fjsp);
+    void fpartReleaseBus(FlashPartitionDriver* fjsp);
+#endif /* FLASH_PARTITION_USE_MUTUAL_EXCLUSION */
 #ifdef __cplusplus
 }
 #endif
