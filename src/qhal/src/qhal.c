@@ -56,6 +56,9 @@ void qhalInit(void)
 #if HAL_USE_FLASH_FILE || defined(__DOXYGEN__)
     ffileInit();
 #endif
+#if HAL_USE_FLASH_MIRROR || defined(__DOXYGEN__)
+    fmirrorInit();
+#endif
 }
 
 /** @} */

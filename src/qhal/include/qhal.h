@@ -32,6 +32,7 @@
 #include "qflash_jedec_spi.h"
 #include "qflash_partition.h"
 #include "qflash_file.h"
+#include "qflash_mirror.h"
 
 /*===========================================================================*/
 /* External declarations.                                                    */
