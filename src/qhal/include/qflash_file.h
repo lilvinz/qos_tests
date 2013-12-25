@@ -11,6 +11,8 @@
 
 #if HAL_USE_FLASH_FILE || defined(__DOXYGEN__)
 
+#include <stdio.h>
+
 /*===========================================================================*/
 /* Driver constants.                                                         */
 /*===========================================================================*/
@@ -95,6 +97,10 @@ typedef struct
     * @brief Current configuration data.
     */
     const FlashFileConfig*               config;
+    /**
+     * @brief Current configuration data.
+    */
+    FILE*                                file;
 #if FLASH_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES || defined(__DOXYGEN__)
     /**

@@ -98,9 +98,40 @@ void ffileStart(FlashFileDriver* ffilep, const FlashFileConfig* config)
     chDbgAssert((ffilep->state == FLASH_STOP) || (ffilep->state == FLASH_READY),
             "ffileStart(), #1", "invalid state");
 
+    if (ffilep->state == FLASH_READY)
+        ffileStop(ffilep);
+
     ffilep->config = config;
 
-    // TODO add file open code
+    ffilep->file = fopen(ffilep->config->file_name, "r+b");
+
+    if (ffilep->file == NULL)
+    {
+        /* Create file as it seems to not exist */
+        ffilep->file = fopen(ffilep->config->file_name, "w+b");
+    }
+
+    chDbgAssert(ffilep->file != NULL, "ffileStart(), #2", "invalid file pointer");
+
+    if (ffilep->file == NULL)
+        return;
+
+    /* grow file according to configuration if necessary */
+    if (fseek(ffilep->file, 0, SEEK_END) != 0)
+        return;
+
+    size_t current_size = ftell(ffilep->file);
+    size_t desired_size = ffilep->config->sector_size * ffilep->config->sector_num;
+
+    if (current_size < desired_size)
+    {
+        uint8_t empty = 0xff;
+        for (size_t i = current_size; i < desired_size; ++i)
+            if (fwrite(&empty, 1, sizeof(empty), ffilep->file) != sizeof(empty))
+                return;
+        if (fflush(ffilep->file) != 0)
+            return;
+    }
 
     ffilep->state = FLASH_READY;
 }
@@ -119,8 +150,10 @@ void ffileStop(FlashFileDriver* ffilep)
     chDbgAssert((ffilep->state == FLASH_STOP) || (ffilep->state == FLASH_READY),
             "ffileStop(), #1", "invalid state");
 
-    // TODO add file close code
+    if (ffilep->file != NULL)
+        fclose(ffilep->file);
 
+    ffilep->file = NULL;
     ffilep->state = FLASH_STOP;
 }
 
@@ -151,10 +184,17 @@ bool_t ffileRead(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, uint8_
     if (ffileSync(ffilep) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Read operation in progress.*/
+    /* Read operation in progress. */
     ffilep->state = FLASH_READING;
 
-    // TODO add read code
+    if (fseek(ffilep->file, startaddr, SEEK_SET) != 0)
+        return CH_FAILED;
+
+    if (fread(buffer, 1, n, ffilep->file) != n)
+        return CH_FAILED;
+
+    /* Read operation finished. */
+    ffilep->state = FLASH_READY;
 
     return CH_SUCCESS;
 }
@@ -186,10 +226,14 @@ bool_t ffileWrite(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, const
     if (ffileSync(ffilep) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Erase operation in progress.*/
+    /* Write operation in progress.*/
     ffilep->state = FLASH_WRITING;
 
-    // TODO add write code
+    if (fseek(ffilep->file, startaddr, SEEK_SET) != 0)
+        return CH_FAILED;
+
+    if (fwrite(buffer, 1, n, ffilep->file) != n)
+        return CH_FAILED;
 
     return CH_SUCCESS;
 }
@@ -223,7 +267,19 @@ bool_t ffileErase(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n)
     /* Erase operation in progress.*/
     ffilep->state = FLASH_ERASING;
 
-    // TODO add erase code
+    uint32_t first_sector_addr = startaddr - (startaddr % ffilep->config->sector_size);
+    uint32_t last_sector_addr = (startaddr + n) - ((startaddr + n) % ffilep->config->sector_size);
+
+    if (fseek(ffilep->file, first_sector_addr, SEEK_SET) != 0)
+        return CH_FAILED;
+
+    for (uint32_t addr = first_sector_addr; addr < last_sector_addr; addr += ffilep->config->sector_size)
+    {
+        uint8_t empty = 0xff;
+        for (size_t i = 0; i < ffilep->config->sector_size; ++i)
+            if (fwrite(&empty, 1, sizeof(empty), ffilep->file) != sizeof(empty))
+                return CH_FAILED;
+    }
 
     return CH_SUCCESS;
 }
@@ -252,7 +308,16 @@ bool_t ffileMassErase(FlashFileDriver* ffilep)
     /* Erase operation in progress.*/
     ffilep->state = FLASH_ERASING;
 
-    // TODO add erase code
+    for (uint32_t addr = 0; addr < ffilep->config->sector_size * ffilep->config->sector_num; addr += ffilep->config->sector_size)
+    {
+        if (fseek(ffilep->file, addr, SEEK_SET) != 0)
+            return CH_FAILED;
+
+        uint8_t empty = 0xff;
+        for (size_t i = 0; i < ffilep->config->sector_size; ++i)
+            if (fwrite(&empty, 1, sizeof(empty), ffilep->file) != sizeof(empty))
+                return CH_FAILED;
+    }
 
     return CH_SUCCESS;
 }
@@ -278,7 +343,8 @@ bool_t ffileSync(FlashFileDriver* ffilep)
     if (ffilep->state == FLASH_READY)
         return CH_SUCCESS;
 
-    // TODO add sync code
+    if (fflush(ffilep->file) != 0)
+        return CH_FAILED;
 
     ffilep->state = FLASH_READY;
 
