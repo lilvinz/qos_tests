@@ -80,7 +80,7 @@ void fpartObjectInit(FlashPartitionDriver* fpartp)
 #else
     chSemInit(&fpartp->semaphore, 1);
 #endif
-#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
+#endif /* FLASH_PARTITION_USE_MUTUAL_EXCLUSION */
 }
 
 /**
