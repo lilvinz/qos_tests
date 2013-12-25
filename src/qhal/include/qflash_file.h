@@ -47,7 +47,7 @@
 /*===========================================================================*/
 
 /**
- * @brief   Flash JEDEC over SPI driver configuration structure.
+ * @brief   Flash emulation driver configuration structure.
  */
 typedef struct
 {
