@@ -53,6 +53,9 @@ void qhalInit(void)
 #if HAL_USE_FLASH_PARTITION || defined(__DOXYGEN__)
     fpartInit();
 #endif
+#if HAL_USE_FLASH_FILE || defined(__DOXYGEN__)
+    ffileInit();
+#endif
 }
 
 /** @} */
