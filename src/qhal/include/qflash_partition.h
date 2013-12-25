@@ -45,7 +45,7 @@
 /*===========================================================================*/
 
 /**
- * @brief   Flash JEDEC over SPI driver configuration structure.
+ * @brief   Flash JEDEC partition driver configuration structure.
  */
 typedef struct
 {
@@ -82,7 +82,7 @@ struct FlashPartitionDriverVMT
 /**
  * @extends BaseFlashDevice
  *
- * @brief   Structure representing a FLASH JEDEC over SPI driver.
+ * @brief   Structure representing a FLASH partition driver.
  */
 typedef struct
 {
