@@ -135,10 +135,6 @@ static bool_t flash_jedec_spi_sector_erase(FlashJedecSPIDriver* fjsp, uint32_t s
 {
     chDbgCheck(fjsp != NULL, "flash_jedec_spi_sector_erase");
 
-    /* Check if device supports erase command. */
-    if (fjsp->config->sector_erase == 0x00)
-        return CH_SUCCESS;
-
     if (fjsSync(fjsp) != CH_SUCCESS)
         return CH_FAILED;
 
@@ -166,6 +162,47 @@ static bool_t flash_jedec_spi_sector_erase(FlashJedecSPIDriver* fjsp, uint32_t s
     /* address bytes */
     spiSend(fjsp->config->spip, fjsp->config->addrbytes_num,
             &out[1 + (4 - fjsp->config->addrbytes_num)]);
+
+    spiUnselect(fjsp->config->spip);
+
+    return CH_SUCCESS;
+}
+
+static bool_t flash_jedec_spi_page_program_ff(FlashJedecSPIDriver* fjsp, uint32_t startaddr)
+{
+    chDbgCheck(fjsp != NULL, "flash_jedec_spi_page_program_ff");
+
+    if (fjsSync(fjsp) != CH_SUCCESS)
+        return CH_FAILED;
+
+    if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
+        return CH_FAILED;
+
+    /* Write operation in progress.*/
+    fjsp->state = FLASH_WRITING;
+
+    spiSelect(fjsp->config->spip);
+
+    const uint8_t out[] =
+    {
+        FLASH_JEDEC_PP,
+        (startaddr >> 24) & 0xff,
+        (startaddr >> 16) & 0xff,
+        (startaddr >> 8) & 0xff,
+        (startaddr >> 0) & 0xff,
+    };
+
+    /* command byte */
+    spiSend(fjsp->config->spip, 1, &out[0]);
+
+    /* address bytes */
+    spiSend(fjsp->config->spip, fjsp->config->addrbytes_num,
+            &out[1 + (4 - fjsp->config->addrbytes_num)]);
+
+    /* data */
+    static const uint8_t erased = 0xff;
+    for (uint32_t i = 0; i < fjsp->config->page_size; ++i)
+        spiSend(fjsp->config->spip, sizeof(erased), &erased);
 
     spiUnselect(fjsp->config->spip);
 
@@ -372,10 +409,22 @@ bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n)
     uint32_t first_sector_addr = startaddr - (startaddr % fjsp->config->sector_size);
     uint32_t last_sector_addr = (startaddr + n) - ((startaddr + n) % fjsp->config->sector_size);
 
-    for (uint32_t addr = first_sector_addr; addr < last_sector_addr; addr += fjsp->config->sector_size)
+    /* Check if device supports erase command. */
+    if (fjsp->config->sector_erase != 0x00)
     {
-        if (flash_jedec_spi_sector_erase(fjsp, addr) != CH_SUCCESS)
-            return CH_FAILED;
+        for (uint32_t addr = first_sector_addr; addr < last_sector_addr; addr += fjsp->config->sector_size)
+        {
+            if (flash_jedec_spi_sector_erase(fjsp, addr) != CH_SUCCESS)
+                return CH_FAILED;
+        }
+    }
+    else
+    {
+        for (uint32_t addr = first_sector_addr; addr < last_sector_addr; addr += fjsp->config->page_size)
+        {
+            if (flash_jedec_spi_page_program_ff(fjsp, addr) != CH_SUCCESS)
+                return CH_FAILED;
+        }
     }
 
     return CH_SUCCESS;
@@ -400,29 +449,33 @@ bool_t fjsMassErase(FlashJedecSPIDriver* fjsp)
             "invalid state");
 
     /* Check if device supports erase command. */
-    if (fjsp->config->sector_erase == 0x00)
-        return CH_SUCCESS;
-
-    if (fjsSync(fjsp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    /* Erase operation in progress.*/
-    fjsp->state = FLASH_ERASING;
-
-    spiSelect(fjsp->config->spip);
-
-    static const uint8_t out[] =
+    if (fjsp->config->sector_erase != 0x00)
     {
-        FLASH_JEDEC_MASS_ERASE,
-    };
+        if (fjsSync(fjsp) != CH_SUCCESS)
+            return CH_FAILED;
 
-    /* command byte */
-    spiSend(fjsp->config->spip, NELEMS(out), out);
+        if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
+            return CH_FAILED;
 
-    spiUnselect(fjsp->config->spip);
+        /* Erase operation in progress.*/
+        fjsp->state = FLASH_ERASING;
+
+        spiSelect(fjsp->config->spip);
+
+        static const uint8_t out[] =
+        {
+            FLASH_JEDEC_MASS_ERASE,
+        };
+
+        /* command byte */
+        spiSend(fjsp->config->spip, NELEMS(out), out);
+
+        spiUnselect(fjsp->config->spip);
+    }
+    else
+    {
+        return fjsErase(fjsp, 0, fjsp->config->sector_size * fjsp->config->sector_num);
+    }
 
     return CH_SUCCESS;
 }
