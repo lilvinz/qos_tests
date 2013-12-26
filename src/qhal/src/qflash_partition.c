@@ -144,10 +144,16 @@ bool_t fpartRead(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, u
     chDbgAssert((startaddr + n <= fpartp->llfdi.sector_size * fpartp->config->sector_num), "fpartRead(), #2",
             "invalid parameters");
 
-    return flashRead(fpartp->config->flashp,
+    fpartp->state = FLASH_READING;
+
+    bool_t result = flashRead(fpartp->config->flashp,
             fpartp->llfdi.sector_size * fpartp->config->sector_offset + startaddr,
             n,
             buffer);
+
+    fpartp->state = FLASH_READY;
+
+    return result;
 }
 
 /**
@@ -173,6 +179,8 @@ bool_t fpartWrite(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, 
     /* verify range is within partition size */
     chDbgAssert((startaddr + n <= fpartp->llfdi.sector_size * fpartp->config->sector_num), "fpartRead(), #2",
             "invalid parameters");
+
+    fpartp->state = FLASH_WRITING;
 
     return flashWrite(fpartp->config->flashp,
             fpartp->llfdi.sector_size * fpartp->config->sector_offset + startaddr,
@@ -203,6 +211,8 @@ bool_t fpartErase(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n)
     chDbgAssert((startaddr + n <= fpartp->llfdi.sector_size * fpartp->config->sector_num), "fpartRead(), #2",
             "invalid parameters");
 
+    fpartp->state = FLASH_ERASING;
+
     return flashErase(fpartp->config->flashp,
             fpartp->llfdi.sector_size * fpartp->config->sector_offset + startaddr,
             n);
@@ -226,7 +236,11 @@ bool_t fpartSync(FlashPartitionDriver* fpartp)
     chDbgAssert(fpartp->state >= FLASH_READY, "fpartSync(), #1",
             "invalid state");
 
-    return flashSync(fpartp->config->flashp);
+    bool_t result = flashSync(fpartp->config->flashp);
+
+    fpartp->state = FLASH_READY;
+
+    return result;
 }
 
 /**
