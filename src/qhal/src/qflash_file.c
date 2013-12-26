@@ -125,9 +125,9 @@ void ffileStart(FlashFileDriver* ffilep, const FlashFileConfig* config)
 
     if (current_size < desired_size)
     {
-        uint8_t empty = 0xff;
+        static const uint8_t erased = 0xff;
         for (size_t i = current_size; i < desired_size; ++i)
-            if (fwrite(&empty, 1, sizeof(empty), ffilep->file) != sizeof(empty))
+            if (fwrite(&erased, 1, sizeof(erased), ffilep->file) != sizeof(erased))
                 return;
         if (fflush(ffilep->file) != 0)
             return;
@@ -275,9 +275,9 @@ bool_t ffileErase(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n)
 
     for (uint32_t addr = first_sector_addr; addr < last_sector_addr; addr += ffilep->config->sector_size)
     {
-        uint8_t empty = 0xff;
+        static const uint8_t erased = 0xff;
         for (size_t i = 0; i < ffilep->config->sector_size; ++i)
-            if (fwrite(&empty, 1, sizeof(empty), ffilep->file) != sizeof(empty))
+            if (fwrite(&erased, 1, sizeof(erased), ffilep->file) != sizeof(erased))
                 return CH_FAILED;
     }
 
@@ -313,9 +313,9 @@ bool_t ffileMassErase(FlashFileDriver* ffilep)
         if (fseek(ffilep->file, addr, SEEK_SET) != 0)
             return CH_FAILED;
 
-        uint8_t empty = 0xff;
+        static const uint8_t erased = 0xff;
         for (size_t i = 0; i < ffilep->config->sector_size; ++i)
-            if (fwrite(&empty, 1, sizeof(empty), ffilep->file) != sizeof(empty))
+            if (fwrite(&erased, 1, sizeof(erased), ffilep->file) != sizeof(erased))
                 return CH_FAILED;
     }
 
