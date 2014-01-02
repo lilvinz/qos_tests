@@ -53,6 +53,10 @@ typedef struct
     * @brief Flash driver associated to this mirror.
     */
     BaseFlashDevice*    flashp;
+    /*
+     * @brief number of sectors to assign to metadata header
+     */
+    uint32_t            sectors_header_num;
 } FlashMirrorConfig;
 
 /**
@@ -86,7 +90,7 @@ typedef struct
     /**
     * @brief Current configuration data.
     */
-    const FlashMirrorConfig*           config;
+    const FlashMirrorConfig*              config;
     /**
     * @brief Device info of underlying flash device.
     */
@@ -101,6 +105,8 @@ typedef struct
     Semaphore                             semaphore;
 #endif
 #endif /* FLASH_MIRROR_USE_MUTUAL_EXCLUSION */
+    uint64_t                              mirror_state;
+    uint32_t                              mirror_state_idx;
 } FlashMirrorDriver;
 
 /*===========================================================================*/
@@ -126,8 +132,8 @@ extern "C" {
     bool_t fmirrorSync(FlashMirrorDriver* fmirrorp);
     bool_t fmirrorGetInfo(FlashMirrorDriver* fmirrorp, FlashDeviceInfo* fdip);
 #if FLASH_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
-    void fmirrorAcquireBus(FlashMirrorDriver* fjsp);
-    void fmirrorReleaseBus(FlashMirrorDriver* fjsp);
+    void fmirrorAcquireBus(FlashMirrorDriver* fmirrorp);
+    void fmirrorReleaseBus(FlashMirrorDriver* fmirrorp);
 #endif /* FLASH_MIRROR_USE_MUTUAL_EXCLUSION */
 #ifdef __cplusplus
 }

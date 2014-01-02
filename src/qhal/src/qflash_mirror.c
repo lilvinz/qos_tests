@@ -15,9 +15,82 @@
 
 #if HAL_USE_FLASH_MIRROR || defined(__DOXYGEN__)
 
+/*
+ * @brief   Functional description
+ *          Memory partitioning is:
+ *          - header (at least 1 sector)
+ *          - mirror a
+ *          - mirror b (same size as mirror a)
+ *          Header is being used to store the current state
+ *          where a state entry can be:
+ *          - unused
+ *          - dirty a
+ *          - dirty b
+ *          - synced
+ *          Mirror a and mirror b must be of the same size.
+ *          The flow of operation is:
+ *          Startup / Recovery rollback:
+ *              - state synced:
+ *                  Do nothing.
+ *              - state dirty a:
+ *                  Copy mirror b to mirror a erasing pages as required.
+ *                  Set state to synced.
+ *                  Execute sync of lower level driver.
+ *              - state dirty b:
+ *                  Copy mirror a to mirror b erasing pages as required.
+ *                  Set state to synced.
+ *                  Execute sync of lower level driver.
+ *          Sync:
+ *              - state synced:
+ *                  Execute sync of lower level driver.
+ *              - state dirty a:
+ *                  State is changed to dirty b.
+ *                  Execute sync of lower level driver.
+ *                  Copy mirror a to mirror b erasing pages as required.
+ *                  State is changed to synced.
+ *                  Execute sync of lower level driver.
+ *              - state dirty b:
+ *                  Invalid state!
+ *          Read:
+ *              - state synced:
+ *              - state dirty a:
+ *                  Read data from mirror a.
+ *              - state dirty b:
+ *                  Invalid state!
+ *          Write / Erase:
+ *              - state synced:
+ *                  State is being set to dirty a.
+ *                  Execute sync of lower level driver.
+ *                  Write(s) and / or erase(s) are being executed on mirror a.
+ *              - state dirty a:
+ *                  Write(s) and / or erase(s) are being executed on mirror a.
+ *              - state dirty b:
+ *                  Invalid state!
+ *
+ * @todo
+ */
+
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
+
+/*
+ * @brief   State values have to be chosen so that they can be represented on
+ *          any flash device including devices with the following
+ *          limitations:
+ *          - Writes are not allowed to cells which contain low bits.
+ *          - Smallest write operation is 16bits
+ *
+ *          The header section is being filled by an array of state entries.
+ *          On startup, the last used entry is taken into account. Further
+ *          updates are being written to unused entries until the array has
+ *          been filled. At that point the header is being erased and the first
+ *          entry is being used.
+ */
+static const uint64_t MIRROR_STATE_UNUSED  = 0xffffffffffffffff;
+static const uint64_t MIRROR_STATE_DIRTY_A = 0x0000ffffffffffff;
+static const uint64_t MIRROR_STATE_DIRTY_B = 0x00000000ffffffff;
+static const uint64_t MIRROR_STATE_SYNCED  = 0x000000000000ffff;
 
 /*===========================================================================*/
 /* Driver exported variables.                                                */
@@ -46,7 +119,14 @@ static const struct FlashMirrorDriverVMT flash_mirror_vmt =
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
+#if 0
+static void header_new_index(FlashMirrorDriver* fmirrorp)
+{
+    uint32_t i = fmirrorp->header_state_idx;
 
+
+}
+#endif
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
