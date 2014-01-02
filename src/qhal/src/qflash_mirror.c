@@ -87,10 +87,14 @@
  *          been filled. At that point the header is being erased and the first
  *          entry is being used.
  */
-static const uint64_t MIRROR_STATE_UNUSED  = 0xffffffffffffffff;
-static const uint64_t MIRROR_STATE_DIRTY_A = 0x0000ffffffffffff;
-static const uint64_t MIRROR_STATE_DIRTY_B = 0x00000000ffffffff;
-static const uint64_t MIRROR_STATE_SYNCED  = 0x000000000000ffff;
+static const uint64_t flash_mirror_state_mark_table[] =
+{
+    0xffffffffffffffff,
+    0x0000ffffffffffff,
+    0x00000000ffffffff,
+    0x000000000000ffff,
+};
+STATIC_ASSERT(NELEMS(flash_mirror_state_mark_table) == STATE_DIRTY_COUNT);
 
 /*===========================================================================*/
 /* Driver exported variables.                                                */
@@ -119,14 +123,93 @@ static const struct FlashMirrorDriverVMT flash_mirror_vmt =
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
-#if 0
-static void header_new_index(FlashMirrorDriver* fmirrorp)
+
+static bool_t flash_mirror_state_init(FlashMirrorDriver* fmirrorp)
 {
-    uint32_t i = fmirrorp->header_state_idx;
+    chDbgCheck((fmirrorp != NULL), "flash_mirror_state_init");
 
+    const uint32_t header_orig = 0;
+    const uint32_t header_size = fmirrorp->config->sectors_header_num * fmirrorp->llfdi.sector_size;
 
+    FlashMirrorState new_state = STATE_INVALID;
+    uint32_t new_state_addr;
+
+    uint64_t state_mark;
+
+    for (new_state_addr = header_orig;
+            new_state_addr < header_orig + header_size;
+            new_state_addr += sizeof(state_mark))
+    {
+        bool_t result = flashRead(fmirrorp->config->flashp,
+                new_state_addr,
+                sizeof(new_state_addr),
+                (uint8_t*)&state_mark);
+        if (result != CH_SUCCESS)
+            return result;
+
+        if (state_mark == flash_mirror_state_mark_table[STATE_SYNCED])
+            new_state = STATE_SYNCED;
+        else if (state_mark == flash_mirror_state_mark_table[STATE_DIRTY_A])
+            new_state = STATE_DIRTY_A;
+        else if (state_mark == flash_mirror_state_mark_table[STATE_DIRTY_B])
+            new_state = STATE_DIRTY_B;
+        else if (state_mark == flash_mirror_state_mark_table[STATE_INVALID])
+            goto end;
+    }
+
+end:
+    fmirrorp->mirror_state = new_state;
+    fmirrorp->mirror_state_addr = new_state_addr;
+
+    return CH_SUCCESS;
 }
-#endif
+
+static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirrorState new_state)
+{
+    chDbgCheck((fmirrorp != NULL), "flash_mirror_state_write");
+
+    if (new_state == fmirrorp->mirror_state)
+        return CH_SUCCESS;
+
+    const uint32_t header_orig = 0;
+    const uint32_t header_size = fmirrorp->config->sectors_header_num * fmirrorp->llfdi.sector_size;
+
+    uint32_t new_state_addr = fmirrorp->mirror_state_addr;
+    uint64_t new_state_mark = flash_mirror_state_mark_table[new_state];
+
+    /* Advance state entry pointer if last state was synced */
+    if (fmirrorp->mirror_state == STATE_SYNCED)
+        new_state_addr += sizeof(new_state_mark);
+
+    /* Detect wrap around and erase header if necessary. */
+    if (new_state_addr >= header_orig + header_size)
+    {
+        new_state_addr = 0;
+        bool_t result = flashErase(fmirrorp->config->flashp, header_orig, fmirrorp->config->sectors_header_num * fmirrorp->llfdi.sector_size);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    /* Write updated state entry. */
+    {
+        bool_t result = flashWrite(fmirrorp->config->flashp, new_state_addr, sizeof(new_state_mark), (uint8_t*)&new_state_mark);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    /* Sync lower level driver. */
+    {
+        bool_t result = flashSync(fmirrorp->config->flashp);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    fmirrorp->mirror_state = new_state;
+    fmirrorp->mirror_state_addr = new_state_addr;
+
+    return CH_SUCCESS;
+}
+
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
@@ -180,6 +263,34 @@ void fmirrorStart(FlashMirrorDriver* fmirrorp, const FlashMirrorConfig* config)
 
     fmirrorp->config = config;
     flashGetInfo(fmirrorp->config->flashp, &fmirrorp->llfdi);
+
+    flash_mirror_state_init(fmirrorp);
+
+    switch (fmirrorp->mirror_state)
+    {
+    case STATE_DIRTY_A:
+        /* Copy mirror b to mirror a erasing pages as required. */
+
+        /* Set state to synced. */
+        flash_mirror_state_update(fmirrorp, STATE_SYNCED);
+        /* Execute sync of lower level driver. */
+        flashSync(fmirrorp->config->flashp);
+        break;
+    case STATE_INVALID:
+        /* Invalid state (all header invalid) assumes mirror b to be dirty. */
+    case STATE_DIRTY_B:
+        /* Copy mirror a to mirror b erasing pages as required. */
+
+        /* Set state to synced. */
+        flash_mirror_state_update(fmirrorp, STATE_SYNCED);
+        /* Execute sync of lower level driver. */
+        flashSync(fmirrorp->config->flashp);
+        break;
+    case STATE_SYNCED:
+    default:
+        break;
+    }
+
     fmirrorp->state = FLASH_READY;
 }
 

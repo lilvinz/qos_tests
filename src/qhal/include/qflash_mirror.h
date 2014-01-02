@@ -76,6 +76,18 @@ struct FlashMirrorDriverVMT
 };
 
 /**
+ * @brief   Enum representing the internal state of the mirror
+ */
+typedef enum
+{
+    STATE_INVALID = 0,
+    STATE_DIRTY_A,
+    STATE_DIRTY_B,
+    STATE_SYNCED,
+    STATE_DIRTY_COUNT,
+} FlashMirrorState;
+
+/**
  * @extends BaseFlashDevice
  *
  * @brief   Structure representing a FLASH mirror driver.
@@ -105,8 +117,8 @@ typedef struct
     Semaphore                             semaphore;
 #endif
 #endif /* FLASH_MIRROR_USE_MUTUAL_EXCLUSION */
-    uint64_t                              mirror_state;
-    uint32_t                              mirror_state_idx;
+    FlashMirrorState                      mirror_state;
+    uint32_t                              mirror_state_addr;
 } FlashMirrorDriver;
 
 /*===========================================================================*/
