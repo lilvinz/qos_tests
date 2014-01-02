@@ -13,6 +13,11 @@
 
 #if HAL_USE_FLASH_JEDEC_SPI || defined(__DOXYGEN__)
 
+/*
+ * @todo    - add AAI writing for chips which support it
+ *
+ */
+
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
