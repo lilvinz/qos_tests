@@ -138,8 +138,8 @@ extern "C" {
     void fmirrorObjectInit(FlashMirrorDriver* fmirrorp);
     void fmirrorStart(FlashMirrorDriver* fmirrorp, const FlashMirrorConfig* config);
     void fmirrorStop(FlashMirrorDriver* fmirrorp);
-    bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, uint8_t *buffer);
-    bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, const uint8_t *buffer);
+    bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, uint8_t* buffer);
+    bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, const uint8_t* buffer);
     bool_t fmirrorErase(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n);
     bool_t fmirrorSync(FlashMirrorDriver* fmirrorp);
     bool_t fmirrorGetInfo(FlashMirrorDriver* fmirrorp, FlashDeviceInfo* fdip);

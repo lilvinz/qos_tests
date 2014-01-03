@@ -417,7 +417,7 @@ void fmirrorStop(FlashMirrorDriver* fmirrorp)
  * @api
  */
 bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr,
-        uint32_t n, uint8_t *buffer)
+        uint32_t n, uint8_t* buffer)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorRead");
     /* Verify device status. */
