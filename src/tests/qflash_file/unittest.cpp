@@ -54,7 +54,7 @@ TEST_F(FlashFile, ffileMassErase)
 TEST_F(FlashFile, ffileWrite)
 {
     uint8_t buffer[flashfilecfg.sector_size];
-    EXPECT_EQ(ffileWrite(&_flashfile, 0, sizeof(*buffer), buffer), CH_SUCCESS);
+    EXPECT_EQ(ffileWrite(&_flashfile, 0, sizeof(buffer), buffer), CH_SUCCESS);
 
     EXPECT_EQ(ffileWrite(&_flashfile, flashfilecfg.sector_num * flashfilecfg.sector_size - sizeof(*buffer), sizeof(*buffer), buffer), CH_SUCCESS);
 }
@@ -62,7 +62,7 @@ TEST_F(FlashFile, ffileWrite)
 TEST_F(FlashFile, ffileRead)
 {
     uint8_t buffer[flashfilecfg.sector_size];
-    EXPECT_EQ(ffileRead(&_flashfile, 0, sizeof(*buffer), buffer), CH_SUCCESS);
+    EXPECT_EQ(ffileRead(&_flashfile, 0, sizeof(buffer), buffer), CH_SUCCESS);
 
     EXPECT_EQ(ffileRead(&_flashfile, flashfilecfg.sector_num * flashfilecfg.sector_size - sizeof(*buffer), sizeof(*buffer), buffer), CH_SUCCESS);
 }
