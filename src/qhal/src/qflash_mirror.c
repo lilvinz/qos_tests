@@ -86,15 +86,17 @@
  *          updates are being written to unused entries until the array has
  *          been filled. At that point the header is being erased and the first
  *          entry is being used.
+ *          Also note that the chosen patterns assumes a little endian architecture.
  */
 static const uint64_t flash_mirror_state_mark_table[] =
 {
     0xffffffffffffffff,
-    0x0000ffffffffffff,
-    0x00000000ffffffff,
-    0x000000000000ffff,
+    0xffffffffffff0000,
+    0xffffffff00000000,
+    0xffff000000000000,
 };
 STATIC_ASSERT(NELEMS(flash_mirror_state_mark_table) == STATE_DIRTY_COUNT);
+STATIC_ASSERT(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__);
 
 /*===========================================================================*/
 /* Driver exported variables.                                                */
@@ -132,32 +134,49 @@ static bool_t flash_mirror_state_init(FlashMirrorDriver* fmirrorp)
     const uint32_t header_size = fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size;
 
     FlashMirrorState new_state = STATE_INVALID;
-    uint32_t new_state_addr;
+    uint32_t new_state_addr = 0;
 
     uint64_t state_mark;
 
-    for (new_state_addr = header_orig;
-            new_state_addr < header_orig + header_size;
-            new_state_addr += sizeof(state_mark))
+    for (uint32_t i = header_orig;
+            i < header_orig + header_size;
+            i += sizeof(state_mark))
     {
         bool_t result = flashRead(fmirrorp->config->flashp,
-                new_state_addr,
+                i,
                 sizeof(state_mark),
                 (uint8_t*)&state_mark);
         if (result != CH_SUCCESS)
             return result;
 
         if (state_mark == flash_mirror_state_mark_table[STATE_SYNCED])
+        {
             new_state = STATE_SYNCED;
+            new_state_addr = i;
+        }
         else if (state_mark == flash_mirror_state_mark_table[STATE_DIRTY_A])
+        {
             new_state = STATE_DIRTY_A;
+            new_state_addr = i;
+        }
         else if (state_mark == flash_mirror_state_mark_table[STATE_DIRTY_B])
+        {
             new_state = STATE_DIRTY_B;
+            new_state_addr = i;
+        }
         else if (state_mark == flash_mirror_state_mark_table[STATE_INVALID])
-            goto end;
+        {
+            /* skip unused */
+        }
+        else
+        {
+            /* invalid, force header reinit */
+            new_state = STATE_INVALID;
+            new_state_addr = 0;
+            return CH_SUCCESS;
+        }
     }
 
-end:
     fmirrorp->mirror_state = new_state;
     fmirrorp->mirror_state_addr = new_state_addr;
 
@@ -181,8 +200,9 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
     if (fmirrorp->mirror_state == STATE_SYNCED)
         new_state_addr += sizeof(new_state_mark);
 
-    /* Detect wrap around and erase header if necessary. */
-    if (new_state_addr >= header_orig + header_size)
+    /* Erase header in case of wrap around or if its invalid. */
+    if (new_state_addr >= header_orig + header_size ||
+            fmirrorp->mirror_state == STATE_INVALID)
     {
         new_state_addr = 0;
         bool_t result = flashErase(fmirrorp->config->flashp, header_orig, fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size);
