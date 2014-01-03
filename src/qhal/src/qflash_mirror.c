@@ -129,7 +129,7 @@ static bool_t flash_mirror_state_init(FlashMirrorDriver* fmirrorp)
     chDbgCheck((fmirrorp != NULL), "flash_mirror_state_init");
 
     const uint32_t header_orig = 0;
-    const uint32_t header_size = fmirrorp->config->sectors_header_num * fmirrorp->llfdi.sector_size;
+    const uint32_t header_size = fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size;
 
     FlashMirrorState new_state = STATE_INVALID;
     uint32_t new_state_addr;
@@ -172,7 +172,7 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
         return CH_SUCCESS;
 
     const uint32_t header_orig = 0;
-    const uint32_t header_size = fmirrorp->config->sectors_header_num * fmirrorp->llfdi.sector_size;
+    const uint32_t header_size = fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size;
 
     uint32_t new_state_addr = fmirrorp->mirror_state_addr;
     uint64_t new_state_mark = flash_mirror_state_mark_table[new_state];
@@ -185,7 +185,7 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
     if (new_state_addr >= header_orig + header_size)
     {
         new_state_addr = 0;
-        bool_t result = flashErase(fmirrorp->config->flashp, header_orig, fmirrorp->config->sectors_header_num * fmirrorp->llfdi.sector_size);
+        bool_t result = flashErase(fmirrorp->config->flashp, header_orig, fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size);
         if (result != CH_SUCCESS)
             return result;
     }
@@ -206,6 +206,40 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
 
     fmirrorp->mirror_state = new_state;
     fmirrorp->mirror_state_addr = new_state_addr;
+
+    return CH_SUCCESS;
+}
+
+static bool_t flash_mirror_copy(FlashMirrorDriver* fmirrorp, uint32_t src_addr, uint32_t dst_addr, size_t n)
+{
+    chDbgCheck((fmirrorp != NULL), "flash_mirror_copy");
+
+    uint64_t state_mark;
+
+    for (uint32_t offset = 0; offset < n; offset += sizeof(state_mark))
+    {
+        /* Detect start of a new sector and erase destination accordingly. */
+        if ((offset % fmirrorp->llfdi.sector_size) == 0)
+        {
+            bool_t result = flashErase(fmirrorp->config->flashp, dst_addr + offset, fmirrorp->llfdi.sector_size);
+            if (result != CH_SUCCESS)
+                return result;
+        }
+
+        /* Read mark into temporary buffer. */
+        {
+            bool_t result = flashRead(fmirrorp->config->flashp, src_addr + offset, sizeof(state_mark), (uint8_t*)&state_mark);
+            if (result != CH_SUCCESS)
+                return result;
+        }
+
+        /* Write mark to destination. */
+        {
+            bool_t result = flashWrite(fmirrorp->config->flashp, dst_addr + offset, sizeof(state_mark), (uint8_t*)&state_mark);
+            if (result != CH_SUCCESS)
+                return result;
+        }
+    }
 
     return CH_SUCCESS;
 }
@@ -244,6 +278,8 @@ void fmirrorObjectInit(FlashMirrorDriver* fmirrorp)
     chSemInit(&fmirrorp->semaphore, 1);
 #endif
 #endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
+    fmirrorp->mirror_state = STATE_INVALID;
+    fmirrorp->mirror_state_addr = 0;
 }
 
 /**
@@ -257,7 +293,7 @@ void fmirrorObjectInit(FlashMirrorDriver* fmirrorp)
 void fmirrorStart(FlashMirrorDriver* fmirrorp, const FlashMirrorConfig* config)
 {
     chDbgCheck((fmirrorp != NULL) && (config != NULL), "fmirrorStart");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert((fmirrorp->state == FLASH_STOP) || (fmirrorp->state == FLASH_READY),
             "fmirrorStart(), #1", "invalid state");
 
@@ -266,29 +302,45 @@ void fmirrorStart(FlashMirrorDriver* fmirrorp, const FlashMirrorConfig* config)
 
     flash_mirror_state_init(fmirrorp);
 
-    switch (fmirrorp->mirror_state)
     {
-    case STATE_DIRTY_A:
-        /* Copy mirror b to mirror a erasing pages as required. */
+        const uint32_t mirror_size =
+                (fmirrorp->llfdi.sector_num - fmirrorp->config->sector_header_num) /
+                2 * fmirrorp->llfdi.sector_size;
+        const uint32_t mirror_a_org =
+                fmirrorp->llfdi.sector_size * fmirrorp->config->sector_header_num;
+        const uint32_t mirror_b_org =
+                mirror_a_org + mirror_size;
 
-        /* Set state to synced. */
-        flash_mirror_state_update(fmirrorp, STATE_SYNCED);
-        /* Execute sync of lower level driver. */
-        flashSync(fmirrorp->config->flashp);
-        break;
-    case STATE_INVALID:
-        /* Invalid state (all header invalid) assumes mirror b to be dirty. */
-    case STATE_DIRTY_B:
-        /* Copy mirror a to mirror b erasing pages as required. */
-
-        /* Set state to synced. */
-        flash_mirror_state_update(fmirrorp, STATE_SYNCED);
-        /* Execute sync of lower level driver. */
-        flashSync(fmirrorp->config->flashp);
-        break;
-    case STATE_SYNCED:
-    default:
-        break;
+        switch (fmirrorp->mirror_state)
+        {
+        case STATE_DIRTY_A:
+            /* Copy mirror b to mirror a erasing pages as required. */
+            if (flash_mirror_copy(fmirrorp, mirror_b_org, mirror_a_org, mirror_size) != CH_SUCCESS)
+                return;
+            /* Set state to synced. */
+            if (flash_mirror_state_update(fmirrorp, STATE_SYNCED) != CH_SUCCESS)
+                return;
+            /* Execute sync of lower level driver. */
+            if (flashSync(fmirrorp->config->flashp) != CH_SUCCESS)
+                return;
+            break;
+        case STATE_INVALID:
+            /* Invalid state (all header invalid) assumes mirror b to be dirty. */
+        case STATE_DIRTY_B:
+            /* Copy mirror a to mirror b erasing pages as required. */
+            if (flash_mirror_copy(fmirrorp, mirror_a_org, mirror_b_org, mirror_size) != CH_SUCCESS)
+                return;
+            /* Set state to synced. */
+            if (flash_mirror_state_update(fmirrorp, STATE_SYNCED) != CH_SUCCESS)
+                return;
+            /* Execute sync of lower level driver. */
+            if (flashSync(fmirrorp->config->flashp) != CH_SUCCESS)
+                return;
+            break;
+        case STATE_SYNCED:
+        default:
+            break;
+        }
     }
 
     fmirrorp->state = FLASH_READY;
@@ -304,7 +356,7 @@ void fmirrorStart(FlashMirrorDriver* fmirrorp, const FlashMirrorConfig* config)
 void fmirrorStop(FlashMirrorDriver* fmirrorp)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorStop");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert((fmirrorp->state == FLASH_STOP) || (fmirrorp->state == FLASH_READY),
             "fmirrorStop(), #1", "invalid state");
 
@@ -328,20 +380,26 @@ void fmirrorStop(FlashMirrorDriver* fmirrorp)
 bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, uint8_t *buffer)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorRead");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fmirrorp->state >= FLASH_READY, "fmirrorRead(), #1",
             "invalid state");
-#if 0
-    /* verify range is within mirror size */
-    chDbgAssert((startaddr + n <= fmirrorp->llfdi.sector_size * fmirrorp->config->sector_num), "fmirrorRead(), #2",
+
+    /* Verify range is within mirror size. */
+    chDbgAssert(
+            (startaddr + n <=
+                (fmirrorp->llfdi.sector_num - fmirrorp->config->sector_header_num) /
+                2 * fmirrorp->llfdi.sector_size),
+            "fmirrorRead(), #2",
             "invalid parameters");
 
+    /* Verify mirror is in valid sync state. */
+    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorRead(), #3",
+            "invalid mirror state");
+
     return flashRead(fmirrorp->config->flashp,
-            fmirrorp->llfdi.sector_size * fmirrorp->config->sector_offset + startaddr,
+            fmirrorp->llfdi.sector_size * fmirrorp->config->sector_header_num + startaddr,
             n,
             buffer);
-#endif
-    return CH_SUCCESS;
 }
 
 /**
@@ -361,20 +419,34 @@ bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, 
 bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, const uint8_t* buffer)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorWrite");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fmirrorp->state >= FLASH_READY, "fmirrorWrite(), #1",
             "invalid state");
-#if 0
-    /* verify range is within mirror size */
-    chDbgAssert((startaddr + n <= fmirrorp->llfdi.sector_size * fmirrorp->config->sector_num), "fmirrorRead(), #2",
+
+    /* Verify range is within mirror size. */
+    chDbgAssert(
+            (startaddr + n <=
+                (fmirrorp->llfdi.sector_num - fmirrorp->config->sector_header_num) /
+                2 * fmirrorp->llfdi.sector_size),
+            "fmirrorWrite(), #2",
             "invalid parameters");
 
+    /* Verify mirror is in valid sync state. */
+    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorWrite(), #3",
+            "invalid mirror state");
+
+    /* Set mirror state to dirty if necessary. */
+    if (fmirrorp->mirror_state == STATE_SYNCED)
+    {
+        bool_t result = flash_mirror_state_update(fmirrorp, STATE_DIRTY_A);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
     return flashWrite(fmirrorp->config->flashp,
-            fmirrorp->llfdi.sector_size * fmirrorp->config->sector_offset + startaddr,
+            fmirrorp->llfdi.sector_size * fmirrorp->config->sector_header_num + startaddr,
             n,
             buffer);
-#endif
-    return CH_SUCCESS;
 }
 
 /**
@@ -393,19 +465,33 @@ bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n,
 bool_t fmirrorErase(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorErase");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fmirrorp->state >= FLASH_READY, "fmirrorErase(), #1",
             "invalid state");
-#if 0
-    /* verify range is within mirror size */
-    chDbgAssert((startaddr + n <= fmirrorp->llfdi.sector_size * fmirrorp->config->sector_num), "fmirrorRead(), #2",
+
+    /* Verify range is within mirror size. */
+    chDbgAssert(
+            (startaddr + n <=
+                (fmirrorp->llfdi.sector_num - fmirrorp->config->sector_header_num) /
+                2 * fmirrorp->llfdi.sector_size),
+            "fmirrorErase(), #2",
             "invalid parameters");
 
+    /* Verify mirror is in valid sync state. */
+    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorErase(), #3",
+            "invalid mirror state");
+
+    /* Set mirror state to dirty if necessary. */
+    if (fmirrorp->mirror_state == STATE_SYNCED)
+    {
+        bool_t result = flash_mirror_state_update(fmirrorp, STATE_DIRTY_A);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
     return flashErase(fmirrorp->config->flashp,
-            fmirrorp->llfdi.sector_size * fmirrorp->config->sector_offset + startaddr,
+            fmirrorp->llfdi.sector_size * fmirrorp->config->sector_header_num + startaddr,
             n);
-#endif
-    return CH_SUCCESS;
 }
 
 /**
@@ -426,7 +512,44 @@ bool_t fmirrorSync(FlashMirrorDriver* fmirrorp)
     chDbgAssert(fmirrorp->state >= FLASH_READY, "fmirrorSync(), #1",
             "invalid state");
 
-    return flashSync(fmirrorp->config->flashp);
+    /* Verify mirror is in valid sync state. */
+    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorSync(), #2",
+            "invalid mirror state");
+
+    if (fmirrorp->mirror_state == STATE_SYNCED)
+        return flashSync(fmirrorp->config->flashp);
+
+    /* Update mirror state to dirty_b to inidicate sync in progress. */
+    {
+        bool_t result = flash_mirror_state_update(fmirrorp, STATE_DIRTY_B);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    /* Copy mirror a contents to mirror b. */
+    {
+        const uint32_t mirror_size =
+                (fmirrorp->llfdi.sector_num - fmirrorp->config->sector_header_num) /
+                2 * fmirrorp->llfdi.sector_size;
+        const uint32_t mirror_a_org =
+                fmirrorp->llfdi.sector_size * fmirrorp->config->sector_header_num;
+        const uint32_t mirror_b_org =
+                mirror_a_org + mirror_size;
+
+        /* Copy mirror a to mirror b erasing pages as required. */
+        bool_t result = flash_mirror_copy(fmirrorp, mirror_a_org, mirror_b_org, mirror_size);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    /* Update mirror state to synced. */
+    {
+        bool_t result = flash_mirror_state_update(fmirrorp, STATE_SYNCED);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    return CH_SUCCESS;
 }
 
 /**
@@ -448,7 +571,7 @@ bool_t fmirrorGetInfo(FlashMirrorDriver* fmirrorp, FlashDeviceInfo* fdip)
     chDbgAssert(fmirrorp->state >= FLASH_READY, "fmirrorGetInfo(), #1",
             "invalid state");
 
-    fdip->sector_num = (fmirrorp->llfdi.sector_size) - 1 / 2;
+    fdip->sector_num = (fmirrorp->llfdi.sector_num - fmirrorp->config->sector_header_num) / 2;
     fdip->sector_size = fmirrorp->llfdi.sector_size;
     memcpy(fdip->identification, fmirrorp->llfdi.identification, sizeof(fdip->identification));
 

@@ -56,7 +56,7 @@ typedef struct
     /*
      * @brief number of sectors to assign to metadata header
      */
-    uint32_t            sectors_header_num;
+    uint32_t            sector_header_num;
 } FlashMirrorConfig;
 
 /**
