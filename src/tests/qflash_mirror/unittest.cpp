@@ -63,6 +63,11 @@ TEST_F(FlashMirror, fmirrorGetInfo)
     EXPECT_EQ(info.sector_num, (ffile_extfram.config->sector_num - fmirror_test.config->sector_header_num) / 2);
 }
 
+TEST_F(FlashMirror, fmirrorErase)
+{
+    EXPECT_EQ(fmirrorErase(&fmirror_test, 0, ffilecfg_extfram.sector_size), CH_SUCCESS);
+}
+
 TEST_F(FlashMirror, fmirrorWrite)
 {
     uint8_t buffer[ffilecfg_extfram.sector_size];
@@ -77,22 +82,20 @@ TEST_F(FlashMirror, fmirrorRead)
     EXPECT_EQ(fmirrorRead(&fmirror_test, 0, sizeof(buffer), buffer), CH_SUCCESS);
 }
 
-TEST_F(FlashMirror, fmirrorErase)
-{
-    EXPECT_EQ(fmirrorErase(&fmirror_test, 0, ffilecfg_extfram.sector_size), CH_SUCCESS);
-}
-/*
 TEST_F(FlashMirror, EraseWriteReadVerify)
 {
-    uint8_t buffer[ffilecfg_extfram.sector_size];
+    FlashDeviceInfo info;
+    EXPECT_EQ(fmirrorGetInfo(&fmirror_test, &info), CH_SUCCESS);
+
+    uint8_t buffer[info.sector_size];
 
     uint32_t addr = 0;
 
     while (true)
     {
-        uint32_t block_length = ffilecfg_extfram.sector_size;
-        if (addr + block_length > ffilecfg_extfram.sector_num * ffilecfg_extfram.sector_size)
-            block_length = ffilecfg_extfram.sector_num * ffilecfg_extfram.sector_size - addr;
+        uint32_t block_length = info.sector_size;
+        if (addr + block_length > info.sector_num * info.sector_size)
+            block_length = info.sector_num * info.sector_size - addr;
 
         uint8_t pattern = 0xa5 ^ (addr / block_length);
         pattern = 0;
@@ -100,14 +103,11 @@ TEST_F(FlashMirror, EraseWriteReadVerify)
         for (size_t i = 0; i < block_length; ++i)
             buffer[i] = pattern ^ i;
 
-        EXPECT_EQ(flashErase(&ffile_extfram, addr, block_length), CH_SUCCESS);
-        EXPECT_EQ(flashSync(&ffile_extfram), CH_SUCCESS);
+        EXPECT_EQ(flashErase(&fmirror_test, addr, block_length), CH_SUCCESS);
 
-        EXPECT_EQ(flashWrite(&ffile_extfram, addr, block_length, buffer), CH_SUCCESS);
-        EXPECT_EQ(flashSync(&ffile_extfram), CH_SUCCESS);
+        EXPECT_EQ(flashWrite(&fmirror_test, addr, block_length, buffer), CH_SUCCESS);
 
-        EXPECT_EQ(flashRead(&ffile_extfram, addr, block_length, buffer), CH_SUCCESS);
-        EXPECT_EQ(flashSync(&ffile_extfram), CH_SUCCESS);
+        EXPECT_EQ(flashRead(&fmirror_test, addr, block_length, buffer), CH_SUCCESS);
 
         for (size_t i = 0; i < block_length; ++i)
         {
@@ -119,11 +119,11 @@ TEST_F(FlashMirror, EraseWriteReadVerify)
 
         // go to next block
         addr += block_length;
-        if (addr >= ffilecfg_extfram.sector_size * ffilecfg_extfram.sector_num)
+        if (addr >= info.sector_size * info.sector_num)
         {
             break;
         }
     }
 }
-*/
+
 
