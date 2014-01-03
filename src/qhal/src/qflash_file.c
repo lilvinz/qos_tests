@@ -171,7 +171,7 @@ void ffileStop(FlashFileDriver* ffilep)
  *
  * @api
  */
-bool_t ffileRead(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, uint8_t *buffer)
+bool_t ffileRead(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, uint8_t* buffer)
 {
     chDbgCheck(ffilep != NULL, "ffileRead");
     /* verify device status */

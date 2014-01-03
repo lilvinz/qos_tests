@@ -130,8 +130,8 @@ extern "C" {
     void ffileObjectInit(FlashFileDriver* ffilep);
     void ffileStart(FlashFileDriver* ffilep, const FlashFileConfig* config);
     void ffileStop(FlashFileDriver* ffilep);
-    bool_t ffileRead(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, uint8_t *buffer);
-    bool_t ffileWrite(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, const uint8_t *buffer);
+    bool_t ffileRead(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, uint8_t* buffer);
+    bool_t ffileWrite(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n, const uint8_t* buffer);
     bool_t ffileErase(FlashFileDriver* ffilep, uint32_t startaddr, uint32_t n);
     bool_t ffileMassErase(FlashFileDriver* ffilep);
     bool_t ffileSync(FlashFileDriver* ffilep);
