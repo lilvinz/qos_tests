@@ -183,7 +183,8 @@ static bool_t flash_mirror_state_init(FlashMirrorDriver* fmirrorp)
     return CH_SUCCESS;
 }
 
-static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirrorState new_state)
+static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp,
+        FlashMirrorState new_state)
 {
     chDbgCheck((fmirrorp != NULL), "flash_mirror_state_write");
 
@@ -191,7 +192,8 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
         return CH_SUCCESS;
 
     const uint32_t header_orig = 0;
-    const uint32_t header_size = fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size;
+    const uint32_t header_size =
+            fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size;
 
     uint32_t new_state_addr = fmirrorp->mirror_state_addr;
     uint64_t new_state_mark = flash_mirror_state_mark_table[new_state];
@@ -205,14 +207,18 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
             fmirrorp->mirror_state == STATE_INVALID)
     {
         new_state_addr = 0;
-        bool_t result = flashErase(fmirrorp->config->flashp, header_orig, fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size);
+        bool_t result = flashErase(fmirrorp->config->flashp, header_orig,
+                fmirrorp->config->sector_header_num * fmirrorp->llfdi.sector_size);
         if (result != CH_SUCCESS)
             return result;
     }
 
     /* Write updated state entry. */
     {
-        bool_t result = flashWrite(fmirrorp->config->flashp, new_state_addr, sizeof(new_state_mark), (uint8_t*)&new_state_mark);
+        bool_t result = flashWrite(fmirrorp->config->flashp,
+                new_state_addr,
+                sizeof(new_state_mark),
+                (uint8_t*)&new_state_mark);
         if (result != CH_SUCCESS)
             return result;
     }
@@ -230,7 +236,8 @@ static bool_t flash_mirror_state_update(FlashMirrorDriver* fmirrorp, FlashMirror
     return CH_SUCCESS;
 }
 
-static bool_t flash_mirror_copy(FlashMirrorDriver* fmirrorp, uint32_t src_addr, uint32_t dst_addr, size_t n)
+static bool_t flash_mirror_copy(
+        FlashMirrorDriver* fmirrorp, uint32_t src_addr, uint32_t dst_addr, size_t n)
 {
     chDbgCheck((fmirrorp != NULL), "flash_mirror_copy");
 
@@ -241,21 +248,29 @@ static bool_t flash_mirror_copy(FlashMirrorDriver* fmirrorp, uint32_t src_addr, 
         /* Detect start of a new sector and erase destination accordingly. */
         if ((offset % fmirrorp->llfdi.sector_size) == 0)
         {
-            bool_t result = flashErase(fmirrorp->config->flashp, dst_addr + offset, fmirrorp->llfdi.sector_size);
+            bool_t result = flashErase(fmirrorp->config->flashp,
+                    dst_addr + offset,
+                    fmirrorp->llfdi.sector_size);
             if (result != CH_SUCCESS)
                 return result;
         }
 
         /* Read mark into temporary buffer. */
         {
-            bool_t result = flashRead(fmirrorp->config->flashp, src_addr + offset, sizeof(state_mark), (uint8_t*)&state_mark);
+            bool_t result = flashRead(fmirrorp->config->flashp,
+                    src_addr + offset,
+                    sizeof(state_mark),
+                    (uint8_t*)&state_mark);
             if (result != CH_SUCCESS)
                 return result;
         }
 
         /* Write mark to destination. */
         {
-            bool_t result = flashWrite(fmirrorp->config->flashp, dst_addr + offset, sizeof(state_mark), (uint8_t*)&state_mark);
+            bool_t result = flashWrite(fmirrorp->config->flashp,
+                    dst_addr + offset,
+                    sizeof(state_mark),
+                    (uint8_t*)&state_mark);
             if (result != CH_SUCCESS)
                 return result;
         }
@@ -401,7 +416,8 @@ void fmirrorStop(FlashMirrorDriver* fmirrorp)
  *
  * @api
  */
-bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, uint8_t *buffer)
+bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr,
+        uint32_t n, uint8_t *buffer)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorRead");
     /* Verify device status. */
@@ -440,7 +456,8 @@ bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, 
  *
  * @api
  */
-bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, const uint8_t* buffer)
+bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr,
+        uint32_t n, const uint8_t* buffer)
 {
     chDbgCheck(fmirrorp != NULL, "fmirrorWrite");
     /* Verify device status. */
