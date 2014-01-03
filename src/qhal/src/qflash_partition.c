@@ -134,7 +134,7 @@ void fpartStop(FlashPartitionDriver* fpartp)
  *
  * @api
  */
-bool_t fpartRead(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, uint8_t *buffer)
+bool_t fpartRead(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, uint8_t* buffer)
 {
     chDbgCheck(fpartp != NULL, "fpartRead");
     /* verify device status */

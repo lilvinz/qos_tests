@@ -128,8 +128,8 @@ extern "C" {
     void fpartObjectInit(FlashPartitionDriver* fpartp);
     void fpartStart(FlashPartitionDriver* fpartp, const FlashPartitionConfig* config);
     void fpartStop(FlashPartitionDriver* fpartp);
-    bool_t fpartRead(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, uint8_t *buffer);
-    bool_t fpartWrite(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, const uint8_t *buffer);
+    bool_t fpartRead(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, uint8_t* buffer);
+    bool_t fpartWrite(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, const uint8_t* buffer);
     bool_t fpartErase(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n);
     bool_t fpartSync(FlashPartitionDriver* fpartp);
     bool_t fpartGetInfo(FlashPartitionDriver* fpartp, FlashDeviceInfo* fdip);
