@@ -142,7 +142,7 @@ static bool_t flash_mirror_state_init(FlashMirrorDriver* fmirrorp)
     {
         bool_t result = flashRead(fmirrorp->config->flashp,
                 new_state_addr,
-                sizeof(new_state_addr),
+                sizeof(state_mark),
                 (uint8_t*)&state_mark);
         if (result != CH_SUCCESS)
             return result;
@@ -360,6 +360,10 @@ void fmirrorStop(FlashMirrorDriver* fmirrorp)
     chDbgAssert((fmirrorp->state == FLASH_STOP) || (fmirrorp->state == FLASH_READY),
             "fmirrorStop(), #1", "invalid state");
 
+    /* Verify mirror is in valid sync state. */
+    chDbgAssert(fmirrorp->mirror_state == STATE_SYNCED, "fmirrorStop(), #2",
+            "invalid mirror state");
+
     fmirrorp->state = FLASH_STOP;
 }
 
@@ -393,7 +397,7 @@ bool_t fmirrorRead(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n, 
             "invalid parameters");
 
     /* Verify mirror is in valid sync state. */
-    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorRead(), #3",
+    chDbgAssert(fmirrorp->mirror_state != STATE_DIRTY_B, "fmirrorRead(), #3",
             "invalid mirror state");
 
     return flashRead(fmirrorp->config->flashp,
@@ -432,7 +436,7 @@ bool_t fmirrorWrite(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n,
             "invalid parameters");
 
     /* Verify mirror is in valid sync state. */
-    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorWrite(), #3",
+    chDbgAssert(fmirrorp->mirror_state != STATE_DIRTY_B, "fmirrorWrite(), #3",
             "invalid mirror state");
 
     /* Set mirror state to dirty if necessary. */
@@ -478,7 +482,7 @@ bool_t fmirrorErase(FlashMirrorDriver* fmirrorp, uint32_t startaddr, uint32_t n)
             "invalid parameters");
 
     /* Verify mirror is in valid sync state. */
-    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorErase(), #3",
+    chDbgAssert(fmirrorp->mirror_state != STATE_DIRTY_B, "fmirrorErase(), #3",
             "invalid mirror state");
 
     /* Set mirror state to dirty if necessary. */
@@ -513,7 +517,7 @@ bool_t fmirrorSync(FlashMirrorDriver* fmirrorp)
             "invalid state");
 
     /* Verify mirror is in valid sync state. */
-    chDbgAssert(fmirrorp->mirror_state == STATE_DIRTY_B, "fmirrorSync(), #2",
+    chDbgAssert(fmirrorp->mirror_state != STATE_DIRTY_B, "fmirrorSync(), #2",
             "invalid mirror state");
 
     if (fmirrorp->mirror_state == STATE_SYNCED)
