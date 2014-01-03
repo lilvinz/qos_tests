@@ -177,7 +177,7 @@ bool_t fpartWrite(FlashPartitionDriver* fpartp, uint32_t startaddr, uint32_t n, 
     chDbgAssert(fpartp->state >= FLASH_READY, "fpartWrite(), #1",
             "invalid state");
     /* verify range is within partition size */
-    chDbgAssert((startaddr + n <= fpartp->llfdi.sector_size * fpartp->config->sector_num), "fpartRead(), #2",
+    chDbgAssert((startaddr + n <= fpartp->llfdi.sector_size * fpartp->config->sector_num), "fpartWrite(), #2",
             "invalid parameters");
 
     fpartp->state = FLASH_WRITING;
