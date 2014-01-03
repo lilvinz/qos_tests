@@ -21,7 +21,7 @@
 #include "qhalconf.h"
 
 /* Abstract interfaces.*/
-#include "qio_flash.h"
+#include "qio_nvm.h"
 
 /* Shared headers.*/
 
@@ -30,9 +30,9 @@
 /* Complex drivers.*/
 #include "qserial_485.h"
 #include "qflash_jedec_spi.h"
-#include "qflash_partition.h"
-#include "qflash_file.h"
-#include "qflash_mirror.h"
+#include "qnvm_partition.h"
+#include "qnvm_file.h"
+#include "qnvm_mirror.h"
 
 /*===========================================================================*/
 /* External declarations.                                                    */

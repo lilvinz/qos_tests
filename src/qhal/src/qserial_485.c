@@ -203,7 +203,8 @@ void sd485Start(Serial485Driver *sd485p, const Serial485Config *config)
             "invalid state");
 
     sd485p->state = SD485_READY;
-    uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib), sd485p->uart_ib);
+    uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
+            sd485p->uart_ib);
 
     chSysUnlock();
 }
@@ -303,7 +304,8 @@ void sd485EndOfTx2I(UARTDriver* uartp)
     /* Restart receiving but check if its not running already.
      * This happens once on startup for unknown reason. */
     if (sd485p->config->uartp->rxstate == UART_RX_IDLE)
-        uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib), sd485p->uart_ib);
+        uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
+                sd485p->uart_ib);
 
     chSysUnlockFromIsr();
 }
@@ -339,7 +341,8 @@ void sd485EndOfRxI(UARTDriver* uartp)
     }
 
     /* Restart receiving */
-    uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib), sd485p->uart_ib);
+    uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
+            sd485p->uart_ib);
 
     chSysUnlockFromIsr();
 }

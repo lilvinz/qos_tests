@@ -50,14 +50,14 @@ void qhalInit(void)
 #if HAL_USE_FLASH_JEDEC_SPI || defined(__DOXYGEN__)
     fjsInit();
 #endif
-#if HAL_USE_FLASH_PARTITION || defined(__DOXYGEN__)
-    fpartInit();
+#if HAL_USE_NVM_PARTITION || defined(__DOXYGEN__)
+    nvmpartInit();
 #endif
-#if HAL_USE_FLASH_FILE || defined(__DOXYGEN__)
-    ffileInit();
+#if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
+    nvmfileInit();
 #endif
-#if HAL_USE_FLASH_MIRROR || defined(__DOXYGEN__)
-    fmirrorInit();
+#if HAL_USE_NVM_MIRROR || defined(__DOXYGEN__)
+    nvmmirrorInit();
 #endif
 }
 

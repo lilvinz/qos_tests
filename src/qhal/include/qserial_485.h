@@ -34,7 +34,7 @@
  *          buffers.
  */
 #if !defined(SERIAL_485_BUFFERS_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_BUFFERS_SIZE     16
+#define SERIAL_485_BUFFERS_SIZE             16
 #endif
 
 /**
@@ -45,7 +45,7 @@
  *          filled completely.
  */
 #if !defined(SERIAL_485_UART_RX_BUFFER_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_UART_RX_BUFFER_SIZE     1
+#define SERIAL_485_UART_RX_BUFFER_SIZE      1
 #endif
 
 /**
@@ -55,7 +55,7 @@
  * @note    The default is 16 bytes.
  */
 #if !defined(SERIAL_485_UART_TX_BUFFER_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_UART_TX_BUFFER_SIZE     16
+#define SERIAL_485_UART_TX_BUFFER_SIZE      16
 #endif
 /** @} */
 
@@ -113,11 +113,11 @@ typedef struct
     /**
      * @brief The chip select line port.
      */
-    ioportid_t                ssport;
+    ioportid_t ssport;
     /**
      * @brief The chip select line pad number.
      */
-    uint16_t                  sspad;
+    uint16_t sspad;
 } Serial485Config;
 
 /**
@@ -126,28 +126,28 @@ typedef struct
 #define _serial_485_driver_data                                               \
     _base_asynchronous_channel_data                                           \
     /* Driver state.*/                                                        \
-    sd485state_t              state;                                          \
+    sd485state_t state;                                                       \
     /* Input queue.*/                                                         \
-    InputQueue                iqueue;                                         \
+    InputQueue iqueue;                                                        \
     /* Output queue.*/                                                        \
-    OutputQueue               oqueue;                                         \
+    OutputQueue oqueue;                                                       \
     /* Input buffer.*/                                                        \
-    uint8_t                   ib[SERIAL_485_BUFFERS_SIZE];                    \
+    uint8_t ib[SERIAL_485_BUFFERS_SIZE];                                      \
     /* Output buffer.*/                                                       \
-    uint8_t                   ob[SERIAL_485_BUFFERS_SIZE];                    \
+    uint8_t ob[SERIAL_485_BUFFERS_SIZE];                                      \
     /* End of the mandatory fields.*/                                         \
     /* Current configuration data.*/                                          \
-    const Serial485Config*    config;                                         \
+    const Serial485Config* config;                                            \
     /* UART Input buffer.*/                                                   \
-    uint8_t                   uart_ib[SERIAL_485_UART_RX_BUFFER_SIZE];        \
+    uint8_t uart_ib[SERIAL_485_UART_RX_BUFFER_SIZE];                          \
     /* UART Output buffer.*/                                                  \
-    uint8_t                   uart_ob[SERIAL_485_UART_TX_BUFFER_SIZE];
+    uint8_t uart_ob[SERIAL_485_UART_TX_BUFFER_SIZE];
 
 
 /**
  * @brief   @p Serial485Driver specific methods.
  */
-#define _serial_485_driver_methods                                          \
+#define _serial_485_driver_methods                                            \
     _base_asynchronous_channel_methods
 
 /**

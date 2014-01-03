@@ -1,50 +1,50 @@
 /**
- * @file    qio_flash.h
- * @brief   I/O flash devices access.
+ * @file    qio_nvm.h
+ * @brief   I/O non volatile memory devices access.
  * @details This header defines an abstract interface useful to access generic
- *          I/O flash devices in a standardized way.
+ *          I/O with non volatile memory devices in a standardized way.
  *
- * @addtogroup QIO_FLASH
+ * @addtogroup QIO_NVM
  * @details This module defines an abstract interface for accessing generic
- *          flash devices.<br>
+ *          non volatile memory devices.<br>
  *          Note that no code is present, just abstract interfaces-like
  *          structures, you should look at the system as to a set of
  *          abstract C++ classes (even if written in C). This system
- *          has then advantage to make the access to flash devices
+ *          has then advantage to make the access to nvm devices
  *          independent from the implementation logic.
  * @{
  */
 
-#ifndef _IO_FLASH_H_
-#define _IO_FLASH_H_
+#ifndef _IO_NVM_H_
+#define _IO_NVM_H_
 
 /**
  * @brief   Driver state machine possible states.
  */
 typedef enum
 {
-    FLASH_UNINIT = 0,                 /**< Not initialized.                   */
-    FLASH_STOP = 1,                   /**< Stopped.                           */
-    FLASH_READY = 2,                  /**< Device ready.                      */
-    FLASH_READING = 3,                /**< Read operation in progress.        */
-    FLASH_WRITING = 4,                /**< Write operation in progress.       */
-    FLASH_ERASING = 5,                /**< Erase operation in progress.       */
-} flashstate_t;
+    NVM_UNINIT = 0,                 /**< Not initialized.                   */
+    NVM_STOP = 1,                   /**< Stopped.                           */
+    NVM_READY = 2,                  /**< Device ready.                      */
+    NVM_READING = 3,                /**< Read operation in progress.        */
+    NVM_WRITING = 4,                /**< Write operation in progress.       */
+    NVM_ERASING = 5,                /**< Erase operation in progress.       */
+} nvmstate_t;
 
 /**
- * @brief   Flash device info.
+ * @brief   Non volatile memory device info.
  */
 typedef struct
 {
     uint32_t      sector_size;        /**< @brief Sector size in bytes.       */
     uint32_t      sector_num;         /**< @brief Total number of sectors.    */
     uint8_t       identification[3];  /**< @brief Jedec device identification.*/
-} FlashDeviceInfo;
+} NVMDeviceInfo;
 
 /**
- * @brief   @p BaseFlashDevice specific methods.
+ * @brief   @p BaseNVMDevice specific methods.
  */
-#define _base_flash_device_methods                                            \
+#define _base_nvm_device_methods                                              \
     /* Reads one or more bytes crossing sectors when required.*/              \
     bool_t (*read)(void *instance, uint32_t startaddr,                        \
             uint32_t n, uint8_t *buffer);                                     \
@@ -56,60 +56,64 @@ typedef struct
             uint32_t n);                                                      \
     /* Write / erase operations synchronization.*/                            \
     bool_t (*sync)(void *instance);                                           \
+    /* Enables chip write protection. */                                      \
+    bool_t (*write_lock)(void *instance);                                     \
+    /* Disables chip write protection. */                                     \
+    bool_t (*write_unlock)(void *instance);                                   \
     /* Acquire device if supported by underlying driver.*/                    \
     bool_t (*acquire)(void *instance);                                        \
     /* Release device if supported by underlying driver.*/                    \
     bool_t (*release)(void *instance);                                        \
     /* Obtains info about the media.*/                                        \
-    bool_t (*get_info)(void *instance, FlashDeviceInfo *bdip);
+    bool_t (*get_info)(void *instance, NVMDeviceInfo *bdip);
 
 /**
- * @brief   @p BaseFlashDevice specific data.
+ * @brief   @p BaseNVMDevice specific data.
  */
-#define _base_flash_device_data                                               \
+#define _base_nvm_device_data                                                 \
     /* Driver state.*/                                                        \
-    flashstate_t            state;
+    nvmstate_t state;
 
 /**
- * @brief   @p BaseFlashDevice virtual methods table.
+ * @brief   @p BaseNVMDevice virtual methods table.
  */
-struct BaseFlashDeviceVMT
+struct BaseNVMDeviceVMT
 {
-    _base_flash_device_methods
+    _base_nvm_device_methods
 };
 
 /**
- * @brief   Base flash device class.
+ * @brief   Base nvm device class.
  * @details This class represents a generic, block-accessible, device.
  */
 typedef struct
 {
     /** @brief Virtual Methods Table.*/
-    const struct BaseFlashDeviceVMT *vmt;
-    _base_flash_device_data
-} BaseFlashDevice;
+    const struct BaseNVMDeviceVMT* vmt;
+    _base_nvm_device_data
+} BaseNVMDevice;
 
 /**
- * @name    Macro Functions (BaseFlashDevice)
+ * @name    Macro Functions (BaseNVMDevice)
  * @{
  */
 /**
  * @brief   Returns the driver state.
  * @note    Can be called in ISR context.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
  * @return              The driver state.
  *
  * @special
  */
-#define flashGetDriverState(ip) ((ip)->state)
+#define nvmGetDriverState(ip) ((ip)->state)
 
 /**
  * @brief   Determines if the device is transferring data.
  * @note    Can be called in ISR context.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
  * @return              The driver state.
  * @retval FALSE        the device is not transferring data.
@@ -117,14 +121,14 @@ typedef struct
  *
  * @special
  */
-#define flashIsTransferring(ip) ((((ip)->state) == FLASH_READING) ||          \
-                               (((ip)->state) == FLASH_WRITING) ||            \
-                               (((ip)->state) == FLASH_ERASING))
+#define nvmIsTransferring(ip) ((((ip)->state) == NVM_READING) ||              \
+                               (((ip)->state) == NVM_WRITING) ||              \
+                               (((ip)->state) == NVM_ERASING))
 
 /**
  * @brief   Reads one or more bytes crossing sectors when required.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  * @param[in] startaddr first address to read
  * @param[in] n         number of bytes to read
  * @param[out] buffer   pointer to the read buffer
@@ -135,13 +139,13 @@ typedef struct
  *
  * @api
  */
-#define flashRead(ip, startaddr, n, buffer)                                   \
+#define nvmRead(ip, startaddr, n, buffer)                                     \
     ((ip)->vmt->read(ip, startaddr, n, buffer))
 
 /**
  * @brief   Writes one or more bytes crossing sectors when required.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  * @param[in] startaddr first address to write
  * @param[in] n         number of bytes to write
  * @param[out] buffer   pointer to the write buffer
@@ -152,13 +156,13 @@ typedef struct
  *
  * @api
  */
-#define flashWrite(ip, startaddr, n, buffer)                                  \
+#define nvmWrite(ip, startaddr, n, buffer)                                    \
     ((ip)->vmt->write(ip, startaddr, n, buffer))
 
 /**
  * @brief   Erases one or more sectors.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  * @param[in] startaddr address of sector to erase
  * @param[in] n         number of bytes to erase
  *
@@ -168,13 +172,13 @@ typedef struct
  *
  * @api
  */
-#define flashErase(ip, startaddr, n)                                          \
+#define nvmErase(ip, startaddr, n)                                            \
     ((ip)->vmt->erase(ip, startaddr, n))
 
 /**
  * @brief   Ensures write / erase synchronization.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -182,12 +186,12 @@ typedef struct
  *
  * @api
  */
-#define flashSync(ip) ((ip)->vmt->sync(ip))
+#define nvmSync(ip) ((ip)->vmt->sync(ip))
 
 /**
  * @brief   Acquires device for exclusive access.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -195,7 +199,7 @@ typedef struct
  *
  * @api
  */
-#define flashAcquire(ip) {                                                    \
+#define nvmAcquire(ip) {                                                      \
     if (((ip)->vmt->acquire) != NULL)                                         \
         ((ip)->vmt->acquire)(ip);                                             \
 }
@@ -203,7 +207,7 @@ typedef struct
 /**
  * @brief   Releases exclusive access from device.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -211,7 +215,7 @@ typedef struct
  *
  * @api
  */
-#define flashRelease(ip) {                                                    \
+#define nvmRelease(ip) {                                                      \
     if (((ip)->vmt->release) != NULL)                                         \
         ((ip)->vmt->release)(ip);                                             \
 }
@@ -219,8 +223,8 @@ typedef struct
 /**
  * @brief   Returns a media information structure.
  *
- * @param[in] ip        pointer to a @p BaseFlashDevice or derived class
- * @param[out] bdip     pointer to a @p FlashDeviceInfo structure
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ * @param[out] bdip     pointer to a @p NVMDeviceInfo structure
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -228,10 +232,10 @@ typedef struct
  *
  * @api
  */
-#define flashGetInfo(ip, bdip) ((ip)->vmt->get_info(ip, bdip))
+#define nvmGetInfo(ip, bdip) ((ip)->vmt->get_info(ip, bdip))
 
 /** @} */
 
-#endif /* _IO_FLASH_H_ */
+#endif /* _IO_NVM_H_ */
 
 /** @} */

@@ -1,27 +1,11 @@
-/*
-    ChibiOS/RT - Copyright (C) 2006-2013 Giovanni Di Sirio
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-*/
-
 /**
- * @file    templates/halconf.h
- * @brief   HAL configuration header.
- * @details HAL configuration file, this file allows to enable or disable the
+ * @file    templates/qhalconf.h
+ * @brief   QHAL configuration header.
+ * @details QHAL configuration file, this file allows to enable or disable the
  *          various device drivers from your application. You may also use
  *          this file in order to override the device drivers default settings.
  *
- * @addtogroup HAL_CONF
+ * @addtogroup QHAL_CONF
  * @{
  */
 
@@ -43,24 +27,24 @@
 #endif
 
 /**
- * @brief   Enables the FLASH file subsystem.
+ * @brief   Enables the NVM file subsystem.
  */
-#if !defined(HAL_USE_FLASH_FILE) || defined(__DOXYGEN__)
-#define HAL_USE_FLASH_FILE          TRUE
+#if !defined(HAL_USE_NVM_FILE) || defined(__DOXYGEN__)
+#define HAL_USE_NVM_FILE            TRUE
 #endif
 
 /**
- * @brief   Enables the FLASH partition subsystem.
+ * @brief   Enables the NVM partition subsystem.
  */
-#if !defined(HAL_USE_FLASH_PARTITION) || defined(__DOXYGEN__)
-#define HAL_USE_FLASH_PARTITION     TRUE
+#if !defined(HAL_USE_NVM_PARTITION) || defined(__DOXYGEN__)
+#define HAL_USE_NVM_PARTITION       TRUE
 #endif
 
 /**
- * @brief   Enables the FLASH mirror subsystem.
+ * @brief   Enables the NVM mirror subsystem.
  */
-#if !defined(HAL_USE_FLASH_MIRROR) || defined(__DOXYGEN__)
-#define HAL_USE_FLASH_MIRROR        FALSE
+#if !defined(HAL_USE_NVM_MIRROR) || defined(__DOXYGEN__)
+#define HAL_USE_NVM_MIRROR          TRUE
 #endif
 
 /*===========================================================================*/
@@ -73,7 +57,7 @@
  *          default configuration.
  */
 #if !defined(SERIAL_485_DEFAULT_BITRATE) || defined(__DOXYGEN__)
-#define SERIAL_485_DEFAULT_BITRATE      38400
+#define SERIAL_485_DEFAULT_BITRATE          38400
 #endif
 
 /**
@@ -84,7 +68,7 @@
  *          buffers.
  */
 #if !defined(SERIAL_485_BUFFERS_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_BUFFERS_SIZE         16
+#define SERIAL_485_BUFFERS_SIZE             16
 #endif
 
 /**
@@ -95,7 +79,7 @@
  *          filled completely.
  */
 #if !defined(SERIAL_485_UART_RX_BUFFER_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_UART_RX_BUFFER_SIZE     1
+#define SERIAL_485_UART_RX_BUFFER_SIZE      1
 #endif
 
 /**
@@ -105,7 +89,7 @@
  * @note    The default is 16 bytes.
  */
 #if !defined(SERIAL_485_UART_TX_BUFFER_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_UART_TX_BUFFER_SIZE     16
+#define SERIAL_485_UART_TX_BUFFER_SIZE      16
 #endif
 
 /**
@@ -132,7 +116,7 @@
  *          use a DMA channel and heavily loads the CPU.
  */
 #if !defined(FLASH_JEDEC_SPI_NICE_WAITING) || defined(__DOXYGEN__)
-#define FLASH_JEDEC_SPI_NICE_WAITING             TRUE
+#define FLASH_JEDEC_SPI_NICE_WAITING            TRUE
 #endif
 
 /**
@@ -140,43 +124,43 @@
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION     TRUE
+#define FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION    TRUE
 #endif
 
 /*===========================================================================*/
-/* FLASH_FILE driver related settings                                        */
+/* NVM_FILE driver related settings                                        */
 /*===========================================================================*/
 
 /**
  * @brief   Enables the @p ffileAcquireBus() and @p ffileReleaseBus() APIs.
  * @note    Disabling this option saves both code and data space.
  */
-#if !defined(FLASH_FILE_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define FLASH_FILE_USE_MUTUAL_EXCLUSION          FALSE
+#if !defined(NVM_FILE_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define NVM_FILE_USE_MUTUAL_EXCLUSION           TRUE
 #endif
 
 /*===========================================================================*/
-/* FLASH_PARTITION driver related settings                                   */
+/* NVM_PARTITION driver related settings                                   */
 /*===========================================================================*/
 
 /**
  * @brief   Enables the @p fpartAcquireBus() and @p fpartReleaseBus() APIs.
  * @note    Disabling this option saves both code and data space.
  */
-#if !defined(FLASH_PARTITION_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define FLASH_PARTITION_USE_MUTUAL_EXCLUSION     TRUE
+#if !defined(NVM_PARTITION_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define NVM_PARTITION_USE_MUTUAL_EXCLUSION      TRUE
 #endif
 
 /*===========================================================================*/
-/* FLASH_MIRROR driver related settings                                      */
+/* NVM_MIRROR driver related settings                                      */
 /*===========================================================================*/
 
 /**
  * @brief   Enables the @p fmirrorAcquireBus() and @p fmirrorReleaseBus() APIs.
  * @note    Disabling this option saves both code and data space.
  */
-#if !defined(FLASH_MIRROR_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define FLASH_MIRROR_USE_MUTUAL_EXCLUSION     TRUE
+#if !defined(NVM_MIRROR_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define NVM_MIRROR_USE_MUTUAL_EXCLUSION         TRUE
 #endif
 
 #endif /* _QHALCONF_H_ */

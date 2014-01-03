@@ -53,7 +53,8 @@
 #endif
 
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION && !CH_USE_MUTEXES && !CH_USE_SEMAPHORES
-#error "FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION requires CH_USE_MUTEXES and/or CH_USE_SEMAPHORES"
+#error "FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION requires CH_USE_MUTEXES "
+       "and/or CH_USE_SEMAPHORES"
 #endif
 
 /*===========================================================================*/
@@ -68,34 +69,34 @@ typedef struct
     /**
     * @brief SPI driver associated to this Flash JEDEC driver.
     */
-    SPIDriver*    spip;
+    SPIDriver* spip;
     /**
      * @brief Smallest erasable sector size in bytes.
      */
-    uint32_t      sector_size;
+    uint32_t sector_size;
     /**
      * @brief Total number of sectors.
      */
-    uint32_t      sector_num;
+    uint32_t sector_num;
     /**
      * @brief Maximum amount of data programmable through page program command.
      */
-    uint32_t      page_size;
+    uint32_t page_size;
     /**
      * @brief Number of address bytes used in commands.
      */
-    uint8_t       addrbytes_num;
+    uint8_t addrbytes_num;
     /**
      * @brief Sector erase command.
      */
-    uint8_t       sector_erase;
+    uint8_t sector_erase;
 } FlashJedecSPIConfig;
 
 /**
  * @brief   @p FlashJedecSPIDriver specific methods.
  */
-#define _flash_jedec_spi_driver_methods                                        \
-    _base_flash_device_methods
+#define _flash_jedec_spi_driver_methods                                       \
+    _base_nvm_device_methods
 
 /**
  * @extends BaseFlashDeviceVMT
@@ -118,19 +119,19 @@ typedef struct
     * @brief Virtual Methods Table.
     */
     const struct FlashJedecSPIDriverVMT* vmt;
-    _base_flash_device_data
+    _base_nvm_device_data
     /**
     * @brief Current configuration data.
     */
-    const FlashJedecSPIConfig*           config;
+    const FlashJedecSPIConfig* config;
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES || defined(__DOXYGEN__)
     /**
      * @brief Mutex protecting the device.
      */
-    Mutex                                mutex;
+    Mutex mutex;
 #elif CH_USE_SEMAPHORES
-    Semaphore                            semaphore;
+    Semaphore semaphore;
 #endif
 #endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 } FlashJedecSPIDriver;
@@ -150,14 +151,17 @@ extern "C" {
 #endif
     void fjsInit(void);
     void fjsObjectInit(FlashJedecSPIDriver* fjsp);
-    void fjsStart(FlashJedecSPIDriver* fjsp, const FlashJedecSPIConfig* config);
+    void fjsStart(FlashJedecSPIDriver* fjsp,
+            const FlashJedecSPIConfig* config);
     void fjsStop(FlashJedecSPIDriver* fjsp);
-    bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, uint8_t* buffer);
-    bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, const uint8_t* buffer);
+    bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
+            uint8_t* buffer);
+    bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
+            const uint8_t* buffer);
     bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n);
     bool_t fjsMassErase(FlashJedecSPIDriver* fjsp);
     bool_t fjsSync(FlashJedecSPIDriver* fjsp);
-    bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, FlashDeviceInfo* fdip);
+    bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip);
     bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp);
     bool_t fjsWriteLock(FlashJedecSPIDriver* fjsp);
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
