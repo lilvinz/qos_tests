@@ -300,7 +300,7 @@ void fjsStop(FlashJedecSPIDriver* fjsp)
  *
  * @api
  */
-bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, uint8_t *buffer)
+bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n, uint8_t* buffer)
 {
     chDbgCheck(fjsp != NULL, "fjsRead");
     /* verify device status */
