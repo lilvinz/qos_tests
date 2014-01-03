@@ -56,6 +56,13 @@
 #define HAL_USE_FLASH_PARTITION     TRUE
 #endif
 
+/**
+ * @brief   Enables the FLASH mirror subsystem.
+ */
+#if !defined(HAL_USE_FLASH_MIRROR) || defined(__DOXYGEN__)
+#define HAL_USE_FLASH_MIRROR        FALSE
+#endif
+
 /*===========================================================================*/
 /* SERIAL_485 driver related settings.                                       */
 /*===========================================================================*/
@@ -158,6 +165,18 @@
  */
 #if !defined(FLASH_PARTITION_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
 #define FLASH_PARTITION_USE_MUTUAL_EXCLUSION     TRUE
+#endif
+
+/*===========================================================================*/
+/* FLASH_MIRROR driver related settings                                      */
+/*===========================================================================*/
+
+/**
+ * @brief   Enables the @p fmirrorAcquireBus() and @p fmirrorReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(FLASH_MIRROR_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define FLASH_MIRROR_USE_MUTUAL_EXCLUSION     TRUE
 #endif
 
 #endif /* _QHALCONF_H_ */
