@@ -26,6 +26,7 @@
 /* Shared headers.*/
 
 /* Layered drivers.*/
+#include "qflash.h"
 
 /* Complex drivers.*/
 #include "qserial_485.h"

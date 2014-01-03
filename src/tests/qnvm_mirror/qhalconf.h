@@ -47,6 +47,13 @@
 #define HAL_USE_NVM_MIRROR          TRUE
 #endif
 
+/**
+ * @brief   Enables the internal FLASH subsystem.
+ */
+#if !defined(HAL_USE_FLASH) || defined(__DOXYGEN__)
+#define HAL_USE_FLASH               FALSE
+#endif
+
 /*===========================================================================*/
 /* SERIAL_485 driver related settings.                                       */
 /*===========================================================================*/
