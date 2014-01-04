@@ -9,9 +9,15 @@
 #include "ch.h"
 #include "qhal.h"
 
+#if HAL_USE_FLASH || defined(__DOXYGEN__)
+
 #include "static_assert.h"
 
-#if HAL_USE_FLASH || defined(__DOXYGEN__)
+/*
+ * @todo    - add error detection and handling
+ *          - add option bytes programming
+ *          - add readout protection programming and clearing
+ */
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
@@ -46,126 +52,7 @@ static const struct FLASHDriverVMT flash_vmt =
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
-#if 0
-static bool_t flash_write_enable(FLASHDriver* flashp)
-{
-    chDbgCheck((flashp != NULL), "flash_write_enable");
 
-    spiSelect(flashp->config->spip);
-
-    // send JEDEC WREN command
-    static const uint8_t out[] =
-    {
-        FLASH_JEDEC_WREN,
-    };
-
-    spiSend(flashp->config->spip, NELEMS(out), out);
-
-    spiUnselect(flashp->config->spip);
-
-    return CH_SUCCESS;
-}
-
-static bool_t flash_write_disable(FLASHDriver* flashp)
-{
-    chDbgCheck((flashp != NULL), "flash_write_disable");
-
-    spiSelect(flashp->config->spip);
-
-    // send JEDEC WRDI command
-    static const uint8_t out[] =
-    {
-        FLASH_JEDEC_WRDI,
-    };
-
-    spiSend(flashp->config->spip, NELEMS(out), out);
-
-    spiUnselect(flashp->config->spip);
-
-    return CH_SUCCESS;
-}
-
-static bool_t flash_page_program(FLASHDriver* flashp, uint32_t startaddr,
-        uint32_t n, const uint8_t* buffer)
-{
-    chDbgCheck(flashp != NULL, "flash_page_program");
-
-    if (fiSync(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    if (flash_write_enable(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    /* Write operation in progress.*/
-    flashp->state = FLASH_WRITING;
-
-    spiSelect(flashp->config->spip);
-
-    const uint8_t out[] =
-    {
-        FLASH_JEDEC_PP,
-        (startaddr >> 24) & 0xff,
-        (startaddr >> 16) & 0xff,
-        (startaddr >> 8) & 0xff,
-        (startaddr >> 0) & 0xff,
-    };
-
-    /* command byte */
-    spiSend(flashp->config->spip, 1, &out[0]);
-
-    /* address bytes */
-    spiSend(flashp->config->spip, flashp->config->addrbytes_num,
-            &out[1 + (4 - flashp->config->addrbytes_num)]);
-
-    /* data buffer */
-    spiSend(flashp->config->spip, n, buffer);
-
-    spiUnselect(flashp->config->spip);
-
-    return CH_SUCCESS;
-}
-
-static bool_t flash_sector_erase(FLASHDriver* flashp, uint32_t startaddr)
-{
-    chDbgCheck(flashp != NULL, "flash_sector_erase");
-
-    /* Check if device supports erase command. */
-    if (flashp->config->sector_erase == 0x00)
-        return CH_SUCCESS;
-
-    if (fiSync(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    if (flash_write_enable(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    /* Erase operation in progress.*/
-    flashp->state = FLASH_ERASING;
-
-    spiSelect(flashp->config->spip);
-
-    const uint8_t out[] =
-    {
-        flashp->config->sector_erase, /* Erase command is chip specific. */
-        (startaddr >> 24) & 0xff,
-        (startaddr >> 16) & 0xff,
-        (startaddr >> 8) & 0xff,
-        (startaddr >> 0) & 0xff,
-        0x00,
-    };
-
-    /* command byte */
-    spiSend(flashp->config->spip, 1, &out[0]);
-
-    /* address bytes */
-    spiSend(flashp->config->spip, flashp->config->addrbytes_num,
-            &out[1 + (4 - flashp->config->addrbytes_num)]);
-
-    spiUnselect(flashp->config->spip);
-
-    return CH_SUCCESS;
-}
-#endif
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
@@ -213,12 +100,15 @@ void flashObjectInit(FLASHDriver* flashp)
 void flashStart(FLASHDriver* flashp, const FLASHConfig* config)
 {
     chDbgCheck((flashp != NULL) && (config != NULL), "flashStart");
-    /* verify device status */
+
+    chSysLock();
+    /* Verify device status. */
     chDbgAssert((flashp->state == NVM_STOP) || (flashp->state == NVM_READY),
             "flashStart(), #1", "invalid state");
 
     flashp->config = config;
     flashp->state = NVM_READY;
+    chSysUnlock();
 }
 
 /**
@@ -231,11 +121,14 @@ void flashStart(FLASHDriver* flashp, const FLASHConfig* config)
 void flashStop(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashStop");
+
+    chSysLock();
     /* verify device status */
     chDbgAssert((flashp->state == NVM_STOP) || (flashp->state == NVM_READY),
             "flashStop(), #1", "invalid state");
 
     flashp->state = NVM_STOP;
+    chSysUnlock();
 }
 
 /**
@@ -256,48 +149,35 @@ bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
         uint8_t* buffer)
 {
     chDbgCheck(flashp != NULL, "flashRead");
-    /* verify device status */
+
+    chSysLock();
+
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashRead(), #1",
             "invalid state");
-#if 0
-    /* verify range is within chip size */
+
+    /* Verify range is within chip size. */
     chDbgAssert(
-            (startaddr + n <= flashp->config->sector_size * flashp->config->sector_num),
+            flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
+            && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
             "flashRead(), #2", "invalid parameters");
 
-    if (fiSync(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    /* Read operation in progress.*/
-    flashp->state = FLASH_READING;
-
-    spiSelect(flashp->config->spip);
-
-    const uint8_t out[] =
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        FLASH_JEDEC_FAST_READ,
-        (startaddr >> 24) & 0xff,
-        (startaddr >> 16) & 0xff,
-        (startaddr >> 8) & 0xff,
-        (startaddr >> 0) & 0xff,
-        0x00, /* 1 dummy byte required for timing */
-    };
+        chSysUnlock();
+        return CH_FAILED;
+    }
 
-    /* command byte */
-    spiSend(flashp->config->spip, 1, &out[0]);
+    /* Read operation in progress. */
+    flashp->state = NVM_READING;
 
-    /* address bytes */
-    spiSend(flashp->config->spip,
-            flashp->config->addrbytes_num + 1,
-            &out[1 + (4 - flashp->config->addrbytes_num)]);
+    flash_lld_read(flashp, startaddr, n, buffer);
 
-    spiReceive(flashp->config->spip, n, buffer);
-
-    spiUnselect(flashp->config->spip);
-
-    /* Read operation flashnished.*/
+    /* Read operation finished. */
     flashp->state = NVM_READY;
-#endif
+
+    chSysUnlock();
+
     return CH_SUCCESS;
 }
 
@@ -319,31 +199,32 @@ bool_t flashWrite(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
         const uint8_t* buffer)
 {
     chDbgCheck(flashp != NULL, "flashWrite");
-    /* verify device status */
+
+    chSysLock();
+
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashWrite(), #1",
             "invalid state");
-#if 0
-    /* verify range is within chip size */
+
+    /* Verify range is within chip size. */
     chDbgAssert(
-            (startaddr + n <= flashp->config->sector_size * flashp->config->sector_num),
+            flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
+            && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
             "flashWrite(), #2", "invalid parameters");
 
-    uint32_t written = 0;
-
-    while (written < n)
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        uint32_t n_chunk = flashp->config->page_size
-                - ((startaddr + written) % flashp->config->page_size);
-        if (n_chunk > n - written)
-            n_chunk = n - written;
-
-        if (flash_page_program(flashp,
-                startaddr + written, n_chunk, buffer + written) != CH_SUCCESS)
-            return CH_FAILED;
-
-        written += n_chunk;
+        chSysUnlock();
+        return CH_FAILED;
     }
-#endif
+
+    /* Write operation in progress. */
+    flashp->state = NVM_WRITING;
+
+    flash_lld_write(flashp, startaddr, n, buffer);
+
+    chSysUnlock();
+
     return CH_SUCCESS;
 }
 
@@ -363,24 +244,31 @@ bool_t flashWrite(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
 bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
 {
     chDbgCheck(flashp != NULL, "flashErase");
-    /* verify device status */
+
+    chSysLock();
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashErase(), #1",
             "invalid state");
-#if 0
-    /* verify range is within chip size */
+
+    /* Verify range is within chip size. */
     chDbgAssert(
-            (startaddr + n <= flashp->config->sector_size * flashp->config->sector_num),
+            flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
+            && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
             "flashErase(), #2", "invalid parameters");
 
-    uint32_t flashrst_sector_addr = startaddr - (startaddr % flashp->config->sector_size);
-    uint32_t last_sector_addr = (startaddr + n) - ((startaddr + n) % flashp->config->sector_size);
-
-    for (uint32_t addr = flashrst_sector_addr; addr < last_sector_addr; addr += flashp->config->sector_size)
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        if (flash_sector_erase(flashp, addr) != CH_SUCCESS)
-            return CH_FAILED;
+        chSysUnlock();
+        return CH_FAILED;
     }
-#endif
+
+    /* Erase operation in progress. */
+    flashp->state = NVM_ERASING;
+
+    flash_lld_erase(flashp, startaddr, n);
+
+    chSysUnlock();
+
     return CH_SUCCESS;
 }
 
@@ -398,35 +286,25 @@ bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
 bool_t flashMassErase(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashMassErase");
+
+    chSysLock();
     /* verify device status */
     chDbgAssert(flashp->state >= NVM_READY, "flashMassErase(), #1",
             "invalid state");
-#if 0
-    /* Check if device supports erase command. */
-    if (flashp->config->sector_erase == 0x00)
-        return CH_SUCCESS;
 
-    if (fiSync(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    if (flash_write_enable(flashp) != CH_SUCCESS)
-        return CH_FAILED;
-
-    /* Erase operation in progress.*/
-    flashp->state = FLASH_ERASING;
-
-    spiSelect(flashp->config->spip);
-
-    static const uint8_t out[] =
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        FLASH_JEDEC_MASS_ERASE,
-    };
+        chSysUnlock();
+        return CH_FAILED;
+    }
 
-    /* command byte */
-    spiSend(flashp->config->spip, NELEMS(out), out);
+    /* Erase operation in progress. */
+    flashp->state = NVM_ERASING;
 
-    spiUnselect(flashp->config->spip);
-#endif
+    flash_lld_masserase(flashp);
+
+    chSysUnlock();
+
     return CH_SUCCESS;
 }
 
@@ -444,44 +322,17 @@ bool_t flashMassErase(FLASHDriver* flashp)
 bool_t flashSync(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashSync");
+
+    chSysLock();
     /* verify device status */
     chDbgAssert(flashp->state >= NVM_READY, "flashSync(), #1",
             "invalid state");
-#if 0
-    if (flashp->state == NVM_READY)
-        return CH_SUCCESS;
 
-    spiSelect(flashp->config->spip);
-
-    static const uint8_t out[] =
-    {
-        FLASH_JEDEC_RDSR,
-    };
-
-    spiSend(flashp->config->spip, NELEMS(out), out);
-
-    uint8_t in;
-    for (uint8_t i = 0; i < 16; ++i)
-    {
-        spiReceive(flashp->config->spip, sizeof(in), &in);
-        if ((in & 0x01) == 0x00)
-            break;
-    }
-
-    /* Looks like it is a long wait.*/
-    while ((in & 0x01) != 0x00)
-    {
-#ifdef FLASH_NICE_WAITING
-        /* Trying to be nice with the other threads.*/
-        chThdSleep(1);
-#endif
-        spiReceive(flashp->config->spip, sizeof(in), &in);
-    }
-
-    spiUnselect(flashp->config->spip);
+    flash_lld_sync(flashp);
 
     flashp->state = NVM_READY;
-#endif
+
+    chSysUnlock();
     return CH_SUCCESS;
 }
 
@@ -500,30 +351,21 @@ bool_t flashSync(FLASHDriver* flashp)
 bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 {
     chDbgCheck(flashp != NULL, "flashGetInfo");
+
+    chSysLock();
     /* verify device status */
     chDbgAssert(flashp->state >= NVM_READY, "flashGetInfo(), #1",
             "invalid state");
-#if 0
-    nvmdip->sector_num = flashp->config->sector_num;
-    nvmdip->sector_size = flashp->config->sector_size;
 
-    spiSelect(flashp->config->spip);
-
-    static const uint8_t out[] =
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        FLASH_JEDEC_RDID,
-    };
-    spiSend(flashp->config->spip, NELEMS(out), out);
+        chSysUnlock();
+        return CH_FAILED;
+    }
 
-    // skip JEDEC continuation id
-    nvmdip->identification[0] = 0x7f;
-    while (nvmdip->identification[0] == 0x7f)
-        spiReceive(flashp->config->spip, 1, nvmdip->identification);
+    flash_lld_get_info(flashp, nvmdip);
 
-    spiReceive(flashp->config->spip, NELEMS(nvmdip->identification) - 1, nvmdip->identification + 1);
-
-    spiUnselect(flashp->config->spip);
-#endif
+    chSysUnlock();
     return CH_SUCCESS;
 }
 
@@ -541,33 +383,21 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 bool_t flashWriteUnprotect(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashWriteUnprotect");
-    /* verify device status */
+
+    chSysLock();
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
             "invalid state");
-#if 0
-    if (flash_write_enable(flashp) != CH_SUCCESS)
-        return CH_FAILED;
 
-    spiSelect(flashp->config->spip);
-
-    static const uint8_t out[] =
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        FLASH_JEDEC_WRSR,
-        0x00,
-    };
-
-    /* command byte */
-    spiSend(flashp->config->spip, NELEMS(out), out);
-
-    /* address bytes */
-    spiSend(flashp->config->spip, flashp->config->addrbytes_num,
-            &out[1 + (4 - flashp->config->addrbytes_num)]);
-
-    spiUnselect(flashp->config->spip);
-
-    if (flash_write_disable(flashp) != CH_SUCCESS)
+        chSysUnlock();
         return CH_FAILED;
-#endif
+    }
+
+    flash_lld_write_unprotect(flashp);
+
+    chSysUnlock();
     return CH_SUCCESS;
 }
 
@@ -585,33 +415,21 @@ bool_t flashWriteUnprotect(FLASHDriver* flashp)
 bool_t flashWriteProtect(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashWriteProtect");
-    /* verify device status */
+
+    chSysLock();
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashWriteProtect(), #1",
             "invalid state");
-#if 0
-    if (flash_write_enable(flashp) != CH_SUCCESS)
-        return CH_FAILED;
 
-    spiSelect(flashp->config->spip);
-
-    static const uint8_t out[] =
+    if (flashSync(flashp) != CH_SUCCESS)
     {
-        FLASH_JEDEC_WRSR,
-        0x3c, /* set BP0 ... BP3 */
-    };
-
-    /* command byte */
-    spiSend(flashp->config->spip, NELEMS(out), out);
-
-    /* address bytes */
-    spiSend(flashp->config->spip, flashp->config->addrbytes_num,
-            &out[1 + (4 - flashp->config->addrbytes_num)]);
-
-    spiUnselect(flashp->config->spip);
-
-    if (flash_write_disable(flashp) != CH_SUCCESS)
+        chSysUnlock();
         return CH_FAILED;
-#endif
+    }
+
+    flash_lld_write_protect(flashp);
+
+    chSysUnlock();
     return CH_SUCCESS;
 }
 

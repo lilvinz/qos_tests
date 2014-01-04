@@ -135,7 +135,7 @@
 #endif
 
 /*===========================================================================*/
-/* NVM_FILE driver related settings                                        */
+/* NVM_FILE driver related settings                                          */
 /*===========================================================================*/
 
 /**
@@ -147,7 +147,7 @@
 #endif
 
 /*===========================================================================*/
-/* NVM_PARTITION driver related settings                                   */
+/* NVM_PARTITION driver related settings                                     */
 /*===========================================================================*/
 
 /**
@@ -159,7 +159,7 @@
 #endif
 
 /*===========================================================================*/
-/* NVM_MIRROR driver related settings                                      */
+/* NVM_MIRROR driver related settings                                        */
 /*===========================================================================*/
 
 /**
@@ -168,6 +168,29 @@
  */
 #if !defined(NVM_MIRROR_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
 #define NVM_MIRROR_USE_MUTUAL_EXCLUSION         TRUE
+#endif
+
+/*===========================================================================*/
+/* FLASH internal driver related settings                                    */
+/*===========================================================================*/
+
+/**
+ * @brief   Delays insertions.
+ * @details If enabled this options inserts delays into the flash waiting
+ *          routines releasing some extra CPU time for the threads with
+ *          lower priority, this may slow down the driver a bit however.
+ * @note    This does only make sense if code is being executed from RAM.
+ */
+#if !defined(FLASH_NICE_WAITING) || defined(__DOXYGEN__)
+#define FLASH_NICE_WAITING                      FALSE
+#endif
+
+/**
+ * @brief   Enables the @p flahAcquireBus() and @p flashReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(FLASH_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define FLASH_USE_MUTUAL_EXCLUSION              TRUE
 #endif
 
 #endif /* _QHALCONF_H_ */

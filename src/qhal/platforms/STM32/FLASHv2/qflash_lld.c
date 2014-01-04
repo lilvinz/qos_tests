@@ -7,185 +7,124 @@
  */
 
 #include "ch.h"
-#include "hal.h"
+#include "qhal.h"
 
-#if HAL_USE_FLASH_INTERNAL || defined(__DOXYGEN__)
+#if HAL_USE_FLASH || defined(__DOXYGEN__)
+
+#include "static_assert.h"
+
+#include <string.h>
+
+/*
+ * @todo    - add error detection and handling
+ *          - add option bytes programming
+ *          - add readout protection programming and clearing
+ */
 
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
 
+static const uint16_t RDP_KEY = 0x00A5;
+static const uint32_t FLASH_OPT_KEY1 = 0x08192A3B;
+static const uint32_t FLASH_OPT_KEY2 = 0x4C5D6E7F;
+
 /*===========================================================================*/
 /* Driver exported variables.                                                */
 /*===========================================================================*/
 
-/** @brief USART1 UART driver identifier.*/
-#if STM32_UART_USE_USART1 || defined(__DOXYGEN__)
-FlashInternalDriver FLASHD1;
-#endif
+/*
+ * @brief FLASH driver identifier.
+ */
+FLASHDriver FLASHD;
 
 /*===========================================================================*/
 /* Driver local variables and types.                                         */
 /*===========================================================================*/
 
+typedef enum
+{
+    PSIZE_1 = (uint32_t)0,
+    PSIZE_2 = FLASH_CR_PSIZE_0,
+    PSIZE_4 = FLASH_CR_PSIZE_1,
+    PSIZE_8 = FLASH_CR_PSIZE_1 | FLASH_CR_PSIZE_0,
+} flash_program_size_e;
+
+static const uint32_t flash_sector_sizes[] =
+{
+    [0] = 16 * 1024,
+    [1] = 16 * 1024,
+    [2] = 16 * 1024,
+    [3] = 16 * 1024,
+    [4] = 64 * 1024,
+    [5] = 128 * 1024,
+    [6] = 128 * 1024,
+    [7] = 128 * 1024,
+    [8] = 128 * 1024,
+    [9] = 128 * 1024,
+    [10] = 128 * 1024,
+    [11] = 128 * 1024,
+};
+
 /*===========================================================================*/
 /* Driver local functions.                                                   */
 /*===========================================================================*/
+
+/**
+ * @brief   Locks access to FLASH CR peripheral register.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_cr_lock(FLASHDriver* flashp)
+{
+    flashp->flash->CR |= FLASH_CR_LOCK;
+}
+
+/**
+ * @brief   Unlocks access to FLASH CR peripheral register.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_cr_unlock(FLASHDriver* flashp)
+{
+    static const uint32_t FLASH_KEY1 = 0x45670123;
+    static const uint32_t FLASH_KEY2 = 0xCDEF89AB;
+
+    if ((flashp->flash->CR & FLASH_CR_LOCK) != 0)
+    {
+        flashp->flash->KEYR = FLASH_KEY1;
+        flashp->flash->KEYR = FLASH_KEY2;
+    }
+}
+
+/**
+ * @brief   Unlocks access to FLASH CR peripheral register.
+ *
+ * @notapi
+ */
+static flash_program_size_e flash_lld_get_psize(void)
+{
+    if (STM32_VDD >= 270)
+        return PSIZE_4;
+    if (STM32_VDD >= 210)
+        return PSIZE_2;
+    return PSIZE_1;
+}
+
+/**
+ * @brief   FLASH common service routine.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ */
+static void serve_flash_irq(FLASHDriver* flashp)
+{
 #if 0
-/**
- * @brief   Status bits translation.
- *
- * @param[in] sr        USART SR register value
- *
- * @return  The error flags.
- */
-static uartflags_t translate_errors(uint16_t sr)
-{
-    uartflags_t sts = 0;
-
-    if (sr & USART_SR_ORE)
-        sts |= UART_OVERRUN_ERROR;
-    if (sr & USART_SR_PE)
-        sts |= UART_PARITY_ERROR;
-    if (sr & USART_SR_FE)
-        sts |= UART_FRAMING_ERROR;
-    if (sr & USART_SR_NE)
-        sts |= UART_NOISE_ERROR;
-    if (sr & USART_SR_LBD)
-        sts |= UART_BREAK_DETECTED;
-    return sts;
-}
-
-/**
- * @brief   USART de-initialization.
- * @details This function must be invoked with interrupts disabled.
- *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- */
-static void flash_internal_stop(FlashInternalDriver* finternalp)
-{
-    /* Stops USART operations.*/
-    finternalp->usart->CR1 = 0;
-    finternalp->usart->CR2 = 0;
-    finternalp->usart->CR3 = 0;
-}
-
-/**
- * @brief   USART initialization.
- * @details This function must be invoked with interrupts disabled.
- *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- */
-static void flash_internal_start(FlashInternalDriver* finternalp)
-{
-    FLASH_TypeDef* f = finternalp->flash;
-
-    /* Defensive programming, starting from a clean state.*/
-    flash_internal_stop(finternalp);
-#if 0
-    /* Resetting eventual pending status flags.*/
-    (void)u->SR; /* SR reset step 1.*/
-    (void)u->DR; /* SR reset step 2.*/
-    u->SR = 0;
-
-    /* Note that some bits are enforced because required for correct driver
-     operations.*/
-    u->CR2 = finternalp->config->cr2 | USART_CR2_LBDIE;
-    u->CR3 = finternalp->config->cr3 | USART_CR3_DMAT | USART_CR3_DMAR |
-    USART_CR3_EIE;
-    if (finternalp->config->txend2_cb == NULL)
-    cr1 = USART_CR1_UE | USART_CR1_PEIE | USART_CR1_TE | USART_CR1_RE;
-    else
-    cr1 = USART_CR1_UE | USART_CR1_PEIE | USART_CR1_TE | USART_CR1_RE |
-    USART_CR1_TCIE;
-    u->CR1 = finternalp->config->cr1 | cr1;
-#endif
-}
-
-/**
- * @brief   RX DMA common service routine.
- *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- * @param[in] flags     pre-shifted content of the ISR register
- */
-static void flash_internal_lld_serve_rx_end_irq(FlashInternalDriver* finternalp, uint32_t flags)
-{
-    /* DMA errors handling.*/
-#if defined(STM32_UART_DMA_ERROR_HOOK)
-    if ((flags & (STM32_DMA_ISR_TEIF | STM32_DMA_ISR_DMEIF)) != 0)
-    {
-        STM32_UART_DMA_ERROR_HOOK(finternalp);
-    }
-#else
-    (void)flags;
-#endif
-
-    if (finternalp->rxstate == UART_RX_IDLE)
-    {
-        /* Receiver in idle state, a callback is generated, if enabled, for each
-         received character and then the driver stays in the same state.*/
-        if (finternalp->config->rxchar_cb != NULL)
-        finternalp->config->rxchar_cb(finternalp, finternalp->rxbuf);
-    }
-    else
-    {
-        /* Receiver in active state, a callback is generated, if enabled, after
-         a completed transfer.*/
-        dmaStreamDisable(finternalp->dmarx);
-        finternalp->rxstate = UART_RX_COMPLETE;
-        if (finternalp->config->rxend_cb != NULL)
-        finternalp->config->rxend_cb(finternalp);
-
-        /* If the callback didn't explicitly change state then the receiver
-         automatically returns to the idle state.*/
-        if (finternalp->rxstate == UART_RX_COMPLETE)
-        {
-            finternalp->rxstate = UART_RX_IDLE;
-            set_rx_idle_loop(finternalp);
-        }
-    }
-}
-
-/**
- * @brief   TX DMA common service routine.
- *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- * @param[in] flags     pre-shifted content of the ISR register
- */
-static void flash_internal_lld_serve_tx_end_irq(FlashInternalDriver* finternalp, uint32_t flags)
-{
-    /* DMA errors handling.*/
-#if defined(STM32_UART_DMA_ERROR_HOOK)
-    if ((flags & (STM32_DMA_ISR_TEIF | STM32_DMA_ISR_DMEIF)) != 0)
-    {
-        STM32_UART_DMA_ERROR_HOOK(finternalp);
-    }
-#else
-    (void)flags;
-#endif
-
-    dmaStreamDisable(finternalp->dmatx);
-
-    /* A callback is generated, if enabled, after a completed transfer.*/
-    finternalp->txstate = UART_TX_COMPLETE;
-    if (finternalp->config->txend1_cb != NULL)
-    finternalp->config->txend1_cb(finternalp);
-
-    /* If the callback didn't explicitly change state then the transmitter
-     automatically returns to the idle state.*/
-    if (finternalp->txstate == UART_TX_COMPLETE)
-    finternalp->txstate = UART_TX_IDLE;
-}
-
-/**
- * @brief   USART common service routine.
- *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- */
-static void serve_usart_irq(FlashInternalDriver* finternalp)
-{
     uint16_t sr;
-    USART_TypeDef *u = finternalp->usart;
+    USART_TypeDef *u = flashp->usart;
 
     sr = u->SR; /* SR reset step 1.*/
     (void)u->DR; /* SR reset step 2.*/
@@ -193,41 +132,37 @@ static void serve_usart_irq(FlashInternalDriver* finternalp)
                     USART_SR_FE | USART_SR_PE))
     {
         u->SR = ~USART_SR_LBD;
-        if (finternalp->config->rxerr_cb != NULL)
-        finternalp->config->rxerr_cb(finternalp, translate_errors(sr));
+        if (flashp->config->rxerr_cb != NULL)
+        flashp->config->rxerr_cb(flashp, translate_errors(sr));
     }
     if (sr & USART_SR_TC)
     {
         u->SR = ~USART_SR_TC;
 
         /* End of transmission, a callback is generated.*/
-        if (finternalp->config->txend2_cb != NULL)
-        finternalp->config->txend2_cb(finternalp);
+        if (flashp->config->txend2_cb != NULL)
+        flashp->config->txend2_cb(flashp);
     }
-}
 #endif
+}
+
 /*===========================================================================*/
 /* Driver interrupt handlers.                                                */
 /*===========================================================================*/
 
-#if STM32_UART_USE_USART1 || defined(__DOXYGEN__)
-#if !defined(STM32_USART1_HANDLER)
-#error "STM32_USART1_HANDLER not defined"
-#endif
 /**
- * @brief   USART1 IRQ handler.
+ * @brief   FLASH IRQ handler.
  *
  * @isr
  */
-CH_IRQ_HANDLER(STM32_USART1_HANDLER) {
+CH_IRQ_HANDLER(STM32_FLASH_HANDLER)
+{
+    CH_IRQ_PROLOGUE();
 
-  CH_IRQ_PROLOGUE();
+    serve_flash_irq(&FLASHD);
 
-  serve_usart_irq(&UARTD1);
-
-  CH_IRQ_EPILOGUE();
+    CH_IRQ_EPILOGUE();
 }
-#endif /* STM32_UART_USE_USART1 */
 
 /*===========================================================================*/
 /* Driver exported functions.                                                */
@@ -238,186 +173,208 @@ CH_IRQ_HANDLER(STM32_USART1_HANDLER) {
  *
  * @notapi
  */
-void flash_internal_lld_init(void)
+void flash_lld_init(void)
 {
-#if 0
-#if STM32_UART_USE_USART1
-    uartObjectInit(&UARTD1);
-    UARTD1.usart = USART1;
-    UARTD1.dmamode = STM32_DMA_CR_DMEIE | STM32_DMA_CR_TEIE;
-    UARTD1.dmarx = STM32_DMA_STREAM(STM32_UART_USART1_RX_DMA_STREAM);
-    UARTD1.dmatx = STM32_DMA_STREAM(STM32_UART_USART1_TX_DMA_STREAM);
-#endif
-#endif
+    flashObjectInit(&FLASHD);
+    FLASHD.flash = FLASH;
 }
 
 /**
- * @brief   Configures and activates the UART peripheral.
+ * @brief   Configures and activates the FLASH peripheral.
  *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- *
- * @notapi
- */
-void flash_internal_lld_start(FlashInternalDriver* finternalp)
-{
-#if 0
-    if (finternalp->state == UART_STOP)
-    {
-#if STM32_UART_USE_USART1
-        if (&UARTD1 == finternalp)
-        {
-            bool_t b;
-            b = dmaStreamAllocate(finternalp->dmarx,
-                    STM32_UART_USART1_IRQ_PRIORITY,
-                    (stm32_dmaisr_t)flash_internal_lld_serve_rx_end_irq,
-                    (void *)finternalp);
-            chDbgAssert(!b, "flash_internal_lld_start(), #1", "stream already allocated");
-            b = dmaStreamAllocate(finternalp->dmatx,
-                    STM32_UART_USART1_IRQ_PRIORITY,
-                    (stm32_dmaisr_t)flash_internal_lld_serve_tx_end_irq,
-                    (void *)finternalp);
-            chDbgAssert(!b, "flash_internal_lld_start(), #2", "stream already allocated");
-            rccEnableUSART1(FALSE);
-            nvicEnableVector(STM32_USART1_NUMBER,
-                    CORTEX_PRIORITY_MASK(STM32_UART_USART1_IRQ_PRIORITY));
-            finternalp->dmamode |= STM32_DMA_CR_CHSEL(USART1_RX_DMA_CHANNEL) |
-            STM32_DMA_CR_PL(STM32_UART_USART1_DMA_PRIORITY);
-        }
-#endif
-
-        /* Static DMA setup, the transfer size depends on the USART settings,
-         it is 16 bits if M=1 and PCE=0 else it is 8 bits.*/
-        if ((finternalp->config->cr1 & (USART_CR1_M | USART_CR1_PCE)) == USART_CR1_M)
-            finternalp->dmamode |= STM32_DMA_CR_PSIZE_HWORD | STM32_DMA_CR_MSIZE_HWORD;
-        dmaStreamSetPeripheral(finternalp->dmarx, &finternalp->usart->DR);
-        dmaStreamSetPeripheral(finternalp->dmatx, &finternalp->usart->DR);
-        finternalp->rxbuf = 0;
-    }
-
-    finternalp->rxstate = UART_RX_IDLE;
-    finternalp->txstate = UART_TX_IDLE;
-    usart_start(finternalp);
-#endif
-}
-
-/**
- * @brief   Deactivates the UART peripheral.
- *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
+ * @param[in] flashp    pointer to the @p FLASHDriver object
  *
  * @notapi
  */
-void flash_internal_lld_stop(FlashInternalDriver* finternalp)
+void flash_lld_start(FLASHDriver* flashp)
 {
-#if 0
-    if (finternalp->state == UART_READY)
+    if (flashp->state == NVM_STOP)
     {
-        usart_stop(finternalp);
-        dmaStreamRelease(finternalp->dmarx);
-        dmaStreamRelease(finternalp->dmatx);
-
-#if STM32_UART_USE_USART1
-        if (&UARTD1 == finternalp)
+        if (flashp == &FLASHD)
         {
-            nvicDisableVector(STM32_USART1_NUMBER);
-            rccDisableUSART1(FALSE);
+            nvicEnableVector(STM32_FLASH_NUMBER,
+                    CORTEX_PRIORITY_MASK(STM32_FLASH_IRQ_PRIORITY));
             return;
         }
+    }
+}
+
+/**
+ * @brief   Deactivates the FLASH peripheral.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_stop(FLASHDriver* flashp)
+{
+    if (flashp->state == NVM_READY)
+    {
+        if (flashp == &FLASHD)
+        {
+            nvicDisableVector(STM32_FLASH_NUMBER);
+            return;
+        }
+    }
+}
+
+/**
+ * @brief   Waits for FLASH peripheral to become idle.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, uint8_t* buffer)
+{
+    memcpy(buffer, (uint8_t*)0x08000000 + startaddr, n);
+}
+
+/**
+ * @brief   Waits for FLASH peripheral to become idle.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, const uint8_t* buffer)
+{
+
+}
+
+/**
+ * @brief   Waits for FLASH peripheral to become idle.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_erase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
+{
+    flash_program_size_e psize = flash_lld_get_psize();
+
+    flashp->flash->CR &= FLASH_CR_PSIZE_1 | FLASH_CR_PSIZE_0;
+    flashp->flash->CR |= psize;
+    flashp->flash->CR |= FLASH_CR_MER;
+    flashp->flash->CR |= FLASH_CR_STRT;
+
+    flash_lld_sync(flashp);
+
+    /* when the erase operation is completed, disable the MER Bit */
+    flashp->flash->CR &= (~FLASH_CR_MER);
+}
+
+/**
+ * @brief   Waits for FLASH peripheral to become idle.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_masserase(FLASHDriver* flashp)
+{
+    flash_program_size_e psize = flash_lld_get_psize();
+
+    flashp->flash->CR &= FLASH_CR_PSIZE_1 | FLASH_CR_PSIZE_0;
+    flashp->flash->CR |= psize;
+    flashp->flash->CR |= FLASH_CR_MER;
+    flashp->flash->CR |= FLASH_CR_STRT;
+
+    flash_lld_sync(flashp);
+
+    /* when the erase operation is completed, disable the MER Bit */
+    flashp->flash->CR &= (~FLASH_CR_MER);
+}
+
+/**
+ * @brief   Waits for FLASH peripheral to become idle.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld_sync(FLASHDriver* flashp)
+{
+    while (flashp->flash->SR & FLASH_SR_BSY)
+    {
+#ifdef FLASH_NICE_WAITING
+        /* Trying to be nice with the other threads.*/
+        chThdSleep(1);
 #endif
     }
-#endif
 }
 
 /**
- * @brief   Starts a transmission on the UART peripheral.
- * @note    The buffers are organized as uint8_t arrays for data sizes below
- *          or equal to 8 bits else it is organized as uint16_t arrays.
+ * @brief   Returns chip information.
  *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- * @param[in] n         number of data frames to send
- * @param[in] txbuf     the pointer to the transmit buffer
+ * @param[in] flashp    pointer to the @p FLASHDriver object
  *
  * @notapi
  */
-void flash_internal_lld_start_send(FlashInternalDriver* finternalp, size_t n, const void* txbuf)
+void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 {
-#if 0
-    /* TX DMA channel preparation and start.*/
-    dmaStreamSetMemory0(finternalp->dmatx, txbuf);
-    dmaStreamSetTransactionSize(finternalp->dmatx, n);
-    dmaStreamSetMode(finternalp->dmatx, finternalp->dmamode | STM32_DMA_CR_DIR_M2P |
-            STM32_DMA_CR_MINC | STM32_DMA_CR_TCIE);
-    dmaStreamEnable(finternalp->dmatx);
-#endif
 }
 
 /**
- * @brief   Stops any ongoing transmission.
- * @note    Stopping a transmission also suppresses the transmission callbacks.
+ * @brief   Disables whole chip write protection.
  *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- *
- * @return              The number of data frames not transmitted by the
- *                      stopped transmit operation.
+ * @param[in] flashp    pointer to the @p FLASHDriver object
  *
  * @notapi
  */
-size_t flash_internal_lld_stop_send(FlashInternalDriver* finternalp)
+void flash_lld_write_unprotect(FLASHDriver* flashp)
 {
-#if 0
-    dmaStreamDisable(finternalp->dmatx);
-    return dmaStreamGetTransactionSize(finternalp->dmatx);
-#endif
-    return 0;
 }
 
 /**
- * @brief   Starts a receive operation on the UART peripheral.
- * @note    The buffers are organized as uint8_t arrays for data sizes below
- *          or equal to 8 bits else it is organized as uint16_t arrays.
+ * @brief   Enables whole chip write protection.
  *
- * @param[in] finternalp     pointer to the @p FlashInternalDriver object
- * @param[in] n         number of data frames to send
- * @param[out] rxbuf    the pointer to the receive buffer
+ * @param[in] flashp    pointer to the @p FLASHDriver object
  *
  * @notapi
  */
-void flash_internal_lld_start_receive(FlashInternalDriver* finternalp, size_t n, void* rxbuf)
+void flash_lld_write_protect(FLASHDriver* flashp)
 {
-#if 0
-    /* Stopping previous activity (idle state).*/
-    dmaStreamDisable(finternalp->dmarx);
-
-    /* RX DMA channel preparation and start.*/
-    dmaStreamSetMemory0(finternalp->dmarx, rxbuf);
-    dmaStreamSetTransactionSize(finternalp->dmarx, n);
-    dmaStreamSetMode(finternalp->dmarx, finternalp->dmamode | STM32_DMA_CR_DIR_P2M |
-            STM32_DMA_CR_MINC | STM32_DMA_CR_TCIE);
-    dmaStreamEnable(finternalp->dmarx);
-#endif
 }
 
 /**
- * @brief   Stops any ongoing receive operation.
- * @note    Stopping a receive operation also suppresses the receive callbacks.
+ * @brief   Converts address to sector.
  *
- * @param[in] finternalp    pointer to the @p FlashInternalDriver object
+ * @param[in] addr      address to convert to sector
+ * @param[out] sinfo    pointer to variable receiving sector info or NULL
  *
- * @return                  The number of data frames not received by the
- *                          stopped receive operation.
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
  *
  * @notapi
  */
-size_t flash_internal_lld_stop_receive(FlashInternalDriver* finternalp)
+bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo)
 {
-    size_t n;
+    FLASHSectorInfo sector =
+    {
+        .origin = 0,
+        .size = 0,
+    };
 
-    dmaStreamDisable(finternalp->dmarx);
-    n = dmaStreamGetTransactionSize(finternalp->dmarx);
-    set_rx_idle_loop(finternalp);
-    return n;
+    for (uint8_t i = 0; i < NELEMS(flash_sector_sizes); ++i)
+    {
+        sector.size = flash_sector_sizes[i];
+        if (addr >= sector.origin
+                && addr <= sector.origin + sector.size)
+        {
+            if (sinfo != NULL)
+            {
+                sinfo->origin = sector.origin;
+                sinfo->size = sector.size;
+            }
+            return CH_SUCCESS;
+        }
+        sector.origin += sector.size;
+    }
+    return CH_FAILED;
 }
 
-#endif /* HAL_USE_FLASH_INTERNAL */
+#endif /* HAL_USE_FLASH */
 
 /** @} */

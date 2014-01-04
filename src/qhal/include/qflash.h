@@ -28,9 +28,10 @@
  * @details If enabled this options inserts delays into the flash waiting
  *          routines releasing some extra CPU time for the threads with
  *          lower priority, this may slow down the driver a bit however.
+ * @note    This does only make sense if code is being executed from RAM.
  */
 #if !defined(FLASH_NICE_WAITING) || defined(__DOXYGEN__)
-#define FLASH_NICE_WAITING             TRUE
+#define FLASH_NICE_WAITING                      FALSE
 #endif
 
 /**
