@@ -9,14 +9,14 @@
 #include "ch.h"
 #include "qhal.h"
 
-#include "static_assert.h"
-
 #if HAL_USE_FLASH_JEDEC_SPI || defined(__DOXYGEN__)
+
+#include "static_assert.h"
 
 /*
  * @todo    - add AAI writing for chips which support it
+ *          - add error detection and handling
  *          - add sector level write protection API
- *
  */
 
 /*===========================================================================*/

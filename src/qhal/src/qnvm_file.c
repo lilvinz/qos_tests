@@ -9,11 +9,11 @@
 #include "ch.h"
 #include "qhal.h"
 
+#if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
+
 #include "static_assert.h"
 
 #include <string.h>
-
-#if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
 
 /*
  * @todo    - add write protection emulation

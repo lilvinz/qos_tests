@@ -9,11 +9,11 @@
 #include "ch.h"
 #include "qhal.h"
 
+#if HAL_USE_NVM_MIRROR || defined(__DOXYGEN__)
+
 #include "static_assert.h"
 
 #include <string.h>
-
-#if HAL_USE_NVM_MIRROR || defined(__DOXYGEN__)
 
 /*
  * @brief   Functional description
