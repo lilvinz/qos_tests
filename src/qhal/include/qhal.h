@@ -20,6 +20,8 @@
 
 #include "qhalconf.h"
 
+#include "qhal_lld.h"
+
 /* Abstract interfaces.*/
 #include "qio_nvm.h"
 
