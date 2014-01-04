@@ -15,6 +15,11 @@
 
 #if HAL_USE_NVM_PARTITION || defined(__DOXYGEN__)
 
+/*
+ * @todo    - add write protection pass-through to lower level driver
+ *
+ */
+
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
@@ -36,11 +41,12 @@ static const struct NVMPartitionDriverVMT nvm_partition_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))nvmpartWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartErase,
     .sync = (bool_t (*)(void*))nvmpartSync,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmpartGetInfo,
+    /* End of mandatory functions. */
 #if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (bool_t (*)(void*))nvmpartAcquireBus,
     .release = (bool_t (*)(void*))nvmpartReleaseBus,
 #endif
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmpartGetInfo,
 };
 
 /*===========================================================================*/

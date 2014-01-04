@@ -15,6 +15,7 @@
 
 /*
  * @todo    - add AAI writing for chips which support it
+ *          - add sector level write protection API
  *
  */
 
@@ -48,13 +49,14 @@ static const struct FlashJedecSPIDriverVMT flash_jedec_spi_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))fjsWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))fjsErase,
     .sync = (bool_t (*)(void*))fjsSync,
-    .write_lock = (bool_t (*)(void*))fjsWriteLock,
-    .write_unlock = (bool_t (*)(void*))fjsWriteUnlock,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))fjsGetInfo,
+    /* End of mandatory functions. */
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (bool_t (*)(void*))fjsAcquireBus,
     .release = (bool_t (*)(void*))fjsReleaseBus,
 #endif
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))fjsGetInfo,
+    .write_protect = (bool_t (*)(void*))fjsWriteProtect,
+    .write_unprotect = (bool_t (*)(void*))fjsWriteUnprotect,
 };
 
 /*===========================================================================*/
@@ -598,7 +600,7 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
 }
 
 /**
- * @brief   Write unlocks the whole chip.
+ * @brief   Write unprotects the whole chip.
  *
  * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
  *
@@ -608,11 +610,11 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
  *
  * @api
  */
-bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp)
+bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp)
 {
-    chDbgCheck(fjsp != NULL, "fjsWriteUnlock");
+    chDbgCheck(fjsp != NULL, "fjsWriteUnprotect");
     /* verify device status */
-    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteUnlock(), #1",
+    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteUnprotect(), #1",
             "invalid state");
 
     if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
@@ -642,7 +644,7 @@ bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp)
 }
 
 /**
- * @brief   Write locks the whole chip.
+ * @brief   Write protects the whole chip.
  *
  * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
  *
@@ -652,11 +654,11 @@ bool_t fjsWriteUnlock(FlashJedecSPIDriver* fjsp)
  *
  * @api
  */
-bool_t fjsWriteLock(FlashJedecSPIDriver* fjsp)
+bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp)
 {
-    chDbgCheck(fjsp != NULL, "fjsWriteLock");
+    chDbgCheck(fjsp != NULL, "fjsWriteProtect");
     /* verify device status */
-    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteLock(), #1",
+    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteProtect(), #1",
             "invalid state");
 
     if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)

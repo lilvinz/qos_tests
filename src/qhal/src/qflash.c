@@ -34,8 +34,8 @@ static const struct FLASHDriverVMT flash_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))flashWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))flashErase,
     .sync = (bool_t (*)(void*))flashSync,
-    .write_lock = (bool_t (*)(void*))flashWriteLock,
-    .write_unlock = (bool_t (*)(void*))flashWriteUnlock,
+    .write_protect = (bool_t (*)(void*))flashWriteProtect,
+    .write_unprotect = (bool_t (*)(void*))flashWriteUnprotect,
 #if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (bool_t (*)(void*))flashAcquireBus,
     .release = (bool_t (*)(void*))flashReleaseBus,
@@ -528,7 +528,7 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 }
 
 /**
- * @brief   Write unlocks the whole chip.
+ * @brief   Write unprotects the whole chip.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
  *
@@ -538,11 +538,11 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
  *
  * @api
  */
-bool_t flashWriteUnlock(FLASHDriver* flashp)
+bool_t flashWriteUnprotect(FLASHDriver* flashp)
 {
-    chDbgCheck(flashp != NULL, "flashWriteUnlock");
+    chDbgCheck(flashp != NULL, "flashWriteUnprotect");
     /* verify device status */
-    chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnlock(), #1",
+    chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
             "invalid state");
 #if 0
     if (flash_write_enable(flashp) != CH_SUCCESS)
@@ -572,7 +572,7 @@ bool_t flashWriteUnlock(FLASHDriver* flashp)
 }
 
 /**
- * @brief   Write locks the whole chip.
+ * @brief   Write protects the whole chip.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
  *
@@ -582,11 +582,11 @@ bool_t flashWriteUnlock(FLASHDriver* flashp)
  *
  * @api
  */
-bool_t flashWriteLock(FLASHDriver* flashp)
+bool_t flashWriteProtect(FLASHDriver* flashp)
 {
-    chDbgCheck(flashp != NULL, "flashWriteLock");
+    chDbgCheck(flashp != NULL, "flashWriteProtect");
     /* verify device status */
-    chDbgAssert(flashp->state >= NVM_READY, "flashWriteLock(), #1",
+    chDbgAssert(flashp->state >= NVM_READY, "flashWriteProtect(), #1",
             "invalid state");
 #if 0
     if (flash_write_enable(flashp) != CH_SUCCESS)

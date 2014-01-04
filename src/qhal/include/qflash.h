@@ -80,8 +80,8 @@ extern "C" {
     bool_t flashMassErase(FLASHDriver* flashp);
     bool_t flashSync(FLASHDriver* flashp);
     bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip);
-    bool_t flashWriteUnlock(FLASHDriver* flashp);
-    bool_t flashWriteLock(FLASHDriver* flashp);
+    bool_t flashWriteUnprotect(FLASHDriver* flashp);
+    bool_t flashWriteProtect(FLASHDriver* flashp);
 #if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void flashAcquireBus(FLASHDriver* flashp);
     void flashReleaseBus(FLASHDriver* flashp);

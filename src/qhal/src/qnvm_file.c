@@ -15,6 +15,11 @@
 
 #if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
 
+/*
+ * @todo    - add write protection emulation
+ *
+ */
+
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
@@ -36,11 +41,12 @@ static const struct NVMFileDriverVMT nvm_file_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))nvmfileWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmfileErase,
     .sync = (bool_t (*)(void*))nvmfileSync,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmfileGetInfo,
+    /* End of mandatory functions. */
 #if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (bool_t (*)(void*))nvmfileAcquireBus,
     .release = (bool_t (*)(void*))nvmfileReleaseBus,
 #endif
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmfileGetInfo,
 };
 
 /*===========================================================================*/

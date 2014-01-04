@@ -67,7 +67,8 @@
  *              - state dirty b:
  *                  Invalid state!
  *
- * @todo
+ * @todo    - add write protection pass-through to lower level driver
+ *
  */
 
 /*===========================================================================*/
@@ -115,11 +116,12 @@ static const struct NVMMirrorDriverVMT nvm_mirror_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))nvmmirrorWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmmirrorErase,
     .sync = (bool_t (*)(void*))nvmmirrorSync,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmmirrorGetInfo,
+    /* End of mandatory functions. */
 #if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (bool_t (*)(void*))nvmmirrorAcquireBus,
     .release = (bool_t (*)(void*))nvmmirrorReleaseBus,
 #endif
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmmirrorGetInfo,
 };
 
 /*===========================================================================*/

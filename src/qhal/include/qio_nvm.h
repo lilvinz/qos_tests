@@ -18,6 +18,11 @@
 #ifndef _IO_NVM_H_
 #define _IO_NVM_H_
 
+/*
+ * @todo    - add sector level write protection API
+ *
+ */
+
 /**
  * @brief   Driver state machine possible states.
  */
@@ -56,16 +61,17 @@ typedef struct
             uint32_t n);                                                      \
     /* Write / erase operations synchronization.*/                            \
     bool_t (*sync)(void *instance);                                           \
-    /* Enables chip write protection. */                                      \
-    bool_t (*write_lock)(void *instance);                                     \
-    /* Disables chip write protection. */                                     \
-    bool_t (*write_unlock)(void *instance);                                   \
+    /* Obtains info about the media.*/                                        \
+    bool_t (*get_info)(void *instance, NVMDeviceInfo *bdip);                  \
+    /* End of mandatory functions. */                                         \
     /* Acquire device if supported by underlying driver.*/                    \
     bool_t (*acquire)(void *instance);                                        \
     /* Release device if supported by underlying driver.*/                    \
     bool_t (*release)(void *instance);                                        \
-    /* Obtains info about the media.*/                                        \
-    bool_t (*get_info)(void *instance, NVMDeviceInfo *bdip);
+    /* Enables chip write protection. */                                      \
+    bool_t (*write_protect)(void *instance);                                  \
+    /* Disables chip write protection. */                                     \
+    bool_t (*write_unprotect)(void *instance);
 
 /**
  * @brief   @p BaseNVMDevice specific data.
@@ -189,6 +195,20 @@ typedef struct
 #define nvmSync(ip) ((ip)->vmt->sync(ip))
 
 /**
+ * @brief   Returns a media information structure.
+ *
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ * @param[out] bdip     pointer to a @p NVMDeviceInfo structure
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define nvmGetInfo(ip, bdip) ((ip)->vmt->get_info(ip, bdip))
+
+/**
  * @brief   Acquires device for exclusive access.
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
@@ -221,10 +241,9 @@ typedef struct
 }
 
 /**
- * @brief   Returns a media information structure.
+ * @brief   Enables the write protection if available
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
- * @param[out] bdip     pointer to a @p NVMDeviceInfo structure
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -232,7 +251,26 @@ typedef struct
  *
  * @api
  */
-#define nvmGetInfo(ip, bdip) ((ip)->vmt->get_info(ip, bdip))
+#define nvmWriteProtect(ip) {                                                 \
+    if (((ip)->vmt->write_protect) != NULL)                                   \
+        ((ip)->vmt->write_protect)(ip);                                       \
+}
+
+/**
+ * @brief   Disables the write protection if available
+ *
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define nvmWriteUnprotect(ip) {                                               \
+    if (((ip)->vmt->write_unprotect) != NULL)                                 \
+        ((ip)->vmt->write_unprotect)(ip);                                     \
+}
 
 /** @} */
 
