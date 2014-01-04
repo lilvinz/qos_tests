@@ -28,8 +28,6 @@
 #ifndef _HALCONF_H_
 #define _HALCONF_H_
 
-#include "mcuconf.h"
-
 /**
  * @brief   Enables the TM subsystem.
  */
