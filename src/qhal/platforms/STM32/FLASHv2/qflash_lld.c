@@ -49,10 +49,6 @@ static const uint16_t RDP_KEY = 0x00A5;
 /** @} */
 
 /*
- * @brief   ACR register byte 0 (Bits[7:0]) base address
- */
-#define ACR_BYTE0_ADDRESS           ((uint32_t)0x40023C00)
-/*
  * @brief   OPTCR register byte 0 (Bits[7:0]) base address
  */
 #define OPTCR_BYTE0_ADDRESS         ((uint32_t)0x40023C14)
@@ -73,7 +69,19 @@ static const uint16_t RDP_KEY = 0x00A5;
 /*
  * @brief   OPTCR1 register byte 0 (Bits[7:0]) base address
  */
+#define OPTCR1_BYTE0_ADDRESS        ((uint32_t)0x40023C18)
+/*
+ * @brief   OPTCR1 register byte 1 (Bits[15:8]) base address
+ */
+#define OPTCR1_BYTE1_ADDRESS        ((uint32_t)0x40023C19)
+/*
+ * @brief   OPTCR1 register byte 2 (Bits[23:16]) base address
+ */
 #define OPTCR1_BYTE2_ADDRESS        ((uint32_t)0x40023C1A)
+/*
+ * @brief   OPTCR1 register byte 3 (Bits[31:24]) base address
+ */
+#define OPTCR1_BYTE3_ADDRESS        ((uint32_t)0x40023C1B)
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
 
 /*
@@ -709,15 +717,29 @@ void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
  */
 void flash_lld_write_unprotect(FLASHDriver* flashp)
 {
-    flash_lld_optcr_unlock(flashp);
-
-    *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS &= (~0x0000);
+    /* Check current state first. */
+    if ((*(__IO uint16_t*)OPTCR_BYTE2_ADDRESS & 0xfff) != 0xfff)
+    {
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS |= 0xfff;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
 
 #if defined(STM32F427_437xx) || defined(STM32F429_439xx)
-    *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS &= (~0x0000);
+    /* Check current state first. */
+    if ((*(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS & 0xfff) != 0xfff)
+    {
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS |= 0xfff;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
-
-    flash_lld_optcr_lock(flashp);
 }
 
 /**
@@ -729,15 +751,29 @@ void flash_lld_write_unprotect(FLASHDriver* flashp)
  */
 void flash_lld_write_protect(FLASHDriver* flashp)
 {
-    flash_lld_optcr_unlock(flashp);
-
-    *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS &= (~0x0fff);
+    /* Check current state first. */
+    if ((*(__IO uint16_t*)OPTCR_BYTE2_ADDRESS & 0xfff) != 0x000)
+    {
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS &= ~0xfff;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
 
 #if defined(STM32F427_437xx) || defined(STM32F429_439xx)
-    *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS &= (~0x0fff);
+    /* Check current state first. */
+    if ((*(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS & 0xfff) != 0x000)
+    {
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS &= ~0xfff;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
-
-    flash_lld_optcr_lock(flashp);
 }
 
 /**

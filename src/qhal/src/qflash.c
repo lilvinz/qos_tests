@@ -380,11 +380,7 @@ bool_t flashWriteUnprotect(FLASHDriver* flashp)
     chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
             "invalid state");
 
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
+    flash_lld_sync(flashp);
 
     flash_lld_write_unprotect(flashp);
 
@@ -412,11 +408,7 @@ bool_t flashWriteProtect(FLASHDriver* flashp)
     chDbgAssert(flashp->state >= NVM_READY, "flashWriteProtect(), #1",
             "invalid state");
 
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
+    flash_lld_sync(flashp);
 
     flash_lld_write_protect(flashp);
 
