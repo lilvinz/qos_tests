@@ -66,6 +66,7 @@ static const struct FLASHDriverVMT flash_vmt =
  */
 void flashInit(void)
 {
+    flash_lld_init();
 }
 
 /**
