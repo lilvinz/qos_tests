@@ -173,9 +173,6 @@ bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
 
     flash_lld_read(flashp, startaddr, n, buffer);
 
-    /* Read operation finished. */
-    flashp->state = NVM_READY;
-
     chSysUnlock();
 
     return CH_SUCCESS;
@@ -265,7 +262,26 @@ bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
     /* Erase operation in progress. */
     flashp->state = NVM_ERASING;
 
-    flash_lld_erase(flashp, startaddr, n);
+    FLASHSectorInfo sector;
+
+    for (sector.origin = startaddr;
+            sector.origin < startaddr + n;
+            sector.origin += sector.size)
+    {
+        if (flash_lld_addr_to_sector(sector.origin, &sector) != CH_SUCCESS)
+        {
+            chSysUnlock();
+            return CH_FAILED;
+        }
+
+        if (flashSync(flashp) != CH_SUCCESS)
+        {
+            chSysUnlock();
+            return CH_FAILED;
+        }
+
+        flash_lld_erase(flashp, sector.origin);
+    }
 
     chSysUnlock();
 
