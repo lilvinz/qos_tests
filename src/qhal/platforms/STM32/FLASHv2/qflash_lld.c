@@ -72,8 +72,13 @@ static const uint16_t RDP_KEY = 0x00A5;
 /*
  * @brief   OPTCR1 register byte 0 (Bits[7:0]) base address
  */
-#define OPTCR1_BYTE2_ADDRESS         ((uint32_t)0x40023C1A)
+#define OPTCR1_BYTE2_ADDRESS        ((uint32_t)0x40023C1A)
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+
+/*
+ * @brief   Flash size register address
+ */
+#define FLASH_SIZE_REGISTER_ADDRESS ((uint32_t)0x1FFF7A22)
 
 /*===========================================================================*/
 /* Driver exported variables.                                                */
@@ -689,7 +694,7 @@ void flash_lld_sync(FLASHDriver* flashp)
 void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 {
     nvmdip->sector_size = 16 * 1024;
-    nvmdip->sector_num = *(__I uint16_t*)(0x1fff7a22) * 1024 / nvmdip->sector_size;
+    nvmdip->sector_num = (uint32_t)(*(__I uint16_t*)(FLASH_SIZE_REGISTER_ADDRESS)) * 1024 / nvmdip->sector_size;
     nvmdip->identification[0] = 'F';
     nvmdip->identification[1] = 'v';
     nvmdip->identification[2] = '2';
@@ -773,7 +778,7 @@ bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo)
         info.origin += info.size;
 
         /* Test against total flash size. */
-        if (info.origin >= (uint32_t)(*((__I uint16_t*)(0x1fff7a22))) * 1024)
+        if (info.origin >= (uint32_t)(*((__I uint16_t*)FLASH_SIZE_REGISTER_ADDRESS)) * 1024)
             return CH_FAILED;
     }
     return CH_FAILED;
