@@ -163,14 +163,10 @@ bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
             && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
             "flashRead(), #2", "invalid parameters");
 
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
-
     /* Read operation in progress. */
     flashp->state = NVM_READING;
+
+    flash_lld_sync(flashp);
 
     flash_lld_read(flashp, startaddr, n, buffer);
 
@@ -210,14 +206,10 @@ bool_t flashWrite(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
             && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
             "flashWrite(), #2", "invalid parameters");
 
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
-
     /* Write operation in progress. */
     flashp->state = NVM_WRITING;
+
+    flash_lld_sync(flashp);
 
     flash_lld_write(flashp, startaddr, n, buffer);
 
@@ -254,12 +246,6 @@ bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
             && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
             "flashErase(), #2", "invalid parameters");
 
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
-
     /* Erase operation in progress. */
     flashp->state = NVM_ERASING;
 
@@ -275,11 +261,7 @@ bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
             return CH_FAILED;
         }
 
-        if (flashSync(flashp) != CH_SUCCESS)
-        {
-            chSysUnlock();
-            return CH_FAILED;
-        }
+        flash_lld_sync(flashp);
 
         flash_lld_erase(flashp, sector.origin);
     }
@@ -309,14 +291,10 @@ bool_t flashMassErase(FLASHDriver* flashp)
     chDbgAssert(flashp->state >= NVM_READY, "flashMassErase(), #1",
             "invalid state");
 
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
-
     /* Erase operation in progress. */
     flashp->state = NVM_ERASING;
+
+    flash_lld_sync(flashp);
 
     flash_lld_masserase(flashp);
 
@@ -373,12 +351,6 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
     /* verify device status */
     chDbgAssert(flashp->state >= NVM_READY, "flashGetInfo(), #1",
             "invalid state");
-
-    if (flashSync(flashp) != CH_SUCCESS)
-    {
-        chSysUnlock();
-        return CH_FAILED;
-    }
 
     flash_lld_get_info(flashp, nvmdip);
 

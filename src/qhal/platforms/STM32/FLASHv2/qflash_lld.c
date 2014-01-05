@@ -555,41 +555,41 @@ void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, uint8_t
 void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, const uint8_t* buffer)
 {
     uint32_t addr = 0x08000000 + startaddr;
-    uint32_t remaining = n;
-    while (remaining > 0)
+    uint32_t offset = 0;
+    while (offset < n)
     {
         switch (flash_lld_get_psize())
         {
         case PSIZE_8:
-            if (addr % 8 == 0 && remaining >= 8)
+            if (addr % 8 == 0 && (n - offset) >= 8)
             {
-                flash_lld_program_64(flashp, addr, *(uint64_t*)addr);
+                flash_lld_program_64(flashp, addr, *(uint64_t*)(buffer + offset));
                 addr += 8;
-                remaining -= 8;
+                offset += 8;
                 break;
             }
         case PSIZE_4:
-            if (addr % 4 == 0 && remaining >= 4)
+            if (addr % 4 == 0 && (n - offset) >= 4)
             {
-                flash_lld_program_32(flashp, addr, *(uint32_t*)addr);
+                flash_lld_program_32(flashp, addr, *(uint32_t*)(buffer + offset));
                 addr += 4;
-                remaining -= 4;
+                offset += 4;
                 break;
             }
         case PSIZE_2:
-            if (addr % 2 == 0 && remaining >= 2)
+            if (addr % 2 == 0 && (n - offset) >= 2)
             {
-                flash_lld_program_16(flashp, addr, *(uint16_t*)addr);
+                flash_lld_program_16(flashp, addr, *(uint16_t*)(buffer + offset));
                 addr += 2;
-                remaining -= 2;
+                offset += 2;
                 break;
             }
         case PSIZE_1:
-            if (remaining >= 1)
+            if ((n - offset) >= 1)
             {
-                flash_lld_program_8(flashp, addr, *(uint8_t*)addr);
+                flash_lld_program_8(flashp, addr, *(uint8_t*)(buffer + offset));
                 addr += 1;
-                remaining -= 1;
+                offset += 1;
                 break;
             }
         }
@@ -669,7 +669,9 @@ void flash_lld_sync(FLASHDriver* flashp)
     {
 #ifdef FLASH_NICE_WAITING
         /* Trying to be nice with the other threads.*/
+        chSysUnlock();
         chThdSleep(1);
+        chSysLock();
 #endif
     }
 }
@@ -755,7 +757,7 @@ bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo)
     {
         info.size = flash_sector_infos[i].size;
         if (addr >= info.origin
-                && addr <= info.origin + info.size)
+                && addr < info.origin + info.size)
         {
             if (sinfo != NULL)
             {
