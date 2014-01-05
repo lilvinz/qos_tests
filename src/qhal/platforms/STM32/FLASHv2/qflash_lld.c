@@ -47,6 +47,34 @@ static const uint16_t RDP_KEY = 0x00A5;
 #define FLASH_PRG_SEQUENCE_ERROR        32
 /** @} */
 
+/*
+ * @brief   ACR register byte 0 (Bits[7:0]) base address
+ */
+#define ACR_BYTE0_ADDRESS           ((uint32_t)0x40023C00)
+/*
+ * @brief   OPTCR register byte 0 (Bits[7:0]) base address
+ */
+#define OPTCR_BYTE0_ADDRESS         ((uint32_t)0x40023C14)
+/*
+ * @brief   OPTCR register byte 1 (Bits[15:8]) base address
+ */
+#define OPTCR_BYTE1_ADDRESS         ((uint32_t)0x40023C15)
+/*
+ * @brief   OPTCR register byte 2 (Bits[23:16]) base address
+ */
+#define OPTCR_BYTE2_ADDRESS         ((uint32_t)0x40023C16)
+/*
+ * @brief   OPTCR register byte 3 (Bits[31:24]) base address
+ */
+#define OPTCR_BYTE3_ADDRESS         ((uint32_t)0x40023C17)
+
+#if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN__)
+/*
+ * @brief   OPTCR1 register byte 0 (Bits[7:0]) base address
+ */
+#define OPTCR1_BYTE2_ADDRESS         ((uint32_t)0x40023C1A)
+#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+
 /*===========================================================================*/
 /* Driver exported variables.                                                */
 /*===========================================================================*/
@@ -134,6 +162,7 @@ static const struct
         .size = 128 * 1024,
         .sector_bits = 0x0058,
     },
+#if defined(STM32F427_437xx) || defined(STM32F429_439xx)
     [12] =
     {
         .size = 16 * 1024,
@@ -194,6 +223,7 @@ static const struct
         .size = 128 * 1024,
         .sector_bits = 0x00d8,
     },
+#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
 };
 
 /*===========================================================================*/
@@ -231,7 +261,6 @@ static void flash_lld_cr_unlock(FLASHDriver* flashp)
     }
 }
 
-#if 0
 /**
  * @brief   Locks access to FLASH OPTCR peripheral register.
  *
@@ -262,7 +291,6 @@ static void flash_lld_optcr_unlock(FLASHDriver* flashp)
         flashp->flash->KEYR = FLASH_OPT_KEY2;
     }
 }
-#endif
 
 /**
  * @brief   Returns permitted programming size depending on supply voltage.
@@ -666,6 +694,15 @@ void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
  */
 void flash_lld_write_unprotect(FLASHDriver* flashp)
 {
+    flash_lld_optcr_unlock(flashp);
+
+    *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS &= (~0x0000);
+
+#if defined(STM32F427_437xx) || defined(STM32F429_439xx)
+    *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS &= (~0x0000);
+#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+
+    flash_lld_optcr_lock(flashp);
 }
 
 /**
@@ -677,6 +714,15 @@ void flash_lld_write_unprotect(FLASHDriver* flashp)
  */
 void flash_lld_write_protect(FLASHDriver* flashp)
 {
+    flash_lld_optcr_unlock(flashp);
+
+    *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS &= (~0x0fff);
+
+#if defined(STM32F427_437xx) || defined(STM32F429_439xx)
+    *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS &= (~0x0fff);
+#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+
+    flash_lld_optcr_lock(flashp);
 }
 
 /**
