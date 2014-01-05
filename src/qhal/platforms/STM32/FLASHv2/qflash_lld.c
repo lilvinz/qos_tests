@@ -676,6 +676,9 @@ void flash_lld_sync(FLASHDriver* flashp)
 
 /**
  * @brief   Returns chip information.
+ * @note    Returns smallest sector size because higher level interface
+ *          doesn't support differently sized sectors.
+ *          The caller has to be aware of this fact and act accordingly.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
  *
@@ -683,6 +686,8 @@ void flash_lld_sync(FLASHDriver* flashp)
  */
 void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 {
+    nvmdip->sector_size = 16 * 1024;
+    nvmdip->sector_num = *(__I uint16_t*)(0x1fff7a22) * 1024 / 16;
 }
 
 /**

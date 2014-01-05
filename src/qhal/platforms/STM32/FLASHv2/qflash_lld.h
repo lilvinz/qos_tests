@@ -32,10 +32,6 @@
  */
 typedef struct
 {
-    /**
-     * @brief Pointer to flash peripheral base.
-     */
-    FLASH_TypeDef* flashp;
 } FLASHConfig;
 
 /**
