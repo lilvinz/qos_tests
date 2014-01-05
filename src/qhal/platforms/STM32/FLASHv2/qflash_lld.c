@@ -689,7 +689,10 @@ void flash_lld_sync(FLASHDriver* flashp)
 void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 {
     nvmdip->sector_size = 16 * 1024;
-    nvmdip->sector_num = *(__I uint16_t*)(0x1fff7a22) * 1024 / 16;
+    nvmdip->sector_num = *(__I uint16_t*)(0x1fff7a22) * 1024 / nvmdip->sector_size;
+    nvmdip->identification[0] = 'F';
+    nvmdip->identification[1] = 'v';
+    nvmdip->identification[2] = '2';
 }
 
 /**
