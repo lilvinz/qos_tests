@@ -13,10 +13,8 @@
 
 #include "static_assert.h"
 
-/*
- * @todo    - add error detection and handling
- *          - add option bytes programming
- *          - add readout protection programming and clearing
+/**
+ * @todo    - add error propagation
  */
 
 /*===========================================================================*/
@@ -361,34 +359,6 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 }
 
 /**
- * @brief   Write unprotects the whole chip.
- *
- * @param[in] flashp    pointer to the @p FLASHDriver object
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
- *
- * @api
- */
-bool_t flashWriteUnprotect(FLASHDriver* flashp)
-{
-    chDbgCheck(flashp != NULL, "flashWriteUnprotect");
-
-    chSysLock();
-    /* Verify device status. */
-    chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
-            "invalid state");
-
-    flash_lld_sync(flashp);
-
-    flash_lld_write_unprotect(flashp);
-
-    chSysUnlock();
-    return CH_SUCCESS;
-}
-
-/**
  * @brief   Write protects the whole chip.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
@@ -411,6 +381,34 @@ bool_t flashWriteProtect(FLASHDriver* flashp)
     flash_lld_sync(flashp);
 
     flash_lld_write_protect(flashp);
+
+    chSysUnlock();
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects the whole chip.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t flashWriteUnprotect(FLASHDriver* flashp)
+{
+    chDbgCheck(flashp != NULL, "flashWriteUnprotect");
+
+    chSysLock();
+    /* Verify device status. */
+    chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
+            "invalid state");
+
+    flash_lld_sync(flashp);
+
+    flash_lld_write_unprotect(flashp);
 
     chSysUnlock();
     return CH_SUCCESS;
