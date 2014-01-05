@@ -108,6 +108,7 @@ void flashStart(FLASHDriver* flashp, const FLASHConfig* config)
             "flashStart(), #1", "invalid state");
 
     flashp->config = config;
+    flash_lld_start(flashp);
     flashp->state = NVM_READY;
     chSysUnlock();
 }
@@ -128,6 +129,7 @@ void flashStop(FLASHDriver* flashp)
     chDbgAssert((flashp->state == NVM_STOP) || (flashp->state == NVM_READY),
             "flashStop(), #1", "invalid state");
 
+    flash_lld_stop(flashp);
     flashp->state = NVM_STOP;
     chSysUnlock();
 }

@@ -19,6 +19,7 @@
  * @todo    - add error detection and handling
  *          - add option bytes programming
  *          - add readout protection programming and clearing
+ *          - replace sync polling by synchronization with isr
  */
 
 /*===========================================================================*/
@@ -498,7 +499,6 @@ void flash_lld_start(FLASHDriver* flashp)
             flash_lld_cr_unlock(flashp);
             flashp->flash->CR = FLASH_CR_EOPIE | FLASH_CR_ERRIE;
             flash_lld_cr_lock(flashp);
-
             return;
         }
     }
