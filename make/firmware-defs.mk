@@ -102,6 +102,11 @@ replace_special_chars = $(subst @,_,$(subst :,_,$(subst -,_,$(subst .,_,$(subst 
 	$(V0) @echo $(MSG_SYMBOL_TABLE) $(call toprel, $@)
 	$(V1) $(NM) -n $< > $@
 
+# Create encrypted output from .bin file
+%.enc: %.bin
+	$(V0) @echo $(MSG_ENCRYPT) $(call toprel, $@)
+	$(V1) perl $(ROOT_DIR)/make/scripts/lfsr.pl $(LFSR_GENERATOR_POLY) $(LFSR_KEY) < $< > $@ || ($(RM) -f $@; exit 1)
+
 # Target: clean project.
 .PHONY: clean
 clean:
