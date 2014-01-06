@@ -112,9 +112,6 @@ static bool_t flash_jedec_spi_page_program(FlashJedecSPIDriver* fjsp,
     if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Write operation in progress.*/
-    fjsp->state = NVM_WRITING;
-
     spiSelect(fjsp->config->spip);
 
     const uint8_t out[] =
@@ -152,9 +149,6 @@ static bool_t flash_jedec_spi_sector_erase(FlashJedecSPIDriver* fjsp,
     if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Erase operation in progress.*/
-    fjsp->state = NVM_ERASING;
-
     spiSelect(fjsp->config->spip);
 
     const uint8_t out[] =
@@ -189,9 +183,6 @@ static bool_t flash_jedec_spi_page_program_ff(FlashJedecSPIDriver* fjsp,
 
     if (flash_jedec_spi_write_enable(fjsp) != CH_SUCCESS)
         return CH_FAILED;
-
-    /* Write operation in progress.*/
-    fjsp->state = NVM_WRITING;
 
     spiSelect(fjsp->config->spip);
 
@@ -379,6 +370,9 @@ bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
     chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
             "fjsWrite(), #2", "invalid parameters");
 
+    /* Write operation in progress.*/
+    fjsp->state = NVM_WRITING;
+
     uint32_t written = 0;
 
     while (written < n)
@@ -419,6 +413,9 @@ bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n)
     /* verify range is within chip size */
     chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
             "fjsErase(), #2", "invalid parameters");
+
+    /* Erase operation in progress.*/
+    fjsp->state = NVM_ERASING;
 
     uint32_t first_sector_addr =
             startaddr - (startaddr % fjsp->config->sector_size);
@@ -467,6 +464,9 @@ bool_t fjsMassErase(FlashJedecSPIDriver* fjsp)
     /* verify device status */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsMassErase(), #1",
             "invalid state");
+
+    /* Erase operation in progress.*/
+    fjsp->state = NVM_ERASING;
 
     /* Check if device supports erase command. */
     if (fjsp->config->sector_erase != 0x00)
@@ -551,6 +551,7 @@ bool_t fjsSync(FlashJedecSPIDriver* fjsp)
 
     spiUnselect(fjsp->config->spip);
 
+    /* No more operation in progress.*/
     fjsp->state = NVM_READY;
 
     return CH_SUCCESS;

@@ -433,9 +433,17 @@ bool_t nvmmirrorRead(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr,
     chDbgAssert(nvmmirrorp->mirror_state != STATE_DIRTY_B, "nvmmirrorRead(), #3",
             "invalid mirror state");
 
-    return nvmRead(nvmmirrorp->config->nvmp,
+    /* Read operation in progress. */
+    nvmmirrorp->state = NVM_READING;
+
+    bool_t result = nvmRead(nvmmirrorp->config->nvmp,
             nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->config->sector_header_num + startaddr,
             n, buffer);
+
+    /* Read operation finished. */
+    nvmmirrorp->state = NVM_READY;
+
+    return result;
 }
 
 /**
@@ -478,6 +486,9 @@ bool_t nvmmirrorWrite(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr,
         if (result != CH_SUCCESS)
             return result;
     }
+
+    /* Write operation in progress.*/
+    nvmmirrorp->state = NVM_WRITING;
 
     return nvmWrite(nvmmirrorp->config->nvmp,
             nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->config->sector_header_num + startaddr,
@@ -522,6 +533,9 @@ bool_t nvmmirrorErase(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr, uint32_t 
         if (result != CH_SUCCESS)
             return result;
     }
+
+    /* Erase operation in progress.*/
+    nvmmirrorp->state = NVM_ERASING;
 
     return nvmErase(nvmmirrorp->config->nvmp,
             nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->config->sector_header_num + startaddr,
@@ -582,6 +596,9 @@ bool_t nvmmirrorSync(NVMMirrorDriver* nvmmirrorp)
         if (result != CH_SUCCESS)
             return result;
     }
+
+    /* No more operation in progress.*/
+    nvmmirrorp->state = NVM_READY;
 
     return CH_SUCCESS;
 }

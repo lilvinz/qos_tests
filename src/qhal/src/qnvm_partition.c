@@ -153,12 +153,14 @@ bool_t nvmpartRead(NVMPartitionDriver* nvmpartp, uint32_t startaddr,
             (startaddr + n <= nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num),
             "nvmpartRead(), #2", "invalid parameters");
 
+    /* Read operation in progress. */
     nvmpartp->state = NVM_READING;
 
     bool_t result = nvmRead(nvmpartp->config->nvmp,
             nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset + startaddr,
             n, buffer);
 
+    /* Read operation finished. */
     nvmpartp->state = NVM_READY;
 
     return result;
@@ -190,6 +192,7 @@ bool_t nvmpartWrite(NVMPartitionDriver* nvmpartp, uint32_t startaddr,
             (startaddr + n <= nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num),
             "nvmpartWrite(), #2", "invalid parameters");
 
+    /* Write operation in progress.*/
     nvmpartp->state = NVM_WRITING;
 
     return nvmWrite(nvmpartp->config->nvmp,
@@ -221,6 +224,7 @@ bool_t nvmpartErase(NVMPartitionDriver* nvmpartp, uint32_t startaddr,
     chDbgAssert((startaddr + n <= nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num),
             "nvmpartRead(), #2", "invalid parameters");
 
+    /* Erase operation in progress.*/
     nvmpartp->state = NVM_ERASING;
 
     return nvmErase(nvmpartp->config->nvmp,
@@ -248,6 +252,7 @@ bool_t nvmpartSync(NVMPartitionDriver* nvmpartp)
 
     bool_t result = nvmSync(nvmpartp->config->nvmp);
 
+    /* No more operation in progress.*/
     nvmpartp->state = NVM_READY;
 
     return result;

@@ -160,7 +160,7 @@ bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
     /* Verify range is within chip size. */
     chDbgAssert(
             flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
-            && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
+            && flash_lld_addr_to_sector(startaddr + n - 1, NULL) == CH_SUCCESS,
             "flashRead(), #2", "invalid parameters");
 
     /* Read operation in progress. */
@@ -169,6 +169,9 @@ bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
     flash_lld_sync(flashp);
 
     flash_lld_read(flashp, startaddr, n, buffer);
+
+    /* Read operation finished.*/
+    flashp->state = NVM_READY;
 
     chSysUnlock();
 
@@ -203,7 +206,7 @@ bool_t flashWrite(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
     /* Verify range is within chip size. */
     chDbgAssert(
             flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
-            && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
+            && flash_lld_addr_to_sector(startaddr + n - 1, NULL) == CH_SUCCESS,
             "flashWrite(), #2", "invalid parameters");
 
     /* Write operation in progress. */
@@ -243,7 +246,7 @@ bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
     /* Verify range is within chip size. */
     chDbgAssert(
             flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
-            && flash_lld_addr_to_sector(startaddr + n, NULL) == CH_SUCCESS,
+            && flash_lld_addr_to_sector(startaddr + n - 1, NULL) == CH_SUCCESS,
             "flashErase(), #2", "invalid parameters");
 
     /* Erase operation in progress. */

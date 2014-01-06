@@ -362,6 +362,7 @@ bool_t nvmfileSync(NVMFileDriver* nvmfilep)
     if (fflush(nvmfilep->file) != 0)
         return CH_FAILED;
 
+    /* No more operation in progress.*/
     nvmfilep->state = NVM_READY;
 
     return CH_SUCCESS;
