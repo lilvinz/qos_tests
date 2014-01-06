@@ -40,6 +40,7 @@ static const struct NVMFileDriverVMT nvm_file_vmt =
     .read = (bool_t (*)(void*, uint32_t, uint32_t, uint8_t*))nvmfileRead,
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))nvmfileWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmfileErase,
+    .mass_erase = (bool_t (*)(void*))nvmfileMassErase,
     .sync = (bool_t (*)(void*))nvmfileSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmfileGetInfo,
     /* End of mandatory functions. */

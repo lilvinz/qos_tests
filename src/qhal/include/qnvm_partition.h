@@ -136,6 +136,7 @@ extern "C" {
             uint32_t n, const uint8_t* buffer);
     bool_t nvmpartErase(NVMPartitionDriver* nvmpartp, uint32_t startaddr,
             uint32_t n);
+    bool_t nvmpartMassErase(NVMPartitionDriver* nvmpartp);
     bool_t nvmpartSync(NVMPartitionDriver* nvmpartp);
     bool_t nvmpartGetInfo(NVMPartitionDriver* nvmpartp, NVMDeviceInfo* nvmdip);
 #if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)

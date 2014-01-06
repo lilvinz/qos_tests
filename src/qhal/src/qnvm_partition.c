@@ -40,6 +40,7 @@ static const struct NVMPartitionDriverVMT nvm_partition_vmt =
     .read = (bool_t (*)(void*, uint32_t, uint32_t, uint8_t*))nvmpartRead,
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))nvmpartWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartErase,
+    .mass_erase = (bool_t (*)(void*))nvmpartMassErase,
     .sync = (bool_t (*)(void*))nvmpartSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmpartGetInfo,
     /* End of mandatory functions. */
@@ -230,6 +231,32 @@ bool_t nvmpartErase(NVMPartitionDriver* nvmpartp, uint32_t startaddr,
     return nvmErase(nvmpartp->config->nvmp,
             nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset + startaddr,
             n);
+}
+
+/**
+ * @brief   Erases all sectors.
+ *
+ * @param[in] nvmpartp      pointer to the @p NVMPartitionDriver object
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmpartMassErase(NVMPartitionDriver* nvmpartp)
+{
+    chDbgCheck(nvmpartp != NULL, "nvmpartMassErase");
+    /* verify device status */
+    chDbgAssert(nvmpartp->state >= NVM_READY, "nvmpartMassErase(), #1",
+            "invalid state");
+
+    /* Erase operation in progress.*/
+    nvmpartp->state = NVM_ERASING;
+
+    return nvmErase(nvmpartp->config->nvmp,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num);
 }
 
 /**

@@ -59,6 +59,8 @@ typedef struct
     /* Erase one or more sectors.*/                                           \
     bool_t (*erase)(void *instance, uint32_t startaddr,                       \
             uint32_t n);                                                      \
+    /* Erase all sectors.*/                                                   \
+    bool_t (*mass_erase)(void *instance);                                     \
     /* Write / erase operations synchronization.*/                            \
     bool_t (*sync)(void *instance);                                           \
     /* Obtains info about the media.*/                                        \
@@ -180,6 +182,20 @@ typedef struct
  */
 #define nvmErase(ip, startaddr, n)                                            \
     ((ip)->vmt->erase(ip, startaddr, n))
+
+/**
+ * @brief   Erases all sectors.
+ *
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define nvmMassErase(ip)                                                      \
+    ((ip)->vmt->mass_erase(ip))
 
 /**
  * @brief   Ensures write / erase synchronization.

@@ -115,6 +115,7 @@ static const struct NVMMirrorDriverVMT nvm_mirror_vmt =
     .read = (bool_t (*)(void*, uint32_t, uint32_t, uint8_t*))nvmmirrorRead,
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))nvmmirrorWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmmirrorErase,
+    .mass_erase = (bool_t (*)(void*))nvmmirrorMassErase,
     .sync = (bool_t (*)(void*))nvmmirrorSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmmirrorGetInfo,
     /* End of mandatory functions. */
@@ -540,6 +541,45 @@ bool_t nvmmirrorErase(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr, uint32_t 
     return nvmErase(nvmmirrorp->config->nvmp,
             nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->config->sector_header_num + startaddr,
             n);
+}
+
+/**
+ * @brief   Erases all sectors.
+ *
+ * @param[in] nvmmirrorp    pointer to the @p NVMMirrorDriver object
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmmirrorMassErase(NVMMirrorDriver* nvmmirrorp)
+{
+    chDbgCheck(nvmmirrorp != NULL, "nvmmirrorMassErase");
+    /* Verify device status. */
+    chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorMassErase(), #1",
+            "invalid state");
+
+    /* Verify mirror is in valid sync state. */
+    chDbgAssert(nvmmirrorp->mirror_state != STATE_DIRTY_B, "nvmmirrorMassErase(), #3",
+            "invalid mirror state");
+
+    /* Set mirror state to dirty if necessary. */
+    if (nvmmirrorp->mirror_state == STATE_SYNCED)
+    {
+        bool_t result = nvm_mirror_state_update(nvmmirrorp, STATE_DIRTY_A);
+        if (result != CH_SUCCESS)
+            return result;
+    }
+
+    /* Erase operation in progress.*/
+    nvmmirrorp->state = NVM_ERASING;
+
+    return nvmErase(nvmmirrorp->config->nvmp,
+            nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->config->sector_header_num,
+            nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->llnvmdi.sector_num
+                - nvmmirrorp->config->sector_header_num);
 }
 
 /**

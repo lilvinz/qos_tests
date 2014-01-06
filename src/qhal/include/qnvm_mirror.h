@@ -146,6 +146,7 @@ extern "C" {
             uint32_t n, const uint8_t* buffer);
     bool_t nvmmirrorErase(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr,
             uint32_t n);
+    bool_t nvmmirrorMassErase(NVMMirrorDriver* nvmmirrorp);
     bool_t nvmmirrorSync(NVMMirrorDriver* nvmmirrorp);
     bool_t nvmmirrorGetInfo(NVMMirrorDriver* nvmmirrorp,
             NVMDeviceInfo* nvmdip);
