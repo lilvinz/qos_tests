@@ -67,9 +67,9 @@ typedef struct
     bool_t (*get_info)(void *instance, NVMDeviceInfo *bdip);                  \
     /* End of mandatory functions. */                                         \
     /* Acquire device if supported by underlying driver.*/                    \
-    bool_t (*acquire)(void *instance);                                        \
+    void (*acquire)(void *instance);                                          \
     /* Release device if supported by underlying driver.*/                    \
-    bool_t (*release)(void *instance);                                        \
+    void (*release)(void *instance);                                          \
     /* Enables chip write protection. */                                      \
     bool_t (*write_protect)(void *instance);                                  \
     /* Disables chip write protection. */                                     \

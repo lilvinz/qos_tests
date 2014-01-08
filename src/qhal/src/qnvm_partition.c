@@ -45,8 +45,8 @@ static const struct NVMPartitionDriverVMT nvm_partition_vmt =
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmpartGetInfo,
     /* End of mandatory functions. */
 #if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
-    .acquire = (bool_t (*)(void*))nvmpartAcquireBus,
-    .release = (bool_t (*)(void*))nvmpartReleaseBus,
+    .acquire = (void (*)(void*))nvmpartAcquireBus,
+    .release = (void (*)(void*))nvmpartReleaseBus,
 #endif
 };
 
@@ -353,7 +353,6 @@ void nvmpartReleaseBus(NVMPartitionDriver* nvmpartp)
     chDbgCheck(nvmpartp != NULL, "nvmpartReleaseBus");
 
 #if CH_USE_MUTEXES
-    (void)nvmpartp;
     chMtxUnlock();
 #elif CH_USE_SEMAPHORES
     chSemSignal(&nvmpartp->semaphore);

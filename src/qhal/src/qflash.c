@@ -41,8 +41,8 @@ static const struct FLASHDriverVMT flash_vmt =
     .write_protect = (bool_t (*)(void*))flashWriteProtect,
     .write_unprotect = (bool_t (*)(void*))flashWriteUnprotect,
 #if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
-    .acquire = (bool_t (*)(void*))flashAcquireBus,
-    .release = (bool_t (*)(void*))flashReleaseBus,
+    .acquire = (void (*)(void*))flashAcquireBus,
+    .release = (void (*)(void*))flashReleaseBus,
 #endif
     .get_info = (bool_t (*)(void*, NVMDeviceInfo*))flashGetInfo,
 };

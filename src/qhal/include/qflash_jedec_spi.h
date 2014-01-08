@@ -83,13 +83,21 @@ typedef struct
      */
     uint32_t page_size;
     /**
+     * @brief Required alignment of page program address.
+     */
+    uint8_t page_alignment;
+    /**
      * @brief Number of address bytes used in commands.
      */
     uint8_t addrbytes_num;
     /**
      * @brief Sector erase command.
      */
-    uint8_t sector_erase;
+    uint8_t cmd_sector_erase;
+    /**
+     * @brief Page program command.
+     */
+    uint8_t cmd_page_program;
 } FlashJedecSPIConfig;
 
 /**

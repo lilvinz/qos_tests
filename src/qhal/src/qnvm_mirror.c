@@ -120,8 +120,8 @@ static const struct NVMMirrorDriverVMT nvm_mirror_vmt =
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmmirrorGetInfo,
     /* End of mandatory functions. */
 #if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
-    .acquire = (bool_t (*)(void*))nvmmirrorAcquireBus,
-    .release = (bool_t (*)(void*))nvmmirrorReleaseBus,
+    .acquire = (void (*)(void*))nvmmirrorAcquireBus,
+    .release = (void (*)(void*))nvmmirrorReleaseBus,
 #endif
 };
 
@@ -712,7 +712,6 @@ void nvmmirrorReleaseBus(NVMMirrorDriver* nvmmirrorp)
     chDbgCheck(nvmmirrorp != NULL, "nvmmirrorReleaseBus");
 
 #if CH_USE_MUTEXES
-    (void)nvmmirrorp;
     chMtxUnlock();
 #elif CH_USE_SEMAPHORES
     chSemSignal(&nvmmirrorp->semaphore);

@@ -45,8 +45,8 @@ static const struct NVMFileDriverVMT nvm_file_vmt =
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmfileGetInfo,
     /* End of mandatory functions. */
 #if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
-    .acquire = (bool_t (*)(void*))nvmfileAcquireBus,
-    .release = (bool_t (*)(void*))nvmfileReleaseBus,
+    .acquire = (void (*)(void*))nvmfileAcquireBus,
+    .release = (void (*)(void*))nvmfileReleaseBus,
 #endif
 };
 
@@ -287,7 +287,7 @@ bool_t nvmfileErase(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n)
         return CH_FAILED;
 
     for (uint32_t addr = first_sector_addr;
-            addr < last_sector_addr;
+            addr <= last_sector_addr;
             addr += nvmfilep->config->sector_size)
     {
         static const uint8_t erased = 0xff;
