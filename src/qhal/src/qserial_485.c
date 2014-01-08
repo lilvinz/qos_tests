@@ -276,6 +276,10 @@ void sd485EndOfTx1I(UARTDriver* uartp)
         /* Continue by doing tx */
         uartStartSendI(sd485p->config->uartp, length, sd485p->uart_ob);
     }
+    else
+    {
+        chnAddFlagsI(sd485p, CHN_OUTPUT_EMPTY);
+    }
 
     chSysUnlockFromIsr();
 }
@@ -306,6 +310,8 @@ void sd485EndOfTx2I(UARTDriver* uartp)
     if (sd485p->config->uartp->rxstate == UART_RX_IDLE)
         uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
                 sd485p->uart_ib);
+
+    chnAddFlagsI(sd485p, CHN_TRANSMISSION_END);
 
     chSysUnlockFromIsr();
 }
