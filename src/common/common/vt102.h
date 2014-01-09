@@ -17,7 +17,7 @@
 
 #define CSI                 "\033["
 
-#define RESET_TERMINAL      chprintf(STDIO_STREAM, "%s", CSI"c")
+#define RESET_TERMINAL      chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"c")
 
 #define ESC_CRS_ULC         CSI"H"        // Cursor will move to the home position, at the upper left of the screen.
 
@@ -53,33 +53,33 @@
 #define ESC_COLUMN(n)       CSI STR(n) "G"
 
 
-#define VT_SET(escapesequence) chprintf(STDIO_STREAM, "%s", escapesequence)
+#define VT_SET(escapesequence) chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", escapesequence)
 
 
-#define VT_BOLD                chprintf(STDIO_STREAM, "%s", CSI"1m")
-#define VT_UNDERSCORE          chprintf(STDIO_STREAM, "%s", CSI"4m")
-#define VT_BLINK               chprintf(STDIO_STREAM, "%s", CSI"5m")
-#define VT_INVERSE             chprintf(STDIO_STREAM, "%s", CSI"7m")
-#define VT_BOLD_INVERSE        chprintf(STDIO_STREAM, "%s", CSI"1;7m")
-#define VT_RED_ON_WHITE        chprintf(STDIO_STREAM, "%s", CSI"31;47m")
-#define VT_ATTRIBUTE_OFF       chprintf(STDIO_STREAM, "%s", CSI"0m")
-#define VT_CLEAR_SCREEN        chprintf(STDIO_STREAM, "%s", CSI";H\033[2J")
-#define VT_CURSOR_HOME         chprintf(STDIO_STREAM, "%s", CSI";H")
-#define VT_DISABLE_LINE_WRAP   chprintf(STDIO_STREAM, "%s", CSI"7l")
+#define VT_BOLD                chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"1m")
+#define VT_UNDERSCORE          chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"4m")
+#define VT_BLINK               chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"5m")
+#define VT_INVERSE             chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"7m")
+#define VT_BOLD_INVERSE        chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"1;7m")
+#define VT_RED_ON_WHITE        chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"31;47m")
+#define VT_ATTRIBUTE_OFF       chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"0m")
+#define VT_CLEAR_SCREEN        chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI";H\033[2J")
+#define VT_CURSOR_HOME         chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI";H")
+#define VT_DISABLE_LINE_WRAP   chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"7l")
 
 
-#define VT_ATTRIBUTE(attr)     chprintf(STDIO_STREAM, CSI"%dm"), attr)
-#define VT_UP(count)           chprintf(STDIO_STREAM, CSI"%dA", count)
-#define VT_DOWN(count)         chprintf(STDIO_STREAM, CSI"%dB", count)
-#define VT_RIGHT(count)        chprintf(STDIO_STREAM, CSI"%dC", count)
-#define VT_LEFT(count)         chprintf(STDIO_STREAM, CSI"%dD", count)
-#define VT_COLUMN(n)           chprintf(STDIO_STREAM, CSI"%dG", n)
-#define VT_CLR_TOEND(x)        chprintf(STDIO_STREAM, "%s", CSI"K")
-#define VT_CLR_NL(x)           chprintf(STDIO_STREAM, "%s", CSI"K\r\n")
-#define VT_POSITION(r,c)       chprintf(STDIO_STREAM, CSI"%d;%dH", r, c)
-#define VT_COLOR(color)        chprintf(STDIO_STREAM, CSI"3%dm", color)
-#define VT_BGCOLOR(color)      chprintf(STDIO_STREAM, CSI"4%dm", color)
-#define VT_VGBGCOLOR(vg,bg)    chprintf(STDIO_STREAM, CSI"3%dm"CSI"4%dm", vg, bg)
+#define VT_ATTRIBUTE(attr)     chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%dm"), attr)
+#define VT_UP(count)           chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%dA", count)
+#define VT_DOWN(count)         chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%dB", count)
+#define VT_RIGHT(count)        chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%dC", count)
+#define VT_LEFT(count)         chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%dD", count)
+#define VT_COLUMN(n)           chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%dG", n)
+#define VT_CLR_TOEND(x)        chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"K")
+#define VT_CLR_NL(x)           chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", CSI"K\r\n")
+#define VT_POSITION(r,c)       chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"%d;%dH", r, c)
+#define VT_COLOR(color)        chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"3%dm", color)
+#define VT_BGCOLOR(color)      chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"4%dm", color)
+#define VT_VGBGCOLOR(vg,bg)    chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, CSI"3%dm"CSI"4%dm", vg, bg)
 
 
 #define VT_COLOR_BLACK     0
