@@ -1,20 +1,15 @@
-/*
- * qhal.h
- *
- *  Created on: 22.12.2013
- *      Author: vke
- */
-
-#ifndef QHAL_H_
-#define QHAL_H_
 
 /**
  * @file    qhal.h
  * @brief   Quantec HAL subsystem header.
  *
- * @addtogroup QHAL
+ * @addtogroup HAL
  * @{
  */
+
+#ifndef _QHAL_H_
+#define _QHAL_H_
+
 
 #include "hal.h"
 
@@ -36,6 +31,7 @@
 #include "qnvm_partition.h"
 #include "qnvm_file.h"
 #include "qnvm_mirror.h"
+#include "qled.h"
 
 /*===========================================================================*/
 /* External declarations.                                                    */
@@ -49,7 +45,7 @@ extern "C" {
 }
 #endif
 
-#endif /* QHAL_H_ */
+#endif /* _QHAL_H_ */
 
 /** @} */
 

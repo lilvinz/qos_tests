@@ -62,6 +62,9 @@ void qhalInit(void)
 #if HAL_USE_FLASH || defined(__DOXYGEN__)
     flashInit();
 #endif
+#if HAL_USE_LED || defined(__DOXYGEN__)
+    ledInit();
+#endif
 }
 
 /** @} */

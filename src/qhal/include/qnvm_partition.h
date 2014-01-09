@@ -6,8 +6,8 @@
  * @{
  */
 
-#ifndef _NVM_PARTITION_H_
-#define _NVM_PARTITION_H_
+#ifndef _QNVM_PARTITION_H_
+#define _QNVM_PARTITION_H_
 
 #if HAL_USE_NVM_PARTITION || defined(__DOXYGEN__)
 
@@ -149,6 +149,6 @@ extern "C" {
 
 #endif /* HAL_USE_NVM_PARTITION */
 
-#endif /* _NVM_PARTITION_H_ */
+#endif /* _QNVM_PARTITION_H_ */
 
 /** @} */

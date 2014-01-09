@@ -70,7 +70,7 @@ static void flash_jedec_spi_write_enable(FlashJedecSPIDriver* fjsp)
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC WREN command
+    /* Send JEDEC WREN command. */
     static const uint8_t out[] =
     {
         FLASH_JEDEC_WREN,
@@ -87,7 +87,7 @@ static void flash_jedec_spi_write_disable(FlashJedecSPIDriver* fjsp)
 
     spiSelect(fjsp->config->spip);
 
-    // send JEDEC WRDI command
+    /* Send JEDEC WRDI command. */
     static const uint8_t out[] =
     {
         FLASH_JEDEC_WRDI,
@@ -118,11 +118,11 @@ static void flash_jedec_spi_wait_busy(FlashJedecSPIDriver* fjsp)
             break;
     }
 
-    /* Looks like it is a long wait.*/
+    /* Looks like it is a long wait. */
     while ((in & 0x01) != 0x00)
     {
     #ifdef FLASH_JEDEC_SPI_NICE_WAITING
-        /* Trying to be nice with the other threads.*/
+        /* Trying to be nice with the other threads. */
         chThdSleep(1);
     #endif
         spiReceive(fjsp->config->spip, sizeof(in), &in);
@@ -185,11 +185,10 @@ static void flash_jedec_spi_page_program(FlashJedecSPIDriver* fjsp,
 
     spiUnselect(fjsp->config->spip);
 
-    /* note: this is required to terminate AAI programming on some chips */
+    /* note: This is required to terminate AAI programming on some chips. */
     if (fjsp->config->cmd_page_program == 0xad)
     {
         flash_jedec_spi_wait_busy(fjsp);
-
         flash_jedec_spi_write_disable(fjsp);
     }
 }
@@ -258,11 +257,10 @@ static void flash_jedec_spi_page_program_ff(FlashJedecSPIDriver* fjsp,
 
     spiUnselect(fjsp->config->spip);
 
-    /* note: this is required to terminate AAI programming on some chips */
+    /* note: This is required to terminate AAI programming on some chips. */
     if (fjsp->config->cmd_page_program == 0xad)
     {
         flash_jedec_spi_wait_busy(fjsp);
-
         flash_jedec_spi_write_disable(fjsp);
     }
 }
@@ -341,7 +339,7 @@ void fjsStart(FlashJedecSPIDriver* fjsp, const FlashJedecSPIConfig* config)
 
 #define IS_POW2(x) ((((x) != 0) && !((x) & ((x) - 1))))
 
-    /* Sanity check configuration */
+    /* Sanity check configuration. */
     chDbgAssert(
             IS_POW2(config->sector_num) &&
             IS_POW2(config->sector_size) &&
@@ -353,8 +351,8 @@ void fjsStart(FlashJedecSPIDriver* fjsp, const FlashJedecSPIConfig* config)
     fjsp->config = config;
     fjsp->state = NVM_READY;
 
-    /* note: this is required to terminate AAI programming on some chips */
-    if (fjsp->config->cmd_page_program == 0x20)
+    /* note: This is required to terminate AAI programming on some chips. */
+    if (fjsp->config->cmd_page_program == 0xad)
     {
         fjsSync(fjsp);
         flash_jedec_spi_write_disable(fjsp);
@@ -371,7 +369,7 @@ void fjsStart(FlashJedecSPIDriver* fjsp, const FlashJedecSPIConfig* config)
 void fjsStop(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsStop");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert((fjsp->state == NVM_STOP) || (fjsp->state == NVM_READY),
             "fjsStop(), #1", "invalid state");
 
@@ -396,17 +394,17 @@ bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
         uint8_t* buffer)
 {
     chDbgCheck(fjsp != NULL, "fjsRead");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsRead(), #1",
             "invalid state");
-    /* verify range is within chip size */
+    /* Verify range is within chip size. */
     chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
             "fjsRead(), #2", "invalid parameters");
 
     if (fjsSync(fjsp) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Read operation in progress.*/
+    /* Read operation in progress. */
     fjsp->state = NVM_READING;
 
     spiSelect(fjsp->config->spip);
@@ -427,7 +425,7 @@ bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
     spiSend(fjsp->config->spip, fjsp->config->addrbytes_num,
             &out[NELEMS(out) - fjsp->config->addrbytes_num]);
 
-    /* dummy byte required for timing */
+    /* Dummy byte required for timing. */
     static const uint8_t dummy = 0x00;
     spiSend(fjsp->config->spip, sizeof(dummy), &dummy);
 
@@ -436,7 +434,7 @@ bool_t fjsRead(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
 
     spiUnselect(fjsp->config->spip);
 
-    /* Read operation finished.*/
+    /* Read operation finished. */
     fjsp->state = NVM_READY;
 
     return CH_SUCCESS;
@@ -460,14 +458,14 @@ bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
         const uint8_t* buffer)
 {
     chDbgCheck(fjsp != NULL, "fjsWrite");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsWrite(), #1",
             "invalid state");
-    /* verify range is within chip size */
+    /* Verify range is within chip size. */
     chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
             "fjsWrite(), #2", "invalid parameters");
 
-    /* Write operation in progress.*/
+    /* Write operation in progress. */
     fjsp->state = NVM_WRITING;
 
     uint32_t written = 0;
@@ -504,14 +502,14 @@ bool_t fjsWrite(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n,
 bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n)
 {
     chDbgCheck(fjsp != NULL, "fjsErase");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsErase(), #1",
             "invalid state");
-    /* verify range is within chip size */
+    /* Verify range is within chip size. */
     chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
             "fjsErase(), #2", "invalid parameters");
 
-    /* Erase operation in progress.*/
+    /* Erase operation in progress. */
     fjsp->state = NVM_ERASING;
 
     uint32_t first_sector_addr =
@@ -558,11 +556,11 @@ bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n)
 bool_t fjsMassErase(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsMassErase");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsMassErase(), #1",
             "invalid state");
 
-    /* Erase operation in progress.*/
+    /* Erase operation in progress. */
     fjsp->state = NVM_ERASING;
 
     /* Check if device supports erase command. */
@@ -595,7 +593,7 @@ bool_t fjsMassErase(FlashJedecSPIDriver* fjsp)
 bool_t fjsSync(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsSync");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsSync(), #1",
             "invalid state");
 
@@ -604,7 +602,7 @@ bool_t fjsSync(FlashJedecSPIDriver* fjsp)
 
     flash_jedec_spi_wait_busy(fjsp);
 
-    /* No more operation in progress.*/
+    /* No more operation in progress. */
     fjsp->state = NVM_READY;
 
     return CH_SUCCESS;
@@ -625,7 +623,7 @@ bool_t fjsSync(FlashJedecSPIDriver* fjsp)
 bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
 {
     chDbgCheck(fjsp != NULL, "fjsGetInfo");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsGetInfo(), #1",
             "invalid state");
 
@@ -640,7 +638,7 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
     };
     spiSend(fjsp->config->spip, NELEMS(out), out);
 
-    // skip JEDEC continuation id
+    /* Skip JEDEC continuation id. */
     nvmdip->identification[0] = 0x7f;
     while (nvmdip->identification[0] == 0x7f)
         spiReceive(fjsp->config->spip, 1, nvmdip->identification);
@@ -667,7 +665,7 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
 bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsWriteUnprotect");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteUnprotect(), #1",
             "invalid state");
 
@@ -705,7 +703,7 @@ bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp)
 bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsWriteProtect");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteProtect(), #1",
             "invalid state");
 
@@ -752,7 +750,7 @@ void fjsAcquireBus(FlashJedecSPIDriver* fjsp)
 #endif
 
 #if SPI_USE_MUTUAL_EXCLUSION
-    /* Acquire the underlying device as well */
+    /* Acquire the underlying device as well. */
     spiAcquireBus(fjsp->config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
 }
@@ -778,7 +776,7 @@ void fjsReleaseBus(FlashJedecSPIDriver* fjsp)
 #endif
 
 #if SPI_USE_MUTUAL_EXCLUSION
-    /* Release the underlying device as well */
+    /* Release the underlying device as well. */
     spiReleaseBus(fjsp->config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
 }

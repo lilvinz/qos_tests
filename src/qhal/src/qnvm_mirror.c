@@ -488,7 +488,7 @@ bool_t nvmmirrorWrite(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr,
             return result;
     }
 
-    /* Write operation in progress.*/
+    /* Write operation in progress. */
     nvmmirrorp->state = NVM_WRITING;
 
     return nvmWrite(nvmmirrorp->config->nvmp,
@@ -535,7 +535,7 @@ bool_t nvmmirrorErase(NVMMirrorDriver* nvmmirrorp, uint32_t startaddr, uint32_t 
             return result;
     }
 
-    /* Erase operation in progress.*/
+    /* Erase operation in progress. */
     nvmmirrorp->state = NVM_ERASING;
 
     return nvmErase(nvmmirrorp->config->nvmp,
@@ -573,7 +573,7 @@ bool_t nvmmirrorMassErase(NVMMirrorDriver* nvmmirrorp)
             return result;
     }
 
-    /* Erase operation in progress.*/
+    /* Erase operation in progress. */
     nvmmirrorp->state = NVM_ERASING;
 
     return nvmErase(nvmmirrorp->config->nvmp,
@@ -596,7 +596,7 @@ bool_t nvmmirrorMassErase(NVMMirrorDriver* nvmmirrorp)
 bool_t nvmmirrorSync(NVMMirrorDriver* nvmmirrorp)
 {
     chDbgCheck(nvmmirrorp != NULL, "nvmmirrorSync");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorSync(), #1",
             "invalid state");
 
@@ -637,7 +637,7 @@ bool_t nvmmirrorSync(NVMMirrorDriver* nvmmirrorp)
             return result;
     }
 
-    /* No more operation in progress.*/
+    /* No more operation in progress. */
     nvmmirrorp->state = NVM_READY;
 
     return CH_SUCCESS;
@@ -658,7 +658,7 @@ bool_t nvmmirrorSync(NVMMirrorDriver* nvmmirrorp)
 bool_t nvmmirrorGetInfo(NVMMirrorDriver* nvmmirrorp, NVMDeviceInfo* nvmdip)
 {
     chDbgCheck(nvmmirrorp != NULL, "nvmmirrorGetInfo");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorGetInfo(), #1",
             "invalid state");
 

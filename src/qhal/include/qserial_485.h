@@ -1,12 +1,5 @@
-/*
- * qhal.c
- *
- *  Created on: 22.12.2013
- *      Author: vke
- */
-
 /**
- * @file    serial_485.h
+ * @file    qserial_485.h
  * @brief   Serial over 485 Driver macros and structures.
  *
  * @addtogroup SERIAL_485

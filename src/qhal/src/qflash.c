@@ -123,7 +123,7 @@ void flashStop(FLASHDriver* flashp)
     chDbgCheck(flashp != NULL, "flashStop");
 
     chSysLock();
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert((flashp->state == NVM_STOP) || (flashp->state == NVM_READY),
             "flashStop(), #1", "invalid state");
 
@@ -170,7 +170,7 @@ bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
 
     flash_lld_read(flashp, startaddr, n, buffer);
 
-    /* Read operation finished.*/
+    /* Read operation finished. */
     flashp->state = NVM_READY;
 
     chSysUnlock();
@@ -290,7 +290,7 @@ bool_t flashMassErase(FLASHDriver* flashp)
     chDbgCheck(flashp != NULL, "flashMassErase");
 
     chSysLock();
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashMassErase(), #1",
             "invalid state");
 
@@ -322,7 +322,7 @@ bool_t flashSync(FLASHDriver* flashp)
     chDbgCheck(flashp != NULL, "flashSync");
 
     chSysLock();
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashSync(), #1",
             "invalid state");
 
@@ -351,7 +351,7 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
     chDbgCheck(flashp != NULL, "flashGetInfo");
 
     chSysLock();
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(flashp->state >= NVM_READY, "flashGetInfo(), #1",
             "invalid state");
 

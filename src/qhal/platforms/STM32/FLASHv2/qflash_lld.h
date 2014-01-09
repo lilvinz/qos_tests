@@ -6,8 +6,8 @@
  * @{
  */
 
-#ifndef _FLASH_LLD_H_
-#define _FLASH_LLD_H_
+#ifndef _QFLASH_LLD_H_
+#define _QFLASH_LLD_H_
 
 #if HAL_USE_FLASH || defined(__DOXYGEN__)
 
@@ -221,6 +221,6 @@ extern "C" {
 
 #endif /* HAL_USE_FLASH */
 
-#endif /* _FLASH_LLD_H_ */
+#endif /* _QFLASH_LLD_H_ */
 
 /** @} */

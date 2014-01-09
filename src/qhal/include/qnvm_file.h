@@ -6,8 +6,8 @@
  * @{
  */
 
-#ifndef _NVM_FILE_H_
-#define _NVM_FILE_H_
+#ifndef _QNVM_FILE_H_
+#define _QNVM_FILE_H_
 
 #if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
 
@@ -150,6 +150,6 @@ extern "C" {
 
 #endif /* HAL_USE_NVM_FILE */
 
-#endif /* _NVM_FILE_H_ */
+#endif /* _QNVM_FILE_H_ */
 
 /** @} */

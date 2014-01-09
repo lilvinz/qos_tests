@@ -101,7 +101,7 @@ void nvmfileObjectInit(NVMFileDriver* nvmfilep)
 void nvmfileStart(NVMFileDriver* nvmfilep, const NVMFileConfig* config)
 {
     chDbgCheck((nvmfilep != NULL) && (config != NULL), "nvmfileStart");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert((nvmfilep->state == NVM_STOP) || (nvmfilep->state == NVM_READY),
             "nvmfileStart(), #1", "invalid state");
 
@@ -155,7 +155,7 @@ void nvmfileStart(NVMFileDriver* nvmfilep, const NVMFileConfig* config)
 void nvmfileStop(NVMFileDriver* nvmfilep)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileStop");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert((nvmfilep->state == NVM_STOP) || (nvmfilep->state == NVM_READY),
             "nvmfileStop(), #1", "invalid state");
 
@@ -184,10 +184,10 @@ bool_t nvmfileRead(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n,
         uint8_t* buffer)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileRead");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileRead(), #1",
             "invalid state");
-    /* verify range is within chip size */
+    /* Verify range is within chip size. */
     chDbgAssert((startaddr + n <= nvmfilep->config->sector_size * nvmfilep->config->sector_num),
             "nvmfileRead(), #2", "invalid parameters");
 
@@ -227,17 +227,17 @@ bool_t nvmfileWrite(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n,
         const uint8_t* buffer)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileWrite");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileWrite(), #1",
             "invalid state");
-    /* verify range is within chip size */
+    /* Verify range is within chip size. */
     chDbgAssert((startaddr + n <= nvmfilep->config->sector_size * nvmfilep->config->sector_num),
             "nvmfileWrite(), #2", "invalid parameters");
 
     if (nvmfileSync(nvmfilep) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Write operation in progress.*/
+    /* Write operation in progress. */
     nvmfilep->state = NVM_WRITING;
 
     if (fseek(nvmfilep->file, startaddr, SEEK_SET) != 0)
@@ -265,17 +265,17 @@ bool_t nvmfileWrite(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n,
 bool_t nvmfileErase(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileErase");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileErase(), #1",
             "invalid state");
-    /* verify range is within chip size */
+    /* Verify range is within chip size. */
     chDbgAssert((startaddr + n <= nvmfilep->config->sector_size * nvmfilep->config->sector_num),
             "nvmfileErase(), #2", "invalid parameters");
 
     if (nvmfileSync(nvmfilep) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Erase operation in progress.*/
+    /* Erase operation in progress. */
     nvmfilep->state = NVM_ERASING;
 
     uint32_t first_sector_addr =
@@ -313,14 +313,14 @@ bool_t nvmfileErase(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n)
 bool_t nvmfileMassErase(NVMFileDriver* nvmfilep)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileMassErase");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileMassErase(), #1",
             "invalid state");
 
     if (nvmfileSync(nvmfilep) != CH_SUCCESS)
         return CH_FAILED;
 
-    /* Erase operation in progress.*/
+    /* Erase operation in progress. */
     nvmfilep->state = NVM_ERASING;
 
     for (uint32_t addr = 0;
@@ -353,7 +353,7 @@ bool_t nvmfileMassErase(NVMFileDriver* nvmfilep)
 bool_t nvmfileSync(NVMFileDriver* nvmfilep)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileSync");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileSync(), #1",
             "invalid state");
 
@@ -363,7 +363,7 @@ bool_t nvmfileSync(NVMFileDriver* nvmfilep)
     if (fflush(nvmfilep->file) != 0)
         return CH_FAILED;
 
-    /* No more operation in progress.*/
+    /* No more operation in progress. */
     nvmfilep->state = NVM_READY;
 
     return CH_SUCCESS;
@@ -384,7 +384,7 @@ bool_t nvmfileSync(NVMFileDriver* nvmfilep)
 bool_t nvmfileGetInfo(NVMFileDriver* nvmfilep, NVMDeviceInfo* nvmdip)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileGetInfo");
-    /* verify device status */
+    /* Verify device status. */
     chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileGetInfo(), #1",
             "invalid state");
 

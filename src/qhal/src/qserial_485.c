@@ -104,14 +104,14 @@ static void onotify(GenericQueue* qp)
     chDbgCheck(sd485p != NULL, "onotify");
 
     /* If the driver is not in the appropriate state then transactions
-     must not be started.*/
+     must not be started. */
     if ((sd485p->config->uartp->state != UART_READY) ||
             (sd485p->state != SD485_READY))
         return;
 
     size_t lost_rx_bytes = 0;
 
-    /* If low level driver is not transmitting, initiate transfer */
+    /* If low level driver is not transmitting, initiate transfer. */
     if (sd485p->config->uartp->txstate == UART_TX_IDLE)
     {
         /* Fill output buffer */
@@ -123,14 +123,14 @@ static void onotify(GenericQueue* qp)
 
         if (length > 0)
         {
-            /* Abort rx if pending */
+            /* Abort rx if pending. */
             lost_rx_bytes = uartStopReceiveI(sd485p->config->uartp);
 
-            /* Set driver enable pad */
+            /* Set driver enable pad. */
             if (sd485p->config->ssport != NULL)
                 palSetPad(sd485p->config->ssport, sd485p->config->sspad);
 
-            /* Continue by doing tx */
+            /* Continue by doing tx. */
             uartStartSendI(sd485p->config->uartp, length, sd485p->uart_ob);
         }
         else
@@ -197,7 +197,7 @@ void sd485Start(Serial485Driver *sd485p, const Serial485Config *config)
     sd485p->config = config;
     sd485p->config->uartp->uldp = sd485p;
 
-    /* Ensure that the lower level driver has been started first */
+    /* Ensure that the lower level driver has been started first. */
     chDbgAssert(sd485p->config->uartp->state == UART_READY,
             "sd485Start(), #2",
             "invalid state");
@@ -228,18 +228,18 @@ void sd485Stop(Serial485Driver *sd485p)
             "sd485Stop(), #1",
             "invalid state");
 
-    /* Ensure that the lower level driver is still running */
+    /* Ensure that the lower level driver is still running. */
     chDbgAssert(sd485p->config->uartp->state == UART_READY,
             "sd485Stop(), #2",
             "invalid state");
 
     uartStopReceiveI(sd485p->config->uartp);
 
-    /* Driver in stopped state.*/
+    /* Driver in stopped state. */
     sd485p->config->uartp->uldp = NULL;
     sd485p->state = SD485_STOP;
 
-    /* Queues reset in order to signal the driver stop to the application.*/
+    /* Queues reset in order to signal the driver stop to the application. */
     chnAddFlagsI(sd485p, CHN_DISCONNECTED);
     chIQResetI(&sd485p->iqueue);
     chOQResetI(&sd485p->oqueue);
@@ -273,7 +273,7 @@ void sd485EndOfTx1I(UARTDriver* uartp)
 
     if (length > 0)
     {
-        /* Continue by doing tx */
+        /* Continue by doing tx. */
         uartStartSendI(sd485p->config->uartp, length, sd485p->uart_ob);
     }
     else
@@ -301,12 +301,12 @@ void sd485EndOfTx2I(UARTDriver* uartp)
 
     chSysLockFromIsr();
 
-    /* Clear driver enable pad */
+    /* Clear driver enable pad. */
     if (sd485p->config->ssport != NULL)
         palClearPad(sd485p->config->ssport, sd485p->config->sspad);
 
     /* Restart receiving but check if its not running already.
-     * This happens once on startup for unknown reason. */
+     This happens once on startup for unknown reason. */
     if (sd485p->config->uartp->rxstate == UART_RX_IDLE)
         uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
                 sd485p->uart_ib);
@@ -336,7 +336,7 @@ void sd485EndOfRxI(UARTDriver* uartp)
     if (chIQIsEmptyI(&sd485p->iqueue))
         chnAddFlagsI(sd485p, CHN_INPUT_AVAILABLE);
 
-    /* Consume received data */
+    /* Consume received data. */
     for (size_t i = 0; i < sizeof(sd485p->uart_ib); ++i)
     {
         if (chIQPutI(&sd485p->iqueue, sd485p->uart_ib[i]) == Q_FULL)
@@ -346,7 +346,7 @@ void sd485EndOfRxI(UARTDriver* uartp)
         }
     }
 
-    /* Restart receiving */
+    /* Restart receiving. */
     uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
             sd485p->uart_ib);
 

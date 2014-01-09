@@ -6,8 +6,8 @@
  * @{
  */
 
-#ifndef _NVM_MIRROR_H_
-#define _NVM_MIRROR_H_
+#ifndef _QNVM_MIRROR_H_
+#define _QNVM_MIRROR_H_
 
 #if HAL_USE_NVM_MIRROR || defined(__DOXYGEN__)
 
@@ -160,6 +160,6 @@ extern "C" {
 
 #endif /* HAL_USE_NVM_MIRROR */
 
-#endif /* _NVM_MIRROR_H_ */
+#endif /* _QNVM_MIRROR_H_ */
 
 /** @} */
