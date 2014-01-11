@@ -68,12 +68,12 @@ void wdg_lld_start(WDGDriver* wdgp)
             wdgp->wdg->KR = (uint16_t)0x5555;
 
             /* Set prescaler. */
-            while (wdgp->wdg->SR & IWDG_SR_RVU)
+            while (wdgp->wdg->SR & IWDG_SR_PVU)
                 ;
             wdgp->wdg->PR = wdgp->config->prescaler;
 
             /* Set reload value. */
-            while (wdgp->wdg->SR & IWDG_SR_PVU)
+            while (wdgp->wdg->SR & IWDG_SR_RVU)
                 ;
             wdgp->wdg->RLR = wdgp->config->reload;
 
