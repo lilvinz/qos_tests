@@ -6,8 +6,8 @@
  * @{
  */
 
-#ifndef _FLASH_JEDEC_SPI_H_
-#define _FLASH_JEDEC_SPI_H_
+#ifndef _QFLASH_JEDEC_SPI_H_
+#define _QFLASH_JEDEC_SPI_H_
 
 #if HAL_USE_FLASH_JEDEC_SPI || defined(__DOXYGEN__)
 
@@ -182,6 +182,6 @@ extern "C" {
 
 #endif /* HAL_USE_FLASH_JEDEC_SPI */
 
-#endif /* _FLASH_JEDEC_SPI_H_ */
+#endif /* _QFLASH_JEDEC_SPI_H_ */
 
 /** @} */

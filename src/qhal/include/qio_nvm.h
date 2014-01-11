@@ -15,8 +15,8 @@
  * @{
  */
 
-#ifndef _IO_NVM_H_
-#define _IO_NVM_H_
+#ifndef _QIO_NVM_H_
+#define _QIO_NVM_H_
 
 /*
  * @todo    - add sector level write protection API
@@ -290,6 +290,6 @@ typedef struct
 
 /** @} */
 
-#endif /* _IO_NVM_H_ */
+#endif /* _QIO_NVM_H_ */
 
 /** @} */
