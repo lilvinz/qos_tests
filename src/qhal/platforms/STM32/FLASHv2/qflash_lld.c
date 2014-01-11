@@ -454,7 +454,7 @@ CH_IRQ_HANDLER(STM32_FLASH_HANDLER)
 /*===========================================================================*/
 
 /**
- * @brief   Low level UART driver initialization.
+ * @brief   Low level FLASH driver initialization.
  *
  * @notapi
  */
