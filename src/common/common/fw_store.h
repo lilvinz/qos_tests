@@ -16,6 +16,6 @@
 
 bool fwsValidate(BaseNVMDevice* nvmp, bool encrypted, uint32_t iioffset,
         IMAGE_INFORMATION_T* iip);
-bool fwsUpload(BaseNVMDevice* nvmp, BaseChannel* chp);
+bool fwsUpload(BaseChannel* chp, WDGDriver* wdgp, BaseNVMDevice* nvmp);
 
 #endif /* FW_STORE_H_ */

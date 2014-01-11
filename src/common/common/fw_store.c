@@ -242,15 +242,16 @@ bool fwsValidate(BaseNVMDevice* nvmp, bool encrypted, uint32_t iioffset,
 /**
  * @brief   Receives and stores a firmware image by means of XMODEM transfer
  *
- * @param[in] nvmp          pointer to a @p BaseNVMDevice object
  * @param[in] chp           pointer to a @p BaseChannel object
+ * @param[in] wdgp          pointer to a @p WDGDriver object
+ * @param[out] nvmp         pointer to a @p BaseNVMDevice object
  *
  * @return          The operation status.
  * @retval true     The operation succeeded.
  * @retval false    The operation failed.
  *
  */
-bool fwsUpload(BaseNVMDevice* nvmp, BaseChannel* chp)
+bool fwsUpload(BaseChannel* chp, WDGDriver* wdgp, BaseNVMDevice* nvmp)
 {
     uint8_t ReceiveBuffer[XMODEM_PACKET_SIZE_MAX];
     uint32_t FlashAddress = 0;
@@ -261,6 +262,8 @@ bool fwsUpload(BaseNVMDevice* nvmp, BaseChannel* chp)
     uint8_t Response;
     static const uint32_t INITIAL_TIMEOUT = 40;
 
+    if (wdgp != NULL)
+        wdgReload(wdgp);
     if (nvmMassErase(nvmp) != CH_SUCCESS)
         return false;
 
@@ -273,12 +276,12 @@ bool fwsUpload(BaseNVMDevice* nvmp, BaseChannel* chp)
     uint16_t timeout;
     for (timeout = 0; timeout < INITIAL_TIMEOUT; ++timeout)
     {
+        if (wdgp != NULL)
+            wdgReload(wdgp);
         LastResult = xmodem_receive_packet(chp, iPacket, ReceiveBuffer, &uPacketLen);
         if (LastResult != XMODEM_ASC_TMO && LastResult != XMODEM_ASC_ERR)
             break;
         chSequentialStreamPut(chp, 'C');
-        //todo        if ((timeout % 8) == 0)
-        //            IWDG_ReloadCounter();  // Reload IWDG counter
     }
 
     if (timeout == INITIAL_TIMEOUT)
@@ -287,7 +290,8 @@ bool fwsUpload(BaseNVMDevice* nvmp, BaseChannel* chp)
     // We received a packet or a request to stop the transfer.
     for (;;)
     {
-        //todo        IWDG_ReloadCounter();  // Reload IWDG counter
+        if (wdgp != NULL)
+            wdgReload(wdgp);
 
         // Process a packet
         if ((LastResult == XMODEM_ASC_SOH) || (LastResult == XMODEM_ASC_STX))
