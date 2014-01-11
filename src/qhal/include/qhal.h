@@ -24,6 +24,7 @@
 
 /* Layered drivers.*/
 #include "qflash.h"
+#include "qwdg.h"
 
 /* Complex drivers.*/
 #include "qserial_485.h"

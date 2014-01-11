@@ -65,6 +65,9 @@ void qhalInit(void)
 #if HAL_USE_LED || defined(__DOXYGEN__)
     ledInit();
 #endif
+#if HAL_USE_WDG || defined(__DOXYGEN__)
+    wdgInit();
+#endif
 }
 
 /** @} */
