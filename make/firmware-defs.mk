@@ -37,7 +37,6 @@ endif
 MSG_SIZE               = ${quote} SIZE        $(MSG_EXTRA)${quote}
 MSG_BIN_FILE           = ${quote} BIN         $(MSG_EXTRA)${quote}
 MSG_HEX_FILE           = ${quote} HEX         $(MSG_EXTRA)${quote}
-MSG_BIN_OBJ            = ${quote} BINO        $(MSG_EXTRA)${quote}
 MSG_STRIP_FILE         = ${quote} STRIP       $(MSG_EXTRA)${quote}
 MSG_EXTENDED_LISTING   = ${quote} LIS         $(MSG_EXTRA)${quote}
 MSG_SYMBOL_TABLE       = ${quote} NM          $(MSG_EXTRA)${quote}
@@ -75,21 +74,6 @@ gccversion :
 %.bin: %.elf
 	$(V0) @echo $(MSG_BIN_FILE) $(call toprel, $@)
 	$(V1) $(OBJCOPY) --gap-fill=0xff -O binary $< $@
-
-%.bin: %.o
-	$(V0) @echo $(MSG_LOAD_FILE) $(call toprel, $@)
-	$(V1) $(OBJCOPY) --gap-fill=0xff -O binary $< $@
-
-replace_special_chars = $(subst @,_,$(subst :,_,$(subst -,_,$(subst .,_,$(subst /,_,$1)))))
-%.bin.o: %.bin
-	$(V0) @echo $(MSG_BIN_OBJ) $(call toprel, $@)
-	$(V1) $(OBJCOPY) -I binary -O elf32-littlearm --binary-architecture arm \
-		--rename-section .data=.rodata,alloc,load,readonly,data,contents \
-		--wildcard \
-		--redefine-sym _binary_$(call replace_special_chars,$<)_start=_binary_start \
-		--redefine-sym _binary_$(call replace_special_chars,$<)_end=_binary_end \
-		--redefine-sym _binary_$(call replace_special_chars,$<)_size=_binary_size \
-		$< $@
 
 # Create extended listing file/disassambly from ELF output file.
 # using objdump testing: option -C
