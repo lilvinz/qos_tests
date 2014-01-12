@@ -12,8 +12,8 @@
 #ifndef VT102_H_
 #define VT102_H_
 
-#define STR(a) __STR(a)
-#define __STR(a) #a
+/* common/common */
+#include "stringify.h"
 
 #define CSI                 "\033["
 
@@ -48,9 +48,9 @@
 #define ESC_ECHO_OFF        CSI"12h"
 #define ESC_ECHO_ON         CSI"12l"
 
-#define ESC_DOWN(n)         CSI STR(n) "B"
-#define ESC_RIGHT(n)        CSI STR(n) "C"
-#define ESC_COLUMN(n)       CSI STR(n) "G"
+#define ESC_DOWN(n)         CSI STRINGIFY(n) "B"
+#define ESC_RIGHT(n)        CSI STRINGIFY(n) "C"
+#define ESC_COLUMN(n)       CSI STRINGIFY(n) "G"
 
 
 #define VT_SET(escapesequence) chprintft(STDIO_CHANNEL, STDIO_CHAR_TIMEOUT, "%s", escapesequence)

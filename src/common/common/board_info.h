@@ -8,8 +8,10 @@
 #ifndef BOARD_INFO_H_
 #define BOARD_INFO_H_
 
+/* chibios */
 #include "qhal.h"
 
+/* newlibc */
 #include <stdbool.h>
 #include <stdint.h>
 

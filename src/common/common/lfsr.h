@@ -1,6 +1,7 @@
 #ifndef LFSR_H
 #define LFSR_H
 
+/* newlibc */
 #include <stdint.h>
 #include <stdlib.h>
 

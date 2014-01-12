@@ -8,10 +8,13 @@
 #ifndef FW_STORE_H_
 #define FW_STORE_H_
 
-#include "qhal.h"
-
+/* common */
 #include "image_information.h"
 
+/* chibios */
+#include "qhal.h"
+
+/* newlibc */
 #include <stdbool.h>
 
 bool fwsValidate(BaseNVMDevice* nvmp, bool encrypted, uint32_t iioffset,

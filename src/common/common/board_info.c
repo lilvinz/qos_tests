@@ -5,6 +5,7 @@
  *      Author: vke
  */
 
+/* own */
 #include "board_info.h"
 
 enum

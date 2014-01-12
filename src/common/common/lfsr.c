@@ -1,4 +1,5 @@
 
+/* own */
 #include "lfsr.h"
 
 /**

@@ -1,9 +1,12 @@
 
+/* own */
 #include "fw_store.h"
 
+/* common/common */
 #include "lfsr.h"
 #include "image_information.h"
 
+/* newlibc */
 #include <stdint.h>
 
 #define XMODEM_MAX_PROTO_ERRORS     20
