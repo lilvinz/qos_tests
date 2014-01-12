@@ -101,8 +101,11 @@ enum
     OB_USER_BFB2 = (uint32_t)0x00000020, /* Definition is missing in st header. */
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
     OB_USER_no_WDG_HW = FLASH_OPTCR_WDG_SW,
+    OB_USER_WDG_HW = 0,
     OB_USER_no_RST_STOP = FLASH_OPTCR_nRST_STOP,
+    OB_USER_RST_STOP = 0,
     OB_USER_no_RST_STDBY = FLASH_OPTCR_nRST_STDBY,
+    OB_USER_RST_STDBY = 0,
 };
 /** @} */
 
@@ -205,12 +208,12 @@ extern "C" {
     void flash_lld_write_protect(FLASHDriver* flashp);
     void flash_lld_write_unprotect(FLASHDriver* flashp);
     bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo);
-    void flash_lld_ob_set_wpr(FLASHDriver* flashp, uint16_t wpr);
+    void flash_lld_ob_set_wrp(FLASHDriver* flashp, uint16_t wrp);
     void flash_lld_ob_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
     void flash_lld_ob_set_user(FLASHDriver* flashp, uint8_t user);
     void flash_lld_ob_set_bor(FLASHDriver* flashp, ob_bor_level_e level);
 #if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN)
-    void flash_lld_ob1_set_wpr(FLASHDriver* flashp, uint16_t wpr);
+    void flash_lld_ob1_set_wrp(FLASHDriver* flashp, uint16_t wrp);
     void flash_lld_ob1_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
     void flash_lld_ob1_set_user(FLASHDriver* flashp, uint8_t user);
     void flash_lld_ob1_set_bor(FLASHDriver* flashp, ob_bor_level_e level);
