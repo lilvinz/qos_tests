@@ -38,13 +38,16 @@ static const struct FLASHDriverVMT flash_vmt =
     .write = (bool_t (*)(void*, uint32_t, uint32_t, const uint8_t*))flashWrite,
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))flashErase,
     .sync = (bool_t (*)(void*))flashSync,
-    .write_protect = (bool_t (*)(void*))flashWriteProtect,
-    .write_unprotect = (bool_t (*)(void*))flashWriteUnprotect,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo*))flashGetInfo,
+    /* End of mandatory functions. */
 #if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (void (*)(void*))flashAcquireBus,
     .release = (void (*)(void*))flashReleaseBus,
 #endif
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo*))flashGetInfo,
+    .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))flashWriteProtect,
+    .mass_writeprotect = (bool_t (*)(void*))flashMassWriteProtect,
+    .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))flashWriteUnprotect,
+    .mass_writeunprotect = (bool_t (*)(void*))flashMassWriteUnprotect,
 };
 
 /*===========================================================================*/
@@ -266,7 +269,7 @@ bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
 
         flash_lld_sync(flashp);
 
-        flash_lld_erase(flashp, sector.origin);
+        flash_lld_erase_sector(flashp, sector.origin);
     }
 
     chSysUnlock();
@@ -299,7 +302,7 @@ bool_t flashMassErase(FLASHDriver* flashp)
 
     flash_lld_sync(flashp);
 
-    flash_lld_masserase(flashp);
+    flash_lld_erase_mass(flashp);
 
     chSysUnlock();
 
@@ -361,62 +364,6 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-/**
- * @brief   Write protects the whole chip.
- *
- * @param[in] flashp    pointer to the @p FLASHDriver object
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
- *
- * @api
- */
-bool_t flashWriteProtect(FLASHDriver* flashp)
-{
-    chDbgCheck(flashp != NULL, "flashWriteProtect");
-
-    chSysLock();
-    /* Verify device status. */
-    chDbgAssert(flashp->state >= NVM_READY, "flashWriteProtect(), #1",
-            "invalid state");
-
-    flash_lld_sync(flashp);
-
-    flash_lld_write_protect(flashp);
-
-    chSysUnlock();
-    return CH_SUCCESS;
-}
-
-/**
- * @brief   Write unprotects the whole chip.
- *
- * @param[in] flashp    pointer to the @p FLASHDriver object
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
- *
- * @api
- */
-bool_t flashWriteUnprotect(FLASHDriver* flashp)
-{
-    chDbgCheck(flashp != NULL, "flashWriteUnprotect");
-
-    chSysLock();
-    /* Verify device status. */
-    chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
-            "invalid state");
-
-    flash_lld_sync(flashp);
-
-    flash_lld_write_unprotect(flashp);
-
-    chSysUnlock();
-    return CH_SUCCESS;
-}
-
 #if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the flash device.
@@ -461,6 +408,162 @@ void flashReleaseBus(FLASHDriver* flashp)
 #endif
 }
 #endif /* FLASH_USE_MUTUAL_EXCLUSION */
+
+/**
+ * @brief   Write protects one or more sectors.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] startaddr address within to be protected sector
+ * @param[in] n         number of bytes to protect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t flashWriteProtect(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(flashp != NULL, "flashWriteProtect");
+
+    chSysLock();
+    /* Verify device status. */
+    chDbgAssert(flashp->state >= NVM_READY, "flashWriteProtect(), #1",
+            "invalid state");
+
+    /* Verify range is within chip size. */
+    chDbgAssert(
+            flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
+            && flash_lld_addr_to_sector(startaddr + n - 1, NULL) == CH_SUCCESS,
+            "flashWriteProtect(), #2", "invalid parameters");
+
+    FLASHSectorInfo sector;
+
+    for (sector.origin = startaddr;
+            sector.origin < startaddr + n;
+            sector.origin += sector.size)
+    {
+        if (flash_lld_addr_to_sector(sector.origin, &sector) != CH_SUCCESS)
+        {
+            chSysUnlock();
+            return CH_FAILED;
+        }
+
+        flash_lld_sync(flashp);
+
+        flash_lld_writeprotect_sector(flashp, sector.origin);
+    }
+
+    chSysUnlock();
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write protects the whole device.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t flashMassWriteProtect(FLASHDriver* flashp)
+{
+    chDbgCheck(flashp != NULL, "flashMassWriteProtect");
+
+    chSysLock();
+    /* Verify device status. */
+    chDbgAssert(flashp->state >= NVM_READY, "flashMassWriteProtect(), #1",
+            "invalid state");
+
+    flash_lld_sync(flashp);
+
+    flash_lld_writeprotect_mass(flashp);
+
+    chSysUnlock();
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects one or more sectors.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] startaddr address within to be unprotected sector
+ * @param[in] n         number of bytes to unprotect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t flashWriteUnprotect(FLASHDriver* flashp, uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(flashp != NULL, "flashWriteUnprotect");
+
+    chSysLock();
+    /* Verify device status. */
+    chDbgAssert(flashp->state >= NVM_READY, "flashWriteUnprotect(), #1",
+            "invalid state");
+
+    /* Verify range is within chip size. */
+    chDbgAssert(
+            flash_lld_addr_to_sector(startaddr, NULL) == CH_SUCCESS
+            && flash_lld_addr_to_sector(startaddr + n - 1, NULL) == CH_SUCCESS,
+            "flashWriteUnprotect(), #2", "invalid parameters");
+
+    FLASHSectorInfo sector;
+
+    for (sector.origin = startaddr;
+            sector.origin < startaddr + n;
+            sector.origin += sector.size)
+    {
+        if (flash_lld_addr_to_sector(sector.origin, &sector) != CH_SUCCESS)
+        {
+            chSysUnlock();
+            return CH_FAILED;
+        }
+
+        flash_lld_sync(flashp);
+
+        flash_lld_writeunprotect_sector(flashp, sector.origin);
+    }
+
+    chSysUnlock();
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects the whole device.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t flashMassWriteUnprotect(FLASHDriver* flashp)
+{
+    chDbgCheck(flashp != NULL, "flashMassWriteUnprotect");
+
+    chSysLock();
+    /* Verify device status. */
+    chDbgAssert(flashp->state >= NVM_READY, "flashMassWriteUnprotect(), #1",
+            "invalid state");
+
+    flash_lld_sync(flashp);
+
+    flash_lld_writeunprotect_mass(flashp);
+
+    chSysUnlock();
+    return CH_SUCCESS;
+}
 
 #endif /* HAL_USE_FLASH */
 

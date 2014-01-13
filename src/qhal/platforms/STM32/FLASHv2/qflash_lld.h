@@ -199,24 +199,34 @@ extern "C" {
     void flash_lld_init(void);
     void flash_lld_start(FLASHDriver* flashp);
     void flash_lld_stop(FLASHDriver* flashp);
-    void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, uint8_t* buffer);
-    void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, const uint8_t* buffer);
-    void flash_lld_erase(FLASHDriver* flashp, uint32_t startaddr);
-    void flash_lld_masserase(FLASHDriver* flashp);
+    bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo);
+    void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
+            uint8_t* buffer);
+    void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
+            const uint8_t* buffer);
+    void flash_lld_erase_sector(FLASHDriver* flashp, uint32_t startaddr);
+    void flash_lld_erase_mass(FLASHDriver* flashp);
     void flash_lld_sync(FLASHDriver* flashp);
     void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip);
-    void flash_lld_write_protect(FLASHDriver* flashp);
-    void flash_lld_write_unprotect(FLASHDriver* flashp);
-    bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo);
-    void flash_lld_ob_set_wrp(FLASHDriver* flashp, uint16_t wrp);
-    void flash_lld_ob_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
-    void flash_lld_ob_set_user(FLASHDriver* flashp, uint8_t user);
-    void flash_lld_ob_set_bor(FLASHDriver* flashp, ob_bor_level_e level);
+    void flash_lld_writeprotect_sector(FLASHDriver* flashp,
+            uint32_t startaddr);
+    void flash_lld_writeprotect_mass(FLASHDriver* flashp);
+    void flash_lld_writeunprotect_sector(FLASHDriver* flashp,
+            uint32_t startaddr);
+    void flash_lld_writeunprotect_mass(FLASHDriver* flashp);
+    void flash_lld_ob_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
+    void flash_lld_ob_user(FLASHDriver* flashp, uint8_t user);
+    void flash_lld_ob_bor(FLASHDriver* flashp, ob_bor_level_e level);
 #if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN)
-    void flash_lld_ob1_set_wrp(FLASHDriver* flashp, uint16_t wrp);
-    void flash_lld_ob1_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
-    void flash_lld_ob1_set_user(FLASHDriver* flashp, uint8_t user);
-    void flash_lld_ob1_set_bor(FLASHDriver* flashp, ob_bor_level_e level);
+    void flash_lld1_writeprotect_sector(FLASHDriver* flashp,
+            uint32_t startaddr);
+    void flash_lld1_writeprotect_mass(FLASHDriver* flashp);
+    void flash_lld1_writeunprotect_sector(FLASHDriver* flashp,
+            uint32_t startaddr);
+    void flash_lld1_writeunprotect_mass(FLASHDriver* flashp);
+    void flash_lld1_ob_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
+    void flash_lld1_ob_user(FLASHDriver* flashp, uint8_t user);
+    void flash_lld1_ob_bor(FLASHDriver* flashp, ob_bor_level_e level);
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
 #ifdef __cplusplus
 }

@@ -18,11 +18,6 @@
 #ifndef _QIO_NVM_H_
 #define _QIO_NVM_H_
 
-/*
- * @todo    - add sector level write protection API
- *
- */
-
 /**
  * @brief   Driver state machine possible states.
  */
@@ -64,16 +59,22 @@ typedef struct
     /* Write / erase operations synchronization.*/                            \
     bool_t (*sync)(void *instance);                                           \
     /* Obtains info about the media.*/                                        \
-    bool_t (*get_info)(void *instance, NVMDeviceInfo *bdip);                  \
+    bool_t (*get_info)(void *instance, NVMDeviceInfo *nvmdip);                \
     /* End of mandatory functions. */                                         \
     /* Acquire device if supported by underlying driver.*/                    \
     void (*acquire)(void *instance);                                          \
     /* Release device if supported by underlying driver.*/                    \
     void (*release)(void *instance);                                          \
-    /* Enables chip write protection. */                                      \
-    bool_t (*write_protect)(void *instance);                                  \
-    /* Disables chip write protection. */                                     \
-    bool_t (*write_unprotect)(void *instance);
+    /* Write protect one or more sectors crossing sectors when required. */   \
+    bool_t (*writeprotect)(void *instance, uint32_t startaddr,                \
+            uint32_t n);                                                      \
+    /* Write protect whole device. */                                         \
+    bool_t (*mass_writeprotect)(void *instance);                              \
+    /* Write unprotect one or more sectors crossing sectors when required. */ \
+    bool_t (*writeunprotect)(void *instance, uint32_t startaddr,              \
+            uint32_t n);                                                      \
+    /* Write unprotect whole device. */                                       \
+    bool_t (*mass_writeunprotect)(void *instance);
 
 /**
  * @brief   @p BaseNVMDevice specific data.
@@ -214,7 +215,7 @@ typedef struct
  * @brief   Returns a media information structure.
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
- * @param[out] bdip     pointer to a @p NVMDeviceInfo structure
+ * @param[out] nvmdip   pointer to a @p NVMDeviceInfo structure
  *
  * @return              The operation status.
  * @retval CH_SUCCESS   operation succeeded.
@@ -222,16 +223,12 @@ typedef struct
  *
  * @api
  */
-#define nvmGetInfo(ip, bdip) ((ip)->vmt->get_info(ip, bdip))
+#define nvmGetInfo(ip, nvmdip) ((ip)->vmt->get_info(ip, nvmdip))
 
 /**
- * @brief   Acquires device for exclusive access.
+ * @brief   Acquires device for exclusive access if implemented.
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   operation succeeded.
- * @retval CH_FAILED    operation failed.
  *
  * @api
  */
@@ -241,7 +238,7 @@ typedef struct
 }
 
 /**
- * @brief   Releases exclusive access from device.
+ * @brief   Releases exclusive access from device if implemented.
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
@@ -253,32 +250,72 @@ typedef struct
 }
 
 /**
- * @brief   Enables the write protection if available
+ * @brief   Write protects one or more sectors if implemented.
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
- *
- * @api
- */
-#define nvmWriteProtect(ip)                                                   \
-        (ip->vmt->write_protect == NULL) ?                                    \
-        CH_SUCCESS :                                                          \
-        ((ip)->vmt->write_protect)(ip);
-
-/**
- * @brief   Disables the write protection if available
- *
- * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ * @param[in] startaddr address of sector to protect
+ * @param[in] n         number of bytes to protect
  *
  * @return              The operation status.
- * @retval CH_SUCCESS   operation succeeded or is not implemented.
+ * @retval CH_SUCCESS   operation succeeded or not implemented.
  * @retval CH_FAILED    operation failed.
  *
  * @api
  */
-#define nvmWriteUnprotect(ip)                                                 \
-        (ip->vmt->write_unprotect == NULL) ?                                  \
+#define nvmWriteProtect(ip, startaddr, n)                                     \
+        (ip->vmt->writeprotect == NULL) ?                                     \
         CH_SUCCESS :                                                          \
-        ((ip)->vmt->write_unprotect)(ip);
+        ((ip)->vmt->writeprotect)(ip, startaddr, n);
+
+/**
+ * @brief   Write protects whole device if implemented.
+ *
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded or not implemented.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define nvmMassWriteProtect(ip)                                               \
+        (ip->vmt->mass_writeprotect == NULL) ?                                \
+        CH_SUCCESS :                                                          \
+        ((ip)->vmt->mass_writeprotect)(ip);
+
+/**
+ * @brief   Write unprotects one or more sectors if implemented.
+ *
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ * @param[in] startaddr address of sector to unprotect
+ * @param[in] n         number of bytes to unprotect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded or not implemented.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define nvmWriteUnprotect(ip, startaddr, n)                                   \
+        (ip->vmt->writeunprotect == NULL) ?                                   \
+        CH_SUCCESS :                                                          \
+        ((ip)->vmt->writeunprotect)(ip, startaddr, n);
+
+/**
+ * @brief   Write unprotects whole device if implemented.
+ *
+ * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   operation succeeded or not implemented.
+ * @retval CH_FAILED    operation failed.
+ *
+ * @api
+ */
+#define nvmMassWriteUnprotect(ip)                                             \
+        (ip->vmt->mass_writeunprotect == NULL) ?                              \
+        CH_SUCCESS :                                                          \
+        ((ip)->vmt->mass_writeunprotect)(ip);
 
 /** @} */
 

@@ -312,7 +312,8 @@ static __inline__ flash_program_size_e flash_lld_get_psize(void)
  *
  * @notapi
  */
-static void flash_lld_program_64(FLASHDriver* flashp, uint32_t addr, uint64_t data)
+static void flash_lld_program_64(FLASHDriver* flashp, uint32_t addr,
+        uint64_t data)
 {
     flash_lld_sync(flashp);
 
@@ -340,7 +341,8 @@ static void flash_lld_program_64(FLASHDriver* flashp, uint32_t addr, uint64_t da
  *
  * @notapi
  */
-static void flash_lld_program_32(FLASHDriver* flashp, uint32_t addr, uint32_t data)
+static void flash_lld_program_32(FLASHDriver* flashp, uint32_t addr,
+        uint32_t data)
 {
     flash_lld_sync(flashp);
 
@@ -368,7 +370,8 @@ static void flash_lld_program_32(FLASHDriver* flashp, uint32_t addr, uint32_t da
  *
  * @notapi
  */
-static void flash_lld_program_16(FLASHDriver* flashp, uint32_t addr, uint16_t data)
+static void flash_lld_program_16(FLASHDriver* flashp, uint32_t addr,
+        uint16_t data)
 {
     flash_lld_sync(flashp);
 
@@ -396,7 +399,8 @@ static void flash_lld_program_16(FLASHDriver* flashp, uint32_t addr, uint16_t da
  *
  * @notapi
  */
-static void flash_lld_program_8(FLASHDriver* flashp, uint32_t addr, uint8_t data)
+static void flash_lld_program_8(FLASHDriver* flashp, uint32_t addr,
+        uint8_t data)
 {
     flash_lld_sync(flashp);
 
@@ -414,6 +418,105 @@ static void flash_lld_program_8(FLASHDriver* flashp, uint32_t addr, uint8_t data
 
     *(__O uint8_t*)addr = data;
 }
+
+/**
+ * @brief   Sets write protection bits in option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] wrp       bitmask of sectors to active write protection for
+ *
+ * @notapi
+ */
+static void flash_lld_ob_wrp_set(FLASHDriver* flashp, uint16_t wrp)
+{
+    uint16_t state_current = ~(*(__IO uint16_t*)OPTCR_BYTE2_ADDRESS);
+    /* Check current state first. */
+    if ((state_current & wrp) != wrp)
+    {
+        uint16_t state_new = state_current | wrp;
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS = ~state_new;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
+}
+
+/**
+ * @brief   Clears write protection bits in option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] wrp       bitmask of sectors to deactivate write protection for
+ *
+ * @notapi
+ */
+static void flash_lld_ob_wrp_clear(FLASHDriver* flashp, uint16_t wrp)
+{
+    uint16_t state_current = ~(*(__IO uint16_t*)OPTCR_BYTE2_ADDRESS);
+    /* Check current state first. */
+    if ((state_current & wrp) != 0)
+    {
+        uint16_t state_new = state_current & (~wrp);
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS = ~state_new;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
+}
+
+#if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN)
+/**
+ * @brief   Sets write protection bits in 2nd flash option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] wrp       bitmask of sectors to active write protection for
+ *
+ * @notapi
+ */
+static void flash_lld1_ob_set_wrp(FLASHDriver* flashp, uint16_t wrp)
+{
+    uint16_t state_current = ~(*(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS);
+    /* Check current state first. */
+    if ((state_current & wrp) != wrp)
+    {
+        uint16_t state_new = state_current | wrp;
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS = ~state_new;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
+}
+
+/**
+ * @brief   Clears write protection bits in option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] wrp       bitmask of sectors to deactivate write protection for
+ *
+ * @notapi
+ */
+static void flash_lld1_ob_wrp_clear(FLASHDriver* flashp, uint16_t wrp)
+{
+    uint16_t state_current = ~(*(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS);
+    /* Check current state first. */
+    if ((state_current & wrp) != 0)
+    {
+        uint16_t state_new = state_current & (~wrp);
+        flash_lld_optcr_unlock(flashp);
+        /* Set write protection status. */
+        *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS = ~state_new;
+        /* Program option bytes. */
+        *(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
+        flash_lld_optcr_lock(flashp);
+    }
+}
+
+#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
 
 /**
  * @brief   FLASH common service routine.
@@ -522,6 +625,51 @@ void flash_lld_stop(FLASHDriver* flashp)
 }
 
 /**
+ * @brief   Converts address to sector.
+ *
+ * @param[in] addr      address to convert to sector
+ * @param[out] sinfo    pointer to variable receiving sector info or NULL
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @notapi
+ */
+bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo)
+{
+    FLASHSectorInfo info =
+    {
+        .sector = 0,
+        .origin = 0,
+        .size = 0,
+    };
+
+    for (uint8_t i = 0; i < NELEMS(flash_sector_infos); ++i)
+    {
+        info.size = flash_sector_infos[i].size;
+        if (addr >= info.origin
+                && addr < info.origin + info.size)
+        {
+            if (sinfo != NULL)
+            {
+                sinfo->sector = i;
+                sinfo->origin = info.origin;
+                sinfo->size = info.size;
+            }
+            return CH_SUCCESS;
+        }
+        info.origin += info.size;
+
+        /* Test against total flash size. */
+        if (info.origin >=
+                (uint32_t)(*((__I uint16_t*)FLASH_SIZE_REGISTER_ADDRESS)) * 1024)
+            return CH_FAILED;
+    }
+    return CH_FAILED;
+}
+
+/**
  * @brief   Reads data from flash peripheral.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
@@ -531,7 +679,8 @@ void flash_lld_stop(FLASHDriver* flashp)
  *
  * @notapi
  */
-void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, uint8_t* buffer)
+void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
+        uint8_t* buffer)
 {
     memcpy(buffer, (uint8_t*)(0x08000000 + startaddr), n);
 }
@@ -546,7 +695,8 @@ void flash_lld_read(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, uint8_t
  *
  * @notapi
  */
-void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, const uint8_t* buffer)
+void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
+        const uint8_t* buffer)
 {
     uint32_t addr = 0x08000000 + startaddr;
     uint32_t offset = 0;
@@ -598,7 +748,7 @@ void flash_lld_write(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, const 
  *
  * @notapi
  */
-void flash_lld_erase(FLASHDriver* flashp, uint32_t startaddr)
+void flash_lld_erase_sector(FLASHDriver* flashp, uint32_t startaddr)
 {
     flash_lld_cr_unlock(flashp);
 
@@ -631,7 +781,7 @@ void flash_lld_erase(FLASHDriver* flashp, uint32_t startaddr)
  *
  * @notapi
  */
-void flash_lld_masserase(FLASHDriver* flashp)
+void flash_lld_erase_mass(FLASHDriver* flashp)
 {
     flash_lld_cr_unlock(flashp);
 
@@ -683,109 +833,66 @@ void flash_lld_sync(FLASHDriver* flashp)
 void flash_lld_get_info(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
 {
     nvmdip->sector_size = 16 * 1024;
-    nvmdip->sector_num = (uint32_t)(*(__I uint16_t*)(FLASH_SIZE_REGISTER_ADDRESS)) * 1024 / nvmdip->sector_size;
+    nvmdip->sector_num =
+            (uint32_t)(*(__I uint16_t*)(FLASH_SIZE_REGISTER_ADDRESS)) *
+            1024 / nvmdip->sector_size;
     nvmdip->identification[0] = 'F';
     nvmdip->identification[1] = 'v';
     nvmdip->identification[2] = '2';
 }
 
 /**
- * @brief   Enables whole chip write protection.
+ * @brief   Write protects once sector.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] startaddr relative address to start of flash
+ *
+ * @notapi
+ */
+void flash_lld_writeprotect_sector(FLASHDriver* flashp, uint32_t startaddr)
+{
+    FLASHSectorInfo info;
+    flash_lld_addr_to_sector(startaddr, &info);
+    flash_lld_ob_wrp_set(flashp, (1 << info.sector));
+}
+
+/**
+ * @brief   Write protects whole device.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
  *
  * @notapi
  */
-void flash_lld_write_protect(FLASHDriver* flashp)
+void flash_lld_writeprotect_mass(FLASHDriver* flashp)
 {
-    flash_lld_ob_set_wrp(flashp, ~0xfff);
-
-#if defined(STM32F427_437xx) || defined(STM32F429_439xx)
-    flash_lld_ob1_set_wrp(flashp, ~0xfff);
-#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+    flash_lld_ob_wrp_set(flashp, 0xfff);
 }
 
 /**
- * @brief   Disables whole chip write protection.
+ * @brief   Write unprotects one sector.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] startaddr relative address to start of flash
+ *
+ * @notapi
+ */
+void flash_lld_writeunprotect_sector(FLASHDriver* flashp, uint32_t startaddr)
+{
+    FLASHSectorInfo info;
+    flash_lld_addr_to_sector(startaddr, &info);
+    flash_lld_ob_wrp_clear(flashp, (1 << info.sector));
+}
+
+/**
+ * @brief   Write unprotects whole device.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
  *
  * @notapi
  */
-void flash_lld_write_unprotect(FLASHDriver* flashp)
+void flash_lld_writeunprotect_mass(FLASHDriver* flashp)
 {
-    flash_lld_ob_set_wrp(flashp, ~0x000);
-
-#if defined(STM32F427_437xx) || defined(STM32F429_439xx)
-    flash_lld_ob1_set_wrp(flashp, ~0x000);
-#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
-}
-
-/**
- * @brief   Converts address to sector.
- *
- * @param[in] addr      address to convert to sector
- * @param[out] sinfo    pointer to variable receiving sector info or NULL
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
- *
- * @notapi
- */
-bool_t flash_lld_addr_to_sector(uint32_t addr, FLASHSectorInfo* sinfo)
-{
-    FLASHSectorInfo info =
-    {
-        .sector = 0,
-        .origin = 0,
-        .size = 0,
-    };
-
-    for (uint8_t i = 0; i < NELEMS(flash_sector_infos); ++i)
-    {
-        info.size = flash_sector_infos[i].size;
-        if (addr >= info.origin
-                && addr < info.origin + info.size)
-        {
-            if (sinfo != NULL)
-            {
-                sinfo->sector = i;
-                sinfo->origin = info.origin;
-                sinfo->size = info.size;
-            }
-            return CH_SUCCESS;
-        }
-        info.origin += info.size;
-
-        /* Test against total flash size. */
-        if (info.origin >= (uint32_t)(*((__I uint16_t*)FLASH_SIZE_REGISTER_ADDRESS)) * 1024)
-            return CH_FAILED;
-    }
-    return CH_FAILED;
-}
-
-/**
- * @brief   Sets write protection bits in option bytes.
- *
- * @param[in] flashp    pointer to the @p FLASHDriver object
- * @param[in] wrp       desired write protection bits (low active)
- *
- * @notapi
- */
-void flash_lld_ob_set_wrp(FLASHDriver* flashp, uint16_t wrp)
-{
-    /* Check current state first. */
-    if ((*(__IO uint16_t*)OPTCR_BYTE2_ADDRESS & 0xfff) != wrp)
-    {
-        flash_lld_optcr_unlock(flashp);
-        /* Set write protection status. */
-        *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS &= ~0xfff;
-        *(__IO uint16_t*)OPTCR_BYTE2_ADDRESS |= wrp & 0xfff;
-        /* Program option bytes. */
-        *(__IO uint8_t*)OPTCR_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
-        flash_lld_optcr_lock(flashp);
-    }
+    flash_lld_ob_wrp_clear(flashp, 0xfff);
 }
 
 /**
@@ -796,7 +903,7 @@ void flash_lld_ob_set_wrp(FLASHDriver* flashp, uint16_t wrp)
  *
  * @notapi
  */
-void flash_lld_ob_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level)
+void flash_lld_ob_rdp(FLASHDriver* flashp, ob_rdp_level_e level)
 {
     /* Check current state first. */
     if (*(__IO uint8_t*)OPTCR_BYTE1_ADDRESS != level)
@@ -818,7 +925,7 @@ void flash_lld_ob_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level)
  *
  * @notapi
  */
-void flash_lld_ob_set_bor(FLASHDriver* flashp, ob_bor_level_e level)
+void flash_lld_ob_bor(FLASHDriver* flashp, ob_bor_level_e level)
 {
     /* Check current state first. */
     if ((*(__IO uint8_t*)OPTCR_BYTE0_ADDRESS & FLASH_OPTCR_BOR_LEV) != level)
@@ -841,7 +948,7 @@ void flash_lld_ob_set_bor(FLASHDriver* flashp, ob_bor_level_e level)
  *
  * @notapi
  */
-void flash_lld_ob_set_user(FLASHDriver* flashp, uint8_t user)
+void flash_lld_ob_user(FLASHDriver* flashp, uint8_t user)
 {
     /* Check current state first. */
     if ((*(__IO uint8_t*)OPTCR_BYTE0_ADDRESS & 0xf0) != user)
@@ -858,26 +965,57 @@ void flash_lld_ob_set_user(FLASHDriver* flashp, uint8_t user)
 
 #if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN)
 /**
- * @brief   Sets write protection bits in 2nd flash option bytes.
+ * @brief   Write protects once sector in 2nd flash option bytes.
  *
  * @param[in] flashp    pointer to the @p FLASHDriver object
- * @param[in] wrp       desired write protection bits (low active)
+ * @param[in] startaddr relative address to start of flash
  *
  * @notapi
  */
-void flash_lld_ob1_set_wrp(FLASHDriver* flashp, uint16_t wrp)
+void flash_lld1_writeprotect_sector(FLASHDriver* flashp, uint32_t startaddr)
 {
-    /* Check current state first. */
-    if ((*(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS & 0xfff) != wrp)
-    {
-        flash_lld_optcr_unlock(flashp);
-        /* Set write protection status. */
-        *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS &= ~0xfff;
-        *(__IO uint16_t*)OPTCR1_BYTE2_ADDRESS |= wrp & 0xfff;
-        /* Program option bytes. */
-        *(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS |= FLASH_OPTCR_OPTSTRT;
-        flash_lld_optcr_lock(flashp);
-    }
+    FLASHSectorInfo info;
+    flash_lld_addr_to_sector(startaddr, &info);
+    flash_lld_ob1_wrp_set(flashp, (1 << info.sector));
+}
+
+/**
+ * @brief   Write protects whole device in 2nd flash option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld1_writeprotect_mass(FLASHDriver* flashp)
+{
+    flash_lld_ob1_wrp_set(flashp, 0xfff);
+}
+
+/**
+ * @brief   Write unprotects one sector in 2nd flash option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ * @param[in] startaddr relative address to start of flash
+ *
+ * @notapi
+ */
+void flash_lld1_writeunprotect_sector(FLASHDriver* flashp, uint32_t startaddr)
+{
+    FLASHSectorInfo info;
+    flash_lld_addr_to_sector(startaddr, &info);
+    flash_lld_ob1_wrp_clear(flashp, (1 << info.sector));
+}
+
+/**
+ * @brief   Write unprotects whole device in 2nd flash option bytes.
+ *
+ * @param[in] flashp    pointer to the @p FLASHDriver object
+ *
+ * @notapi
+ */
+void flash_lld1_writeunprotect_mass(FLASHDriver* flashp)
+{
+    flash_lld_ob1_wrp_clear(flashp, 0xfff);
 }
 
 /**
@@ -888,7 +1026,7 @@ void flash_lld_ob1_set_wrp(FLASHDriver* flashp, uint16_t wrp)
  *
  * @notapi
  */
-void flash_lld_ob1_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level)
+void flash_lld1_ob_rdp(FLASHDriver* flashp, ob_rdp_level_e level)
 {
     /* Check current state first. */
     if ((*(__IO uint8_t*)OPTCR1_BYTE1_ADDRESS != level)
@@ -910,7 +1048,7 @@ void flash_lld_ob1_set_rdp(FLASHDriver* flashp, ob_rdp_level_e level)
  *
  * @notapi
  */
-void flash_lld_ob1_set_bor(FLASHDriver* flashp, ob_bor_level_e level)
+void flash_lld1_ob_bor(FLASHDriver* flashp, ob_bor_level_e level)
 {
     /* Check current state first. */
     if ((*(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS & FLASH_OPTCR_BOR_LEV) != level)
@@ -933,7 +1071,7 @@ void flash_lld_ob1_set_bor(FLASHDriver* flashp, ob_bor_level_e level)
  *
  * @notapi
  */
-void flash_lld_ob1_set_user(FLASHDriver* flashp, uint8_t user)
+void flash_lld1_ob_user(FLASHDriver* flashp, uint8_t user)
 {
     /* Check current state first. */
     if ((*(__IO uint8_t*)OPTCR1_BYTE0_ADDRESS & 0xf0) != user)

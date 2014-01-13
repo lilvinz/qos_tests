@@ -73,18 +73,24 @@ extern "C" {
     void flashObjectInit(FLASHDriver* flashp);
     void flashStart(FLASHDriver* flashp, const FLASHConfig* config);
     void flashStop(FLASHDriver* flashp);
-    bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, uint8_t* buffer);
-    bool_t flashWrite(FLASHDriver* flashp, uint32_t startaddr, uint32_t n, const uint8_t* buffer);
+    bool_t flashRead(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
+            uint8_t* buffer);
+    bool_t flashWrite(FLASHDriver* flashp, uint32_t startaddr, uint32_t n,
+            const uint8_t* buffer);
     bool_t flashErase(FLASHDriver* flashp, uint32_t startaddr, uint32_t n);
     bool_t flashMassErase(FLASHDriver* flashp);
     bool_t flashSync(FLASHDriver* flashp);
     bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip);
-    bool_t flashWriteProtect(FLASHDriver* flashp);
-    bool_t flashWriteUnprotect(FLASHDriver* flashp);
 #if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void flashAcquireBus(FLASHDriver* flashp);
     void flashReleaseBus(FLASHDriver* flashp);
 #endif /* FLASH_USE_MUTUAL_EXCLUSION */
+    bool_t flashWriteProtect(FLASHDriver* flashp, uint32_t startaddr,
+            uint32_t n);
+    bool_t flashMassWriteProtect(FLASHDriver* flashp);
+    bool_t flashWriteUnprotect(FLASHDriver* flashp, uint32_t startaddr,
+            uint32_t n);
+    bool_t flashMassWriteUnprotect(FLASHDriver* flashp);
 #ifdef __cplusplus
 }
 #endif

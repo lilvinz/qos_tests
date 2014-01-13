@@ -91,6 +91,10 @@ typedef struct
      */
     uint8_t addrbytes_num;
     /**
+     * @brief Number of block protection bits.
+     */
+    uint8_t bpbits_num;
+    /**
      * @brief Sector erase command.
      */
     uint8_t cmd_sector_erase;
@@ -170,12 +174,14 @@ extern "C" {
     bool_t fjsMassErase(FlashJedecSPIDriver* fjsp);
     bool_t fjsSync(FlashJedecSPIDriver* fjsp);
     bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip);
-    bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp);
-    bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp);
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void fjsAcquireBus(FlashJedecSPIDriver* fjsp);
     void fjsReleaseBus(FlashJedecSPIDriver* fjsp);
 #endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
+    bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n);
+    bool_t fjsMassWriteProtect(FlashJedecSPIDriver* fjsp);
+    bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n);
+    bool_t fjsMassWriteUnprotect(FlashJedecSPIDriver* fjsp);
 #ifdef __cplusplus
 }
 #endif

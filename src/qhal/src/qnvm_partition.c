@@ -15,11 +15,6 @@
 
 #include <string.h>
 
-/*
- * @todo    - add write protection pass-through to lower level driver
- *
- */
-
 /*===========================================================================*/
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
@@ -48,6 +43,10 @@ static const struct NVMPartitionDriverVMT nvm_partition_vmt =
     .acquire = (void (*)(void*))nvmpartAcquireBus,
     .release = (void (*)(void*))nvmpartReleaseBus,
 #endif
+    .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartWriteProtect,
+    .mass_writeprotect = (bool_t (*)(void*))nvmpartMassWriteProtect,
+    .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartWriteUnprotect,
+    .mass_writeunprotect = (bool_t (*)(void*))nvmpartMassWriteUnprotect,
 };
 
 /*===========================================================================*/
@@ -362,6 +361,110 @@ void nvmpartReleaseBus(NVMPartitionDriver* nvmpartp)
     nvmRelease(nvmpartp->config->nvmp);
 }
 #endif /* NVM_PARTITION_USE_MUTUAL_EXCLUSION */
+
+/**
+ * @brief   Write protects one or more sectors.
+ *
+ * @param[in] partp     pointer to the @p NVMPartitionDriver object
+ * @param[in] startaddr address within to be protected sector
+ * @param[in] n         number of bytes to protect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t nvmpartWriteProtect(NVMPartitionDriver* nvmpartp,
+        uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(nvmpartp != NULL, "nvmpartWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(nvmpartp->state >= NVM_READY, "nvmpartWriteProtect(), #1",
+            "invalid state");
+    /* Verify range is within partition size. */
+    chDbgAssert((startaddr + n <= nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num),
+            "nvmpartWriteProtect(), #2", "invalid parameters");
+
+    return nvmWriteProtect(nvmpartp->config->nvmp,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset + startaddr,
+            n);
+}
+
+/**
+ * @brief   Write protects the whole device.
+ *
+ * @param[in] partp     pointer to the @p NVMPartitionDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t nvmpartMassWriteProtect(NVMPartitionDriver* nvmpartp)
+{
+    chDbgCheck(nvmpartp != NULL, "nvmpartMassWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(nvmpartp->state >= NVM_READY, "nvmpartMassWriteProtect(), #1",
+            "invalid state");
+
+    return nvmWriteProtect(nvmpartp->config->nvmp,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num);
+}
+
+/**
+ * @brief   Write unprotects one or more sectors.
+ *
+ * @param[in] partp     pointer to the @p NVMPartitionDriver object
+ * @param[in] startaddr address within to be unprotected sector
+ * @param[in] n         number of bytes to unprotect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t nvmpartWriteUnprotect(NVMPartitionDriver* nvmpartp,
+        uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(nvmpartp != NULL, "nvmpartWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(nvmpartp->state >= NVM_READY, "nvmpartWriteUnprotect(), #1",
+            "invalid state");
+    /* Verify range is within partition size. */
+    chDbgAssert((startaddr + n <= nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num),
+            "nvmpartWriteUnprotect(), #2", "invalid parameters");
+
+    return nvmWriteUnprotect(nvmpartp->config->nvmp,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset + startaddr,
+            n);
+}
+
+/**
+ * @brief   Write unprotects the whole device.
+ *
+ * @param[in] partp     pointer to the @p NVMPartitionDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t nvmpartMassWriteUnprotect(NVMPartitionDriver* nvmpartp)
+{
+    chDbgCheck(nvmpartp != NULL, "nvmpartMassWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(nvmpartp->state >= NVM_READY, "nvmpartMassWriteUnprotect(), #1",
+            "invalid state");
+
+    return nvmWriteUnprotect(nvmpartp->config->nvmp,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_offset,
+            nvmpartp->llnvmdi.sector_size * nvmpartp->config->sector_num);
+}
 
 #endif /* HAL_USE_NVM_PARTITION */
 

@@ -56,8 +56,10 @@ static const struct FlashJedecSPIDriverVMT flash_jedec_spi_vmt =
     .acquire = (void (*)(void*))fjsAcquireBus,
     .release = (void (*)(void*))fjsReleaseBus,
 #endif
-    .write_protect = (bool_t (*)(void*))fjsWriteProtect,
-    .write_unprotect = (bool_t (*)(void*))fjsWriteUnprotect,
+    .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))fjsWriteProtect,
+    .mass_writeprotect = (bool_t (*)(void*))fjsMassWriteProtect,
+    .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))fjsWriteUnprotect,
+    .mass_writeunprotect = (bool_t (*)(void*))fjsMassWriteUnprotect,
 };
 
 /*===========================================================================*/
@@ -96,6 +98,48 @@ static void flash_jedec_spi_write_disable(FlashJedecSPIDriver* fjsp)
     spiSend(fjsp->config->spip, NELEMS(out), out);
 
     spiUnselect(fjsp->config->spip);
+}
+
+static uint8_t flash_jedec_spi_sr_read(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck((fjsp != NULL), "flash_jedec_spi_sr_read");
+    spiSelect(fjsp->config->spip);
+
+    static const uint8_t out[] =
+    {
+        FLASH_JEDEC_RDSR,
+    };
+
+    /* command bytes */
+    spiSend(fjsp->config->spip, NELEMS(out), out);
+
+    uint8_t in;
+    spiReceive(fjsp->config->spip, sizeof(in), &in);
+
+    spiUnselect(fjsp->config->spip);
+
+    return in;
+}
+
+static void flash_jedec_spi_sr_write(FlashJedecSPIDriver* fjsp, uint8_t sr)
+{
+    chDbgCheck((fjsp != NULL), "flash_jedec_spi_sr_write");
+    flash_jedec_spi_write_enable(fjsp);
+
+    spiSelect(fjsp->config->spip);
+
+    uint8_t out[] =
+    {
+        FLASH_JEDEC_WRSR,
+        sr,
+    };
+
+    /* command bytes */
+    spiSend(fjsp->config->spip, NELEMS(out), out);
+
+    spiUnselect(fjsp->config->spip);
+
+    flash_jedec_spi_write_disable(fjsp);
 }
 
 static void flash_jedec_spi_wait_busy(FlashJedecSPIDriver* fjsp)
@@ -286,6 +330,45 @@ static void flash_jedec_spi_mass_erase(FlashJedecSPIDriver* fjsp)
     spiUnselect(fjsp->config->spip);
 }
 
+/**
+ * @brief   Convertes block protection bits into address of first
+ *          protected block.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ * @param[in] bp        block protection bits
+ *
+ * @return              Address of first protected block.
+ *
+ * @noapi
+ */
+static uint32_t flash_jedec_spi_bp_to_address(FlashJedecSPIDriver* fjsp, uint8_t bp)
+{
+    static const uint8_t number_of_parts_table[] =
+    {
+        1,
+        2,
+        4,
+        64,
+    };
+
+    uint8_t number_of_parts = number_of_parts_table[fjsp->config->bpbits_num];
+
+    uint8_t number_of_protected_parts = 0;
+
+    if (bp > 0)
+    {
+        number_of_protected_parts = 1 << (bp - 1);
+    }
+
+    uint32_t part_size = fjsp->config->sector_size * fjsp->config->sector_num / number_of_parts;
+
+    uint8_t first_protected_part = number_of_parts - number_of_protected_parts;
+
+    uint32_t first_protected_address = first_protected_part * part_size;
+
+    return first_protected_address;
+}
+
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
@@ -345,7 +428,8 @@ void fjsStart(FlashJedecSPIDriver* fjsp, const FlashJedecSPIConfig* config)
             IS_POW2(config->sector_size) &&
             IS_POW2(config->page_size) &&
             IS_POW2(config->page_alignment) &&
-            (config->page_alignment <= config->page_size),
+            (config->page_alignment <= config->page_size) &&
+            config->bpbits_num <= 3,
             "fjsStart(), #2", "invalid config");
 
     fjsp->config = config;
@@ -651,82 +735,6 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-/**
- * @brief   Write unprotects the whole chip.
- *
- * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
- *
- * @api
- */
-bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp)
-{
-    chDbgCheck(fjsp != NULL, "fjsWriteUnprotect");
-    /* Verify device status. */
-    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteUnprotect(), #1",
-            "invalid state");
-
-    flash_jedec_spi_write_enable(fjsp);
-
-    spiSelect(fjsp->config->spip);
-
-    static const uint8_t out[] =
-    {
-        FLASH_JEDEC_WRSR,
-        0x00,
-    };
-
-    /* command bytes */
-    spiSend(fjsp->config->spip, NELEMS(out), out);
-
-    spiUnselect(fjsp->config->spip);
-
-    flash_jedec_spi_write_disable(fjsp);
-
-    return CH_SUCCESS;
-}
-
-/**
- * @brief   Write protects the whole chip.
- *
- * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
- *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
- *
- * @api
- */
-bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp)
-{
-    chDbgCheck(fjsp != NULL, "fjsWriteProtect");
-    /* Verify device status. */
-    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteProtect(), #1",
-            "invalid state");
-
-    flash_jedec_spi_write_enable(fjsp);
-
-    spiSelect(fjsp->config->spip);
-
-    static const uint8_t out[] =
-    {
-        FLASH_JEDEC_WRSR,
-        0x3c, /* set BP0 ... BP3 */
-    };
-
-    /* command bytes */
-    spiSend(fjsp->config->spip, NELEMS(out), out);
-
-    spiUnselect(fjsp->config->spip);
-
-    flash_jedec_spi_write_disable(fjsp);
-
-    return CH_SUCCESS;
-}
-
 #if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the flash device.
@@ -781,6 +789,173 @@ void fjsReleaseBus(FlashJedecSPIDriver* fjsp)
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
 }
 #endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
+
+/**
+ * @brief   Write protects one or more blocks if supported.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ * @param[in] startaddr address within to be protected sector
+ * @param[in] n         number of bytes to protect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp, uint32_t startaddr,
+        uint32_t n)
+{
+    chDbgCheck(fjsp != NULL, "fjsWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteProtect(), #1",
+            "invalid state");
+    /* Verify range is within chip size. */
+    chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
+            "fjsWriteProtect(), #2", "invalid parameters");
+
+    /* Check if chip supports write protection. */
+    if (fjsp->config->bpbits_num == 0)
+        return CH_SUCCESS;
+
+    /* Protect as little of our address space as possible to
+     satisfy request. */
+
+    uint8_t bp_mask = 1 << (fjsp->config->bpbits_num - 1);
+    uint8_t bp = (flash_jedec_spi_sr_read(fjsp) >> 2) & bp_mask;
+
+    uint32_t first_protected_addr =
+            flash_jedec_spi_bp_to_address(fjsp, bp);
+
+    if (first_protected_addr <= startaddr)
+        return CH_SUCCESS;
+
+    while (bp < bp_mask)
+    {
+        ++bp;
+        first_protected_addr = flash_jedec_spi_bp_to_address(fjsp, bp);
+        if (first_protected_addr <= startaddr)
+        {
+            flash_jedec_spi_sr_write(fjsp, bp << 2);
+            return CH_SUCCESS;
+        }
+    }
+
+    return CH_FAILED;
+}
+
+/**
+ * @brief   Write protects the whole chip.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t fjsMassWriteProtect(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck(fjsp != NULL, "fjsMassWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(fjsp->state >= NVM_READY, "fjsMassWriteProtect(), #1",
+            "invalid state");
+
+    /* Check if chip supports write protection. */
+    if (fjsp->config->bpbits_num == 0)
+        return CH_SUCCESS;
+
+    /* Check if chip supports write protection. */
+    if (fjsp->config->bpbits_num == 0)
+        return CH_SUCCESS;
+
+    /* set BP3 ... BP0 */
+    flash_jedec_spi_sr_write(fjsp, 0x07 << 2);
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects one or more blocks if supported.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ * @param[in] startaddr address within to be unprotected sector
+ * @param[in] n         number of bytes to unprotect
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp, uint32_t startaddr,
+        uint32_t n)
+{
+    chDbgCheck(fjsp != NULL, "fjsWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(fjsp->state >= NVM_READY, "fjsWriteUnprotect(), #1",
+            "invalid state");
+    /* Verify range is within chip size. */
+    chDbgAssert((startaddr + n <= fjsp->config->sector_size * fjsp->config->sector_num),
+            "fjsWriteUnprotect(), #2", "invalid parameters");
+
+    /* Check if chip supports write protection. */
+    if (fjsp->config->bpbits_num == 0)
+        return CH_SUCCESS;
+
+    /* Unprotect as little of our address space as possible to
+     satisfy request. */
+
+    uint8_t bp_mask = 1 << (fjsp->config->bpbits_num - 1);
+    uint8_t bp = (flash_jedec_spi_sr_read(fjsp) >> 2) & bp_mask;
+
+    uint32_t first_protected_addr =
+            flash_jedec_spi_bp_to_address(fjsp, bp);
+
+    if (first_protected_addr >= startaddr + n)
+        return CH_SUCCESS;
+
+    while (bp > 0)
+    {
+        --bp;
+        first_protected_addr = flash_jedec_spi_bp_to_address(fjsp, bp);
+        if (first_protected_addr >= startaddr + n)
+        {
+            flash_jedec_spi_sr_write(fjsp, bp << 2);
+            return CH_SUCCESS;
+        }
+    }
+
+    return CH_FAILED;
+}
+
+/**
+ * @brief   Write unprotects the whole chip.
+ *
+ * @param[in] fjsp      pointer to the @p FlashJedecSPIDriver object
+ *
+ * @return              The operation status.
+ * @retval CH_SUCCESS   the operation succeeded.
+ * @retval CH_FAILED    the operation failed.
+ *
+ * @api
+ */
+bool_t fjsMassWriteUnprotect(FlashJedecSPIDriver* fjsp)
+{
+    chDbgCheck(fjsp != NULL, "fjsMassWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(fjsp->state >= NVM_READY, "fjsMassWriteUnprotect(), #1",
+            "invalid state");
+
+    /* Check if chip supports write protection. */
+    if (fjsp->config->bpbits_num == 0)
+        return CH_SUCCESS;
+
+    flash_jedec_spi_sr_write(fjsp, 0x00);
+
+    return CH_SUCCESS;
+}
 
 #endif /* HAL_USE_FLASH_JEDEC_SPI */
 
