@@ -3,8 +3,8 @@ include $(ROOT_DIR)/make/firmware-defs.mk
 
 BL_ELF := $(BUILD_DIR)/bl_$(BOARD_NAME)/bl_$(BOARD_NAME).elf
 FW_BIN := $(BUILD_DIR)/fw_$(BOARD_NAME)/fw_$(BOARD_NAME).bin
-TARGET_BIN := $(OUTDIR)/ef_$(BOARD_NAME).bin
-TARGET_ELF := $(OUTDIR)/ef_$(BOARD_NAME).elf
+TARGET_BIN := $(OUTDIR)/$(BUILD_PREFIX)_$(BOARD_NAME).bin
+TARGET_ELF := $(OUTDIR)/$(BUILD_PREFIX)_$(BOARD_NAME).elf
 
 .PHONY: all
 all: $(TARGET_BIN) $(TARGET_ELF)
