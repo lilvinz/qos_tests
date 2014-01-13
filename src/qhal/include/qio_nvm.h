@@ -245,10 +245,6 @@ typedef struct
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   operation succeeded.
- * @retval CH_FAILED    operation failed.
- *
  * @api
  */
 #define nvmRelease(ip) {                                                      \
@@ -261,16 +257,12 @@ typedef struct
  *
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   operation succeeded.
- * @retval CH_FAILED    operation failed.
- *
  * @api
  */
-#define nvmWriteProtect(ip) {                                                 \
-    if (((ip)->vmt->write_protect) != NULL)                                   \
-        ((ip)->vmt->write_protect)(ip);                                       \
-}
+#define nvmWriteProtect(ip)                                                   \
+        (ip->vmt->write_protect == NULL) ?                                    \
+        CH_SUCCESS :                                                          \
+        ((ip)->vmt->write_protect)(ip);
 
 /**
  * @brief   Disables the write protection if available
@@ -278,15 +270,15 @@ typedef struct
  * @param[in] ip        pointer to a @p BaseNVMDevice or derived class
  *
  * @return              The operation status.
- * @retval CH_SUCCESS   operation succeeded.
+ * @retval CH_SUCCESS   operation succeeded or is not implemented.
  * @retval CH_FAILED    operation failed.
  *
  * @api
  */
-#define nvmWriteUnprotect(ip) {                                               \
-    if (((ip)->vmt->write_unprotect) != NULL)                                 \
-        ((ip)->vmt->write_unprotect)(ip);                                     \
-}
+#define nvmWriteUnprotect(ip)                                                 \
+        (ip->vmt->write_unprotect == NULL) ?                                  \
+        CH_SUCCESS :                                                          \
+        ((ip)->vmt->write_unprotect)(ip);
 
 /** @} */
 
