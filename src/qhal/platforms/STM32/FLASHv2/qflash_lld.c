@@ -18,7 +18,6 @@
 /**
  * @todo    - add error propagation
  *          - replace sync polling by synchronization with isr
- *          - add support for OTP area
  */
 
 /*===========================================================================*/
