@@ -820,7 +820,7 @@ bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp, uint32_t startaddr,
     /* Protect as little of our address space as possible to
      satisfy request. */
 
-    uint8_t bp_mask = 1 << (fjsp->config->bpbits_num - 1);
+    uint8_t bp_mask = (1 << fjsp->config->bpbits_num) - 1;
     uint8_t bp = (flash_jedec_spi_sr_read(fjsp) >> 2) & bp_mask;
 
     uint32_t first_protected_addr =
@@ -906,7 +906,7 @@ bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp, uint32_t startaddr,
     /* Unprotect as little of our address space as possible to
      satisfy request. */
 
-    uint8_t bp_mask = 1 << (fjsp->config->bpbits_num - 1);
+    uint8_t bp_mask = (1 << fjsp->config->bpbits_num) - 1;
     uint8_t bp = (flash_jedec_spi_sr_read(fjsp) >> 2) & bp_mask;
 
     uint32_t first_protected_addr =
