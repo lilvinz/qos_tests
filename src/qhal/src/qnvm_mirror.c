@@ -119,10 +119,12 @@ static const struct NVMMirrorDriverVMT nvm_mirror_vmt =
     .sync = (bool_t (*)(void*))nvmmirrorSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmmirrorGetInfo,
     /* End of mandatory functions. */
-#if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (void (*)(void*))nvmmirrorAcquireBus,
     .release = (void (*)(void*))nvmmirrorReleaseBus,
-#endif
+    .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmmirrorWriteProtect,
+    .mass_writeprotect = (bool_t (*)(void*))nvmmirrorMassWriteProtect,
+    .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmmirrorWriteUnprotect,
+    .mass_writeunprotect = (bool_t (*)(void*))nvmmirrorMassWriteUnprotect,
 };
 
 /*===========================================================================*/
@@ -672,7 +674,6 @@ bool_t nvmmirrorGetInfo(NVMMirrorDriver* nvmmirrorp, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-#if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the nvm device.
  * @details This function tries to gain ownership to the nvm device, if the
@@ -688,6 +689,7 @@ void nvmmirrorAcquireBus(NVMMirrorDriver* nvmmirrorp)
 {
     chDbgCheck(nvmmirrorp != NULL, "nvmmirrorAcquireBus");
 
+#if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxLock(&nvmmirrorp->mutex);
 #elif CH_USE_SEMAPHORES
@@ -696,6 +698,7 @@ void nvmmirrorAcquireBus(NVMMirrorDriver* nvmmirrorp)
 
     /* Lock the underlying device as well */
     nvmAcquire(nvmmirrorp->config->nvmp);
+#endif /* NVM_MIRROR_USE_MUTUAL_EXCLUSION */
 }
 
 /**
@@ -711,6 +714,7 @@ void nvmmirrorReleaseBus(NVMMirrorDriver* nvmmirrorp)
 {
     chDbgCheck(nvmmirrorp != NULL, "nvmmirrorReleaseBus");
 
+#if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxUnlock();
 #elif CH_USE_SEMAPHORES
@@ -719,8 +723,106 @@ void nvmmirrorReleaseBus(NVMMirrorDriver* nvmmirrorp)
 
     /* Release the underlying device as well */
     nvmRelease(nvmmirrorp->config->nvmp);
-}
 #endif /* NVM_MIRROR_USE_MUTUAL_EXCLUSION */
+}
+
+/**
+ * @brief   Write protects one or more sectors.
+ *
+ * @param[in] nvmmirrorp    pointer to the @p NVMMirrorDriver object
+ * @param[in] startaddr     address within to be protected sector
+ * @param[in] n             number of bytes to protect
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmmirrorWriteProtect(NVMMirrorDriver* nvmmirrorp,
+        uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(nvmmirrorp != NULL, "nvmmirrorWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorWriteProtect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write protects the whole device.
+ *
+ * @param[in] nvmmirrorp    pointer to the @p NVMMirrorDriver object
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmmirrorMassWriteProtect(NVMMirrorDriver* nvmmirrorp)
+{
+    chDbgCheck(nvmmirrorp != NULL, "nvmmirrorMassWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorMassWriteProtect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects one or more sectors.
+ *
+ * @param[in] nvmmirrorp    pointer to the @p NVMMirrorDriver object
+ * @param[in] startaddr     address within to be unprotected sector
+ * @param[in] n             number of bytes to unprotect
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmmirrorWriteUnprotect(NVMMirrorDriver* nvmmirrorp,
+        uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(nvmmirrorp != NULL, "nvmmirrorWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorWriteUnprotect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects the whole device.
+ *
+ * @param[in] nvmmirrorp    pointer to the @p NVMMirrorDriver object
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmmirrorMassWriteUnprotect(NVMMirrorDriver* nvmmirrorp)
+{
+    chDbgCheck(nvmmirrorp != NULL, "nvmmirrorMassWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(nvmmirrorp->state >= NVM_READY, "nvmmirrorMassWriteUnprotect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
 
 #endif /* HAL_USE_NVM_MIRROR */
 

@@ -150,10 +150,14 @@ extern "C" {
     bool_t nvmmirrorSync(NVMMirrorDriver* nvmmirrorp);
     bool_t nvmmirrorGetInfo(NVMMirrorDriver* nvmmirrorp,
             NVMDeviceInfo* nvmdip);
-#if NVM_MIRROR_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void nvmmirrorAcquireBus(NVMMirrorDriver* nvmmirrorp);
     void nvmmirrorReleaseBus(NVMMirrorDriver* nvmmirrorp);
-#endif /* NVM_MIRROR_USE_MUTUAL_EXCLUSION */
+    bool_t nvmmirrorWriteProtect(NVMMirrorDriver* nvmmirrorp,
+            uint32_t startaddr, uint32_t n);
+    bool_t nvmmirrorMassWriteProtect(NVMMirrorDriver* nvmmirrorp);
+    bool_t nvmmirrorWriteUnprotect(NVMMirrorDriver* nvmmirrorp,
+            uint32_t startaddr, uint32_t n);
+    bool_t nvmmirrorMassWriteUnprotect(NVMMirrorDriver* nvmmirrorp);
 #ifdef __cplusplus
 }
 #endif

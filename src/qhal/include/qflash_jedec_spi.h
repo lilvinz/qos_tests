@@ -174,10 +174,8 @@ extern "C" {
     bool_t fjsMassErase(FlashJedecSPIDriver* fjsp);
     bool_t fjsSync(FlashJedecSPIDriver* fjsp);
     bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip);
-#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void fjsAcquireBus(FlashJedecSPIDriver* fjsp);
     void fjsReleaseBus(FlashJedecSPIDriver* fjsp);
-#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
     bool_t fjsWriteProtect(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n);
     bool_t fjsMassWriteProtect(FlashJedecSPIDriver* fjsp);
     bool_t fjsWriteUnprotect(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n);

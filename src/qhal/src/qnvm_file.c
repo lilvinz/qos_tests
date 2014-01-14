@@ -43,11 +43,12 @@ static const struct NVMFileDriverVMT nvm_file_vmt =
     .mass_erase = (bool_t (*)(void*))nvmfileMassErase,
     .sync = (bool_t (*)(void*))nvmfileSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmfileGetInfo,
-    /* End of mandatory functions. */
-#if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (void (*)(void*))nvmfileAcquireBus,
     .release = (void (*)(void*))nvmfileReleaseBus,
-#endif
+    .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmfileWriteProtect,
+    .mass_writeprotect = (bool_t (*)(void*))nvmfileMassWriteProtect,
+    .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmfileWriteUnprotect,
+    .mass_writeunprotect = (bool_t (*)(void*))nvmfileMassWriteUnprotect,
 };
 
 /*===========================================================================*/
@@ -93,8 +94,8 @@ void nvmfileObjectInit(NVMFileDriver* nvmfilep)
 /**
  * @brief   Configures and activates the NVM emulation.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
- * @param[in] config    pointer to the @p NVMFileConfig object.
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[in] config        pointer to the @p NVMFileConfig object.
  *
  * @api
  */
@@ -148,7 +149,7 @@ void nvmfileStart(NVMFileDriver* nvmfilep, const NVMFileConfig* config)
 /**
  * @brief   Disables the NVM peripheral.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
  *
  * @api
  */
@@ -169,14 +170,14 @@ void nvmfileStop(NVMFileDriver* nvmfilep)
 /**
  * @brief   Reads data crossing sector boundaries if required.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
- * @param[in] startaddr address to start reading from
- * @param[in] n         number of bytes to read
- * @param[in] buffer    pointer to data buffer
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[in] startaddr     address to start reading from
+ * @param[in] n             number of bytes to read
+ * @param[in] buffer        pointer to data buffer
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -212,14 +213,14 @@ bool_t nvmfileRead(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n,
 /**
  * @brief   Writes data crossing sector boundaries if required.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
- * @param[in] startaddr address to start writing to
- * @param[in] n         number of bytes to write
- * @param[in] buffer    pointer to data buffer
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[in] startaddr     address to start writing to
+ * @param[in] n             number of bytes to write
+ * @param[in] buffer        pointer to data buffer
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -252,13 +253,13 @@ bool_t nvmfileWrite(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n,
 /**
  * @brief   Erases one or more sectors.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
- * @param[in] startaddr address within to be erased sector
- * @param[in] n         number of bytes to erase
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[in] startaddr     address within to be erased sector
+ * @param[in] n             number of bytes to erase
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -302,11 +303,11 @@ bool_t nvmfileErase(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n)
 /**
  * @brief   Erases whole chip.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -342,11 +343,11 @@ bool_t nvmfileMassErase(NVMFileDriver* nvmfilep)
 /**
  * @brief   Waits for idle condition.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -372,12 +373,12 @@ bool_t nvmfileSync(NVMFileDriver* nvmfilep)
 /**
  * @brief   Returns media info.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
- * @param[out] nvmdip   pointer to a @p NVMDeviceInfo structure
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[out] nvmdip       pointer to a @p NVMDeviceInfo structure
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -395,7 +396,6 @@ bool_t nvmfileGetInfo(NVMFileDriver* nvmfilep, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-#if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the nvm device.
  * @details This function tries to gain ownership to the nvm device, if the
@@ -403,7 +403,7 @@ bool_t nvmfileGetInfo(NVMFileDriver* nvmfilep, NVMDeviceInfo* nvmdip)
  * @pre     In order to use this function the option
  *          @p NVM_FILE_USE_MUTUAL_EXCLUSION must be enabled.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
  *
  * @api
  */
@@ -411,11 +411,13 @@ void nvmfileAcquireBus(NVMFileDriver* nvmfilep)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileAcquireBus");
 
+#if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxLock(&nvmfilep->mutex);
 #elif CH_USE_SEMAPHORES
     chSemWait(&nvmfilep->semaphore);
 #endif
+#endif /* NVM_FILE_USE_MUTUAL_EXCLUSION */
 }
 
 /**
@@ -423,7 +425,7 @@ void nvmfileAcquireBus(NVMFileDriver* nvmfilep)
  * @pre     In order to use this function the option
  *          @p NVM_FILE_USE_MUTUAL_EXCLUSION must be enabled.
  *
- * @param[in] nvmfilep  pointer to the @p NVMFileDriver object
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
  *
  * @api
  */
@@ -431,14 +433,113 @@ void nvmfileReleaseBus(NVMFileDriver* nvmfilep)
 {
     chDbgCheck(nvmfilep != NULL, "nvmfileReleaseBus");
 
+#if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     (void)nvmfilep;
     chMtxUnlock();
 #elif CH_USE_SEMAPHORES
     chSemSignal(&nvmfilep->semaphore);
 #endif
-}
 #endif /* NVM_FILE_USE_MUTUAL_EXCLUSION */
+}
+
+/**
+ * @brief   Write protects one or more sectors.
+ *
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[in] startaddr     address within to be protected sector
+ * @param[in] n             number of bytes to protect
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmfileWriteProtect(NVMFileDriver* nvmfilep,
+        uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(nvmfilep != NULL, "nvmfileWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileWriteProtect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write protects the whole device.
+ *
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmfileMassWriteProtect(NVMFileDriver* nvmfilep)
+{
+    chDbgCheck(nvmfilep != NULL, "nvmfileMassWriteProtect");
+    /* Verify device status. */
+    chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileMassWriteProtect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects one or more sectors.
+ *
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ * @param[in] startaddr     address within to be unprotected sector
+ * @param[in] n             number of bytes to unprotect
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmfileWriteUnprotect(NVMFileDriver* nvmfilep,
+        uint32_t startaddr, uint32_t n)
+{
+    chDbgCheck(nvmfilep != NULL, "nvmfileWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileWriteUnprotect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
+
+/**
+ * @brief   Write unprotects the whole device.
+ *
+ * @param[in] nvmfilep      pointer to the @p NVMFileDriver object
+ *
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
+ *
+ * @api
+ */
+bool_t nvmfileMassWriteUnprotect(NVMFileDriver* nvmfilep)
+{
+    chDbgCheck(nvmfilep != NULL, "nvmfileMassWriteUnprotect");
+    /* Verify device status. */
+    chDbgAssert(nvmfilep->state >= NVM_READY, "nvmfileMassWriteUnprotect(), #1",
+            "invalid state");
+
+    /* TODO: add implementation */
+
+    return CH_SUCCESS;
+}
 
 #endif /* HAL_USE_NVM_FILE */
 

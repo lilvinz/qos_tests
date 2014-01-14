@@ -39,10 +39,8 @@ static const struct NVMPartitionDriverVMT nvm_partition_vmt =
     .sync = (bool_t (*)(void*))nvmpartSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmpartGetInfo,
     /* End of mandatory functions. */
-#if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (void (*)(void*))nvmpartAcquireBus,
     .release = (void (*)(void*))nvmpartReleaseBus,
-#endif
     .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartWriteProtect,
     .mass_writeprotect = (bool_t (*)(void*))nvmpartMassWriteProtect,
     .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartWriteUnprotect,
@@ -288,7 +286,7 @@ bool_t nvmpartSync(NVMPartitionDriver* nvmpartp)
  * @brief   Returns media info.
  *
  * @param[in] nvmpartp      pointer to the @p NVMPartitionDriver object
- * @param[out] nvmdip         pointer to a @p NVMDeviceInfo structure
+ * @param[out] nvmdip       pointer to a @p NVMDeviceInfo structure
  *
  * @return                  The operation status.
  * @retval CH_SUCCESS       the operation succeeded.
@@ -311,7 +309,6 @@ bool_t nvmpartGetInfo(NVMPartitionDriver* nvmpartp, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-#if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the nvm partition device.
  * @details This function tries to gain ownership to the nvm partition device,
@@ -328,6 +325,7 @@ void nvmpartAcquireBus(NVMPartitionDriver* nvmpartp)
 {
     chDbgCheck(nvmpartp != NULL, "nvmpartAcquireBus");
 
+#if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxLock(&nvmpartp->mutex);
 #elif CH_USE_SEMAPHORES
@@ -336,6 +334,7 @@ void nvmpartAcquireBus(NVMPartitionDriver* nvmpartp)
 
     /* Lock the underlying device as well. */
     nvmAcquire(nvmpartp->config->nvmp);
+#endif /* NVM_PARTITION_USE_MUTUAL_EXCLUSION */
 }
 
 /**
@@ -351,6 +350,7 @@ void nvmpartReleaseBus(NVMPartitionDriver* nvmpartp)
 {
     chDbgCheck(nvmpartp != NULL, "nvmpartReleaseBus");
 
+#if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxUnlock();
 #elif CH_USE_SEMAPHORES
@@ -359,19 +359,19 @@ void nvmpartReleaseBus(NVMPartitionDriver* nvmpartp)
 
     /* Release the underlying device as well. */
     nvmRelease(nvmpartp->config->nvmp);
-}
 #endif /* NVM_PARTITION_USE_MUTUAL_EXCLUSION */
+}
 
 /**
  * @brief   Write protects one or more sectors.
  *
- * @param[in] partp     pointer to the @p NVMPartitionDriver object
- * @param[in] startaddr address within to be protected sector
- * @param[in] n         number of bytes to protect
+ * @param[in] nvmpartp      pointer to the @p NVMPartitionDriver object
+ * @param[in] startaddr     address within to be protected sector
+ * @param[in] n             number of bytes to protect
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -394,11 +394,11 @@ bool_t nvmpartWriteProtect(NVMPartitionDriver* nvmpartp,
 /**
  * @brief   Write protects the whole device.
  *
- * @param[in] partp     pointer to the @p NVMPartitionDriver object
+ * @param[in] nvmpartp      pointer to the @p NVMPartitionDriver object
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -417,13 +417,13 @@ bool_t nvmpartMassWriteProtect(NVMPartitionDriver* nvmpartp)
 /**
  * @brief   Write unprotects one or more sectors.
  *
- * @param[in] partp     pointer to the @p NVMPartitionDriver object
- * @param[in] startaddr address within to be unprotected sector
- * @param[in] n         number of bytes to unprotect
+ * @param[in] nvmpartp      pointer to the @p NVMPartitionDriver object
+ * @param[in] startaddr     address within to be unprotected sector
+ * @param[in] n             number of bytes to unprotect
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */
@@ -446,11 +446,11 @@ bool_t nvmpartWriteUnprotect(NVMPartitionDriver* nvmpartp,
 /**
  * @brief   Write unprotects the whole device.
  *
- * @param[in] partp     pointer to the @p NVMPartitionDriver object
+ * @param[in] nvmpartp      pointer to the @p NVMPartitionDriver object
  *
- * @return              The operation status.
- * @retval CH_SUCCESS   the operation succeeded.
- * @retval CH_FAILED    the operation failed.
+ * @return                  The operation status.
+ * @retval CH_SUCCESS       the operation succeeded.
+ * @retval CH_FAILED        the operation failed.
  *
  * @api
  */

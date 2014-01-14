@@ -14,9 +14,8 @@
 #include "static_assert.h"
 
 /*
- * @todo    - add AAI writing for chips which support it
+ * @todo    - add efficient use of AAI writing for chips which support it
  *          - add error detection and handling
- *          - add sector level write protection API
  */
 
 /*===========================================================================*/
@@ -52,10 +51,8 @@ static const struct FlashJedecSPIDriverVMT flash_jedec_spi_vmt =
     .sync = (bool_t (*)(void*))fjsSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo *))fjsGetInfo,
     /* End of mandatory functions. */
-#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (void (*)(void*))fjsAcquireBus,
     .release = (void (*)(void*))fjsReleaseBus,
-#endif
     .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))fjsWriteProtect,
     .mass_writeprotect = (bool_t (*)(void*))fjsMassWriteProtect,
     .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))fjsWriteUnprotect,
@@ -735,7 +732,6 @@ bool_t fjsGetInfo(FlashJedecSPIDriver* fjsp, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the flash device.
  * @details This function tries to gain ownership to the flash device, if the
@@ -751,6 +747,7 @@ void fjsAcquireBus(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsAcquireBus");
 
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxLock(&fjsp->mutex);
 #elif CH_USE_SEMAPHORES
@@ -761,6 +758,7 @@ void fjsAcquireBus(FlashJedecSPIDriver* fjsp)
     /* Acquire the underlying device as well. */
     spiAcquireBus(fjsp->config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
+#endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
 }
 
 /**
@@ -776,6 +774,7 @@ void fjsReleaseBus(FlashJedecSPIDriver* fjsp)
 {
     chDbgCheck(fjsp != NULL, "fjsReleaseBus");
 
+#if FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     (void)fjsp;
     chMtxUnlock();
@@ -787,8 +786,8 @@ void fjsReleaseBus(FlashJedecSPIDriver* fjsp)
     /* Release the underlying device as well. */
     spiReleaseBus(fjsp->config->spip);
 #endif /* SPI_USE_MUTUAL_EXCLUSION */
-}
 #endif /* FLASH_JEDEC_SPI_USE_MUTUAL_EXCLUSION */
+}
 
 /**
  * @brief   Write protects one or more blocks if supported.

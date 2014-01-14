@@ -139,10 +139,8 @@ extern "C" {
     bool_t nvmpartMassErase(NVMPartitionDriver* nvmpartp);
     bool_t nvmpartSync(NVMPartitionDriver* nvmpartp);
     bool_t nvmpartGetInfo(NVMPartitionDriver* nvmpartp, NVMDeviceInfo* nvmdip);
-#if NVM_PARTITION_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void nvmpartAcquireBus(NVMPartitionDriver* nvmpartp);
     void nvmpartReleaseBus(NVMPartitionDriver* nvmpartp);
-#endif /* NVM_PARTITION_USE_MUTUAL_EXCLUSION */
     bool_t nvmpartWriteProtect(NVMPartitionDriver* nvmpartp,
             uint32_t startaddr, uint32_t n);
     bool_t nvmpartMassWriteProtect(NVMPartitionDriver* nvmpartp);

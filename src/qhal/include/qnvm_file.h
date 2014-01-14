@@ -140,10 +140,14 @@ extern "C" {
     bool_t nvmfileMassErase(NVMFileDriver* nvmfilep);
     bool_t nvmfileSync(NVMFileDriver* nvmfilep);
     bool_t nvmfileGetInfo(NVMFileDriver* nvmfilep, NVMDeviceInfo* nvmdip);
-#if NVM_FILE_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     void nvmfileAcquireBus(NVMFileDriver* nvmfilep);
     void nvmfileReleaseBus(NVMFileDriver* nvmfilep);
-#endif /* NVM_FILE_USE_MUTUAL_EXCLUSION */
+    bool_t nvmfileWriteProtect(NVMFileDriver* nvmfilep,
+            uint32_t startaddr, uint32_t n);
+    bool_t nvmfileMassWriteProtect(NVMFileDriver* nvmfilep);
+    bool_t nvmfileWriteUnprotect(NVMFileDriver* nvmfilep,
+            uint32_t startaddr, uint32_t n);
+    bool_t nvmfileMassWriteUnprotect(NVMFileDriver* nvmfilep);
 #ifdef __cplusplus
 }
 #endif

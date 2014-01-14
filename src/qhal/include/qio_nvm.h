@@ -232,10 +232,7 @@ typedef struct
  *
  * @api
  */
-#define nvmAcquire(ip) {                                                      \
-    if (((ip)->vmt->acquire) != NULL)                                         \
-        ((ip)->vmt->acquire)(ip);                                             \
-}
+#define nvmAcquire(ip) ((ip)->vmt->acquire)(ip)
 
 /**
  * @brief   Releases exclusive access from device if implemented.
@@ -244,10 +241,7 @@ typedef struct
  *
  * @api
  */
-#define nvmRelease(ip) {                                                      \
-    if (((ip)->vmt->release) != NULL)                                         \
-        ((ip)->vmt->release)(ip);                                             \
-}
+#define nvmRelease(ip) ((ip)->vmt->release)(ip)
 
 /**
  * @brief   Write protects one or more sectors if implemented.
@@ -263,9 +257,7 @@ typedef struct
  * @api
  */
 #define nvmWriteProtect(ip, startaddr, n)                                     \
-        (ip->vmt->writeprotect == NULL) ?                                     \
-        CH_SUCCESS :                                                          \
-        ((ip)->vmt->writeprotect)(ip, startaddr, n);
+        ((ip)->vmt->writeprotect)(ip, startaddr, n)
 
 /**
  * @brief   Write protects whole device if implemented.
@@ -279,9 +271,7 @@ typedef struct
  * @api
  */
 #define nvmMassWriteProtect(ip)                                               \
-        (ip->vmt->mass_writeprotect == NULL) ?                                \
-        CH_SUCCESS :                                                          \
-        ((ip)->vmt->mass_writeprotect)(ip);
+        ((ip)->vmt->mass_writeprotect)(ip)
 
 /**
  * @brief   Write unprotects one or more sectors if implemented.
@@ -297,9 +287,7 @@ typedef struct
  * @api
  */
 #define nvmWriteUnprotect(ip, startaddr, n)                                   \
-        (ip->vmt->writeunprotect == NULL) ?                                   \
-        CH_SUCCESS :                                                          \
-        ((ip)->vmt->writeunprotect)(ip, startaddr, n);
+        ((ip)->vmt->writeunprotect)(ip, startaddr, n)
 
 /**
  * @brief   Write unprotects whole device if implemented.
@@ -313,9 +301,7 @@ typedef struct
  * @api
  */
 #define nvmMassWriteUnprotect(ip)                                             \
-        (ip->vmt->mass_writeunprotect == NULL) ?                              \
-        CH_SUCCESS :                                                          \
-        ((ip)->vmt->mass_writeunprotect)(ip);
+        ((ip)->vmt->mass_writeunprotect)(ip)
 
 /** @} */
 

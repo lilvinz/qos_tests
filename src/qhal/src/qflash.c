@@ -40,10 +40,8 @@ static const struct FLASHDriverVMT flash_vmt =
     .sync = (bool_t (*)(void*))flashSync,
     .get_info = (bool_t (*)(void*, NVMDeviceInfo*))flashGetInfo,
     /* End of mandatory functions. */
-#if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
     .acquire = (void (*)(void*))flashAcquireBus,
     .release = (void (*)(void*))flashReleaseBus,
-#endif
     .writeprotect = (bool_t (*)(void*, uint32_t, uint32_t))flashWriteProtect,
     .mass_writeprotect = (bool_t (*)(void*))flashMassWriteProtect,
     .writeunprotect = (bool_t (*)(void*, uint32_t, uint32_t))flashWriteUnprotect,
@@ -364,7 +362,6 @@ bool_t flashGetInfo(FLASHDriver* flashp, NVMDeviceInfo* nvmdip)
     return CH_SUCCESS;
 }
 
-#if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 /**
  * @brief   Gains exclusive access to the flash device.
  * @details This function tries to gain ownership to the flash device, if the
@@ -380,11 +377,13 @@ void flashAcquireBus(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashAcquireBus");
 
+#if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     chMtxLock(&flashp->mutex);
 #elif CH_USE_SEMAPHORES
     chSemWait(&flashp->semaphore);
 #endif
+#endif /* FLASH_USE_MUTUAL_EXCLUSION */
 }
 
 /**
@@ -400,14 +399,15 @@ void flashReleaseBus(FLASHDriver* flashp)
 {
     chDbgCheck(flashp != NULL, "flashReleaseBus");
 
+#if FLASH_USE_MUTUAL_EXCLUSION || defined(__DOXYGEN__)
 #if CH_USE_MUTEXES
     (void)flashp;
     chMtxUnlock();
 #elif CH_USE_SEMAPHORES
     chSemSignal(&flashp->semaphore);
 #endif
-}
 #endif /* FLASH_USE_MUTUAL_EXCLUSION */
+}
 
 /**
  * @brief   Write protects one or more sectors.
