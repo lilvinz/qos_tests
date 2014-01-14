@@ -183,10 +183,10 @@ extern "C"
     void sd485ObjectInit(Serial485Driver* sdp);
     void sd485Start(Serial485Driver* sd485p, const Serial485Config* config);
     void sd485Stop(Serial485Driver* sd485p);
-    void sd485EndOfTx1I(UARTDriver* uartp);
-    void sd485EndOfTx2I(UARTDriver* uartp);
-    void sd485EndOfRxI(UARTDriver* uartp);
-    void sd485ErrorI(UARTDriver* uartp, uartflags_t e);
+    void sd485EndOfTx1(UARTDriver* uartp);
+    void sd485EndOfTx2(UARTDriver* uartp);
+    void sd485EndOfRx(UARTDriver* uartp);
+    void sd485Error(UARTDriver* uartp, uartflags_t e);
 #ifdef __cplusplus
 }
 #endif

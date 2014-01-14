@@ -255,7 +255,7 @@ void sd485Stop(Serial485Driver *sd485p)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-void sd485EndOfTx1I(UARTDriver* uartp)
+void sd485EndOfTx1(UARTDriver* uartp)
 {
     chDbgCheck(uartp != NULL, "sd485EndOfTx1I");
 
@@ -291,7 +291,7 @@ void sd485EndOfTx1I(UARTDriver* uartp)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-void sd485EndOfTx2I(UARTDriver* uartp)
+void sd485EndOfTx2(UARTDriver* uartp)
 {
     chDbgCheck(uartp != NULL, "sd485EndOfTx2I");
 
@@ -323,7 +323,7 @@ void sd485EndOfTx2I(UARTDriver* uartp)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-void sd485EndOfRxI(UARTDriver* uartp)
+void sd485EndOfRx(UARTDriver* uartp)
 {
     chDbgCheck(uartp != NULL, "sd485EndOfRxI");
 
@@ -360,7 +360,7 @@ void sd485EndOfRxI(UARTDriver* uartp)
  *
  * @param[in] uartp     pointer to the @p UARTDriver object
  */
-void sd485ErrorI(UARTDriver* uartp, uartflags_t e)
+void sd485Error(UARTDriver* uartp, uartflags_t e)
 {
     chDbgCheck(uartp != NULL, "sd485ErrorI");
 
