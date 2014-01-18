@@ -391,7 +391,9 @@ bool_t nvmfileGetInfo(NVMFileDriver* nvmfilep, NVMDeviceInfo* nvmdip)
 
     nvmdip->sector_num = nvmfilep->config->sector_num;
     nvmdip->sector_size = nvmfilep->config->sector_size;
-    memset(nvmdip->identification, 0, sizeof(nvmdip->identification));
+    nvmdip->identification[0] = 'F';
+    nvmdip->identification[1] = 'I';
+    nvmdip->identification[2] = 'L';
 
     return CH_SUCCESS;
 }

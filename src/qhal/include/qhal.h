@@ -31,6 +31,7 @@
 #include "qflash_jedec_spi.h"
 #include "qnvm_partition.h"
 #include "qnvm_file.h"
+#include "qnvm_memory.h"
 #include "qnvm_mirror.h"
 #include "qled.h"
 

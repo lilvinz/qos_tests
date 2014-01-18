@@ -56,6 +56,9 @@ void qhalInit(void)
 #if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
     nvmfileInit();
 #endif
+#if HAL_USE_NVM_FILE || defined(__DOXYGEN__)
+    nvmmemoryInit();
+#endif
 #if HAL_USE_NVM_MIRROR || defined(__DOXYGEN__)
     nvmmirrorInit();
 #endif
