@@ -34,6 +34,13 @@
 #endif
 
 /**
+ * @brief   Enables the NVM memory subsystem.
+ */
+#if !defined(HAL_USE_NVM_MEMORY) || defined(__DOXYGEN__)
+#define HAL_USE_NVM_MEMORY          FALSE
+#endif
+
+/**
  * @brief   Enables the NVM partition subsystem.
  */
 #if !defined(HAL_USE_NVM_PARTITION) || defined(__DOXYGEN__)
@@ -139,7 +146,7 @@
 /*===========================================================================*/
 
 /**
- * @brief   Enables the @p ffileAcquireBus() and @p ffileReleaseBus() APIs.
+ * @brief   Enables the @p nvmfileAcquireBus() and @p nvmfileReleaseBus() APIs.
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(NVM_FILE_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
@@ -147,11 +154,24 @@
 #endif
 
 /*===========================================================================*/
+/* NVM_MEMORY driver related settings                                        */
+/*===========================================================================*/
+
+/**
+ * @brief   Enables the @p nvmmemoryAcquireBus() and
+ *          @p nvmmemoryReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(NVM_MEMORY_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define NVM_MEMORY_USE_MUTUAL_EXCLUSION         TRUE
+#endif
+
+/*===========================================================================*/
 /* NVM_PARTITION driver related settings                                     */
 /*===========================================================================*/
 
 /**
- * @brief   Enables the @p fpartAcquireBus() and @p fpartReleaseBus() APIs.
+ * @brief   Enables the @p nvmpartAcquireBus() and @p nvmpartReleaseBus() APIs.
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(NVM_PARTITION_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
