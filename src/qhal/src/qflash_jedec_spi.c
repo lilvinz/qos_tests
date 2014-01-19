@@ -49,7 +49,7 @@ static const struct FlashJedecSPIDriverVMT flash_jedec_spi_vmt =
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))fjsErase,
     .mass_erase = (bool_t (*)(void*))fjsMassErase,
     .sync = (bool_t (*)(void*))fjsSync,
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))fjsGetInfo,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo*))fjsGetInfo,
     /* End of mandatory functions. */
     .acquire = (void (*)(void*))fjsAcquireBus,
     .release = (void (*)(void*))fjsReleaseBus,

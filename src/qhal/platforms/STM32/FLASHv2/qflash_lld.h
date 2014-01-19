@@ -135,7 +135,7 @@ typedef struct
     _base_nvm_device_methods
 
 /**
- * @extends BaseFlashDeviceVMT
+ * @extends BaseNVMDeviceVMT
  *
  * @brief   @p FLASHDriver virtual methods table.
  */
@@ -145,7 +145,7 @@ struct FLASHDriverVMT
 };
 
 /**
- * @extends BaseFlashDevice
+ * @extends BaseNVMDevice
  *
  * @brief   Structure representing a FLASH driver.
  */

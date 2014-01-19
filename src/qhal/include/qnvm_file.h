@@ -48,7 +48,7 @@
 /*===========================================================================*/
 
 /**
- * @brief   Flash emulation driver configuration structure.
+ * @brief   Non volatile memory emulation driver configuration structure.
  */
 typedef struct
 {
@@ -73,7 +73,7 @@ typedef struct
     _base_nvm_device_methods
 
 /**
- * @extends BaseFLashDeviceVMT
+ * @extends BaseNVMDeviceVMT
  *
  * @brief   @p NVMFileDriver virtual methods table.
  */

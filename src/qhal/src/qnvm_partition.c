@@ -37,7 +37,7 @@ static const struct NVMPartitionDriverVMT nvm_partition_vmt =
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmpartErase,
     .mass_erase = (bool_t (*)(void*))nvmpartMassErase,
     .sync = (bool_t (*)(void*))nvmpartSync,
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmpartGetInfo,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo*))nvmpartGetInfo,
     /* End of mandatory functions. */
     .acquire = (void (*)(void*))nvmpartAcquireBus,
     .release = (void (*)(void*))nvmpartReleaseBus,

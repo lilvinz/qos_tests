@@ -117,7 +117,7 @@ static const struct NVMMirrorDriverVMT nvm_mirror_vmt =
     .erase = (bool_t (*)(void*, uint32_t, uint32_t))nvmmirrorErase,
     .mass_erase = (bool_t (*)(void*))nvmmirrorMassErase,
     .sync = (bool_t (*)(void*))nvmmirrorSync,
-    .get_info = (bool_t (*)(void*, NVMDeviceInfo *))nvmmirrorGetInfo,
+    .get_info = (bool_t (*)(void*, NVMDeviceInfo*))nvmmirrorGetInfo,
     /* End of mandatory functions. */
     .acquire = (void (*)(void*))nvmmirrorAcquireBus,
     .release = (void (*)(void*))nvmmirrorReleaseBus,

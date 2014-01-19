@@ -111,7 +111,7 @@ typedef struct
     _base_nvm_device_methods
 
 /**
- * @extends BaseFlashDeviceVMT
+ * @extends BaseNVMDeviceVMT
  *
  * @brief   @p FlashJedecSPIDriver virtual methods table.
  */
@@ -121,7 +121,7 @@ struct FlashJedecSPIDriverVMT
 };
 
 /**
- * @extends BaseFlashDevice
+ * @extends BaseNVMDevice
  *
  * @brief   Structure representing a FLASH JEDEC over SPI driver.
  */

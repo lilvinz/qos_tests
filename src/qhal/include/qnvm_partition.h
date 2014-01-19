@@ -71,7 +71,7 @@ typedef struct
     _base_nvm_device_methods
 
 /**
- * @extends BaseFlashDeviceVMT
+ * @extends BaseNVMDeviceVMT
  *
  * @brief   @p NVMPartitionDriver virtual methods table.
  */
@@ -81,7 +81,7 @@ struct NVMPartitionDriverVMT
 };
 
 /**
- * @extends BaseFlashDevice
+ * @extends BaseNVMDevice
  *
  * @brief   Structure representing a NVM partition driver.
  */
