@@ -15,7 +15,7 @@ FORCE:
 $(TARGET_BIN): FORCE
 $(TARGET_BIN): $(BL_ELF) $(FW_ELF) | $(OUTDIR)
 	$(V0) @echo $(MSG_PADDING) $(call toprel, $@)
-	$(V1) $(OBJCOPY) --pad-to=$(BL_ORIGIN) --gap-fill=0xff -O binary $(BL_ELF) $@
+	$(V1) $(OBJCOPY) --pad-to=$(FW_ORIGIN) --gap-fill=0xff -O binary $(BL_ELF) $@
 	$(V1) cat $(FW_BIN) >> $@
 	$(V1) $(OBJCOPY) --pad-to=$(EF_SIZE) --gap-fill=0xff -I binary -O binary $@ $@
 
