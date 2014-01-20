@@ -183,7 +183,7 @@ define EF_TEMPLATE
 .PHONY: ef_$(1)
 ef_$(1): ef_$(1)_all
 
-ef_$(1)_%: bl_$(1) fw_$(1)
+ef_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/ef && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
@@ -203,7 +203,7 @@ define FT_TEMPLATE
 .PHONY: ft_$(1)
 ft_$(1): ft_$(1)_all
 
-ft_$(1)_%: ef_$(1)
+ft_$(1)_%:
 	$(V1) cd $(TARGETS_DIR)/$(1)/ft && \
 		$$(MAKE) -r --no-print-directory \
 		BOARD_NAME=$(1) \
