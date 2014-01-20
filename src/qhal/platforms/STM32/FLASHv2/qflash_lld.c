@@ -28,6 +28,7 @@
 #define FLASH_SR_OPERR                       ((uint32_t)0x00000002)
 #define FLASH_CR_ERRIE                       ((uint32_t)0x02000000)
 
+#if !defined(OPTCR_BYTE0_ADDRESS)
 /**
  * @brief   OPTCR register byte 0 (Bits[7:0]) base address
  */
@@ -63,6 +64,7 @@
  */
 #define OPTCR1_BYTE3_ADDRESS        ((uint32_t)0x40023c1b)
 #endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+#endif /* !defined(OPTCR_BYTE0_ADDRESS) */
 
 /**
  * @brief   Flash size register address
@@ -245,13 +247,13 @@ static void flash_lld_cr_lock(FLASHDriver* flashp)
  */
 static void flash_lld_cr_unlock(FLASHDriver* flashp)
 {
-    static const uint32_t FLASH_KEY1 = 0x45670123;
-    static const uint32_t FLASH_KEY2 = 0xcdef89ab;
+    static const uint32_t FLASH_UNLOCK_KEY1 = 0x45670123;
+    static const uint32_t FLASH_UNLOCK_KEY2 = 0xcdef89ab;
 
     if ((flashp->flash->CR & FLASH_CR_LOCK) != 0)
     {
-        flashp->flash->KEYR = FLASH_KEY1;
-        flashp->flash->KEYR = FLASH_KEY2;
+        flashp->flash->KEYR = FLASH_UNLOCK_KEY1;
+        flashp->flash->KEYR = FLASH_UNLOCK_KEY2;
     }
 }
 
@@ -276,13 +278,13 @@ static void flash_lld_optcr_lock(FLASHDriver* flashp)
  */
 static void flash_lld_optcr_unlock(FLASHDriver* flashp)
 {
-    static const uint32_t FLASH_OPT_KEY1 = 0x08192a3b;
-    static const uint32_t FLASH_OPT_KEY2 = 0x4c5d6e7f;
+    static const uint32_t FLASH_OPT_UNLOCK_KEY1 = 0x08192a3b;
+    static const uint32_t FLASH_OPT_UNLOCK_KEY2 = 0x4c5d6e7f;
 
     if ((flashp->flash->OPTCR & FLASH_OPTCR_OPTLOCK) != 0)
     {
-        flashp->flash->OPTKEYR = FLASH_OPT_KEY1;
-        flashp->flash->OPTKEYR = FLASH_OPT_KEY2;
+        flashp->flash->OPTKEYR = FLASH_OPT_UNLOCK_KEY1;
+        flashp->flash->OPTKEYR = FLASH_OPT_UNLOCK_KEY2;
     }
 }
 

@@ -18,59 +18,59 @@
 /**
  * @brief   FLASH readout protection options
  *
- *          Level 0: no read protection
- *          When the read protection level is set to Level 0 by writing 0xAA into the read protection
+ *          LEVEL 0: no read protection
+ *          When the read protection level is set to LEVEL 0 by writing 0xAA into the read protection
  *          option byte (RDP), all read/write operations (if no write protection is set) from/to the
  *          Flash memory or the backup SRAM are possible in all boot configurations (Flash user
  *          boot, debug or boot from RAM).
  *
- *          Level 1: memory read protection.
- *          It is the default read protection level after option byte erase. The read protection Level 1
- *          is activated by writing any value (except for 0xAA and 0xCC used to set Level 0 and
- *          Level 2, respectively) into the RDP option byte. When the read protection Level 1 is set:
+ *          LEVEL 1: memory read protection.
+ *          It is the default read protection level after option byte erase. The read protection LEVEL 1
+ *          is activated by writing any value (except for 0xAA and 0xCC used to set LEVEL 0 and
+ *          LEVEL 2, respectively) into the RDP option byte. When the read protection LEVEL 1 is set:
  *
  *          - No Flash memory access (read, erase, program) is performed while the debug
  *            features are connected or boot is executed from RAM. A bus error is generated in
  *            case of a Flash memory read request. Otherwise all operations are possible when
  *            Flash user boot is used or when operating in System memory boot mode.
  *
- *          - When Level 1 is active, programming the protection option byte (RDP) to Level 0
+ *          - When LEVEL 1 is active, programming the protection option byte (RDP) to LEVEL 0
  *            causes the Flash memory and the backup SRAM to be mass-erased. As a result
  *            the user code area is cleared before the read protection is removed. The mass
  *            erase only erases the user code area. The other option bytes including write
  *            protections remain unchanged from before the mass-erase operation. The OTP
  *            area is not affected by mass erase and remains unchanged.
  *
- *          Mass erase is performed only when Level 1 is active and Level 0 requested. When
+ *          Mass erase is performed only when LEVEL 1 is active and LEVEL 0 requested. When
  *          the protection level is increased (0->1, 1->2, 0->2) there is no mass erase.
  *
- *          Level 2: Disable debug/chip read protection
- *          When the read protection Level 2 is activated by writing 0xCC to the RDP option byte,
- *          all protections provided by Level 1 are active, system memory and all debug features
+ *          LEVEL 2: Disable debug/chip read protection
+ *          When the read protection LEVEL 2 is activated by writing 0xCC to the RDP option byte,
+ *          all protections provided by LEVEL 1 are active, system memory and all debug features
  *          (CPU JTAG and single-wire) are disabled when booting from SRAM or from system
  *          memory, and user options can no longer be changed.
- *          Memory read protection Level 2 is an irreversible operation. When Level 2 is activated,
- *          the level of protection cannot be decreased to Level 0 or Level 1
+ *          Memory read protection LEVEL 2 is an irreversible operation. When LEVEL 2 is activated,
+ *          the level of protection cannot be decreased to LEVEL 0 or LEVEL 1
  * @{
  */
 typedef enum
 {
-    OB_RDP_Level_0 = 0xAA,
-    OB_RDP_Level_1 = 0x55,
-    OB_RDP_Level_2 = 0xCC,
+    OB_RDP_LEVEL_0 = 0xAA,
+    OB_RDP_LEVEL_1 = 0x55,
+    OB_RDP_LEVEL_2 = 0xCC,
 } ob_rdp_level_e;
 /** @} */
 
 /**
- * @brief   Level of brown-out detection circuit
+ * @brief   LEVEL of brown-out detection circuit
  * @{
  */
 typedef enum
 {
-    OB_BOR_Level_Off = FLASH_OPTCR_BOR_LEV_1 | FLASH_OPTCR_BOR_LEV_0,
-    OB_BOR_Level_1 = FLASH_OPTCR_BOR_LEV_1,
-    OB_BOR_Level_2 = FLASH_OPTCR_BOR_LEV_0,
-    OB_BOR_Level_3 = 0x00,
+    OB_BOR_LEVEL_OFF = FLASH_OPTCR_BOR_LEV_1 | FLASH_OPTCR_BOR_LEV_0,
+    OB_BOR_LEVEL_1 = FLASH_OPTCR_BOR_LEV_1,
+    OB_BOR_LEVEL_2 = FLASH_OPTCR_BOR_LEV_0,
+    OB_BOR_LEVEL_3 = 0x00,
 } ob_bor_level_e;
 /** @} */
 
