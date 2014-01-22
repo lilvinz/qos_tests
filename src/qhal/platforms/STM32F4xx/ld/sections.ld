@@ -62,6 +62,13 @@ SECTIONS
         PROVIDE(__fini_array_end = .);
     } > flash
 
+    .initcall : ALIGN(4)
+    {
+        __module_initcall_start = .;
+        KEEP(*(SORT(.initcall.*)))
+        __module_initcall_end = .;
+    } > flash
+
     .text : ALIGN(16) SUBALIGN(16)
     {
         *(.text.startup.*)
