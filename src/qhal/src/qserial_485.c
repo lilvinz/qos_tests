@@ -333,7 +333,8 @@ void sd485EndOfRx(UARTDriver* uartp)
 
     chSysLockFromIsr();
 
-    if (chIQIsEmptyI(&sd485p->iqueue))
+    /* If queue was empty before, set flag. */
+    if (chIQIsEmptyI(&sd485p->iqueue) == TRUE)
         chnAddFlagsI(sd485p, CHN_INPUT_AVAILABLE);
 
     /* Consume received data. */
