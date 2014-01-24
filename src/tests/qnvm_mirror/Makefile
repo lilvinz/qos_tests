@@ -7,7 +7,7 @@ include $(ROOT_DIR)/src/common/library.mk
 # ChibiOS with Quantec HAL
 include $(ROOT_DIR)/src/qhal/platforms/Posix/library.mk
 
-CFLAGS += -O0
+CFLAGS += -Os
 CFLAGS += -Wall -Werror -Wshadow
 CFLAGS += -g
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
@@ -24,3 +24,6 @@ CONLYFLAGS += -std=gnu99
 LDFLAGS += -lrt
 
 include $(ROOT_DIR)/make/unittest.mk
+
+# Include the dependency files.
+include $(wildcard $(OUTDIR)/*.d)
