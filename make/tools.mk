@@ -4,10 +4,10 @@
 #
 ###########################################################################################################
 
-ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_7-2013q3
+ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_8-2013q4
 
 .PHONY: arm_sdk_install
-arm_sdk_install: ARM_SDK_URL := https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q3-update/+download/gcc-arm-none-eabi-4_7-2013q3-20130916-linux.tar.bz2
+arm_sdk_install: ARM_SDK_URL := https://launchpad.net/gcc-arm-embedded/4.8/4.8-2013-q4-major/+download/gcc-arm-none-eabi-4_8-2013q4-20131204-linux.tar.bz2
 arm_sdk_install: ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
 # order-only prereq on directory existance:
 arm_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
