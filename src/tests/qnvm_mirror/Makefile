@@ -17,6 +17,7 @@ CFLAGS += -DCH_DBG_ENABLE_STACK_CHECK=FALSE
 CFLAGS += -Wno-attributes
 CFLAGS += -Wno-redundant-decls
 CFLAGS += -m32
+CFLAGS += -D_GNU_SOURCE
 
 CONLYFLAGS += -std=gnu99
 

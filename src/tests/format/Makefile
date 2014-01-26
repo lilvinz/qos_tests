@@ -9,6 +9,7 @@ CFLAGS += -O0
 CFLAGS += -Wall -Werror -Wshadow
 CFLAGS += -g
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
+CFLAGS += -D_GNU_SOURCE
 
 CONLYFLAGS += -std=gnu99
 
