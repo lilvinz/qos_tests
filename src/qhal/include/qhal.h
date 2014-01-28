@@ -25,9 +25,9 @@
 /* Layered drivers.*/
 #include "qflash.h"
 #include "qwdg.h"
+#include "qserial_485.h"
 
 /* Complex drivers.*/
-#include "qserial_485.h"
 #include "qflash_jedec_spi.h"
 #include "qnvm_partition.h"
 #include "qnvm_file.h"
