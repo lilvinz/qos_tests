@@ -230,7 +230,7 @@ typedef struct {
 #define _serial_485_driver_data                                             \
   _base_asynchronous_channel_data                                           \
   /* Driver state.*/                                                        \
-  sd485state_t              state;                                          \
+  s485dstate_t              state;                                          \
   /* Input queue.*/                                                         \
   InputQueue                iqueue;                                         \
   /* Output queue.*/                                                        \
@@ -260,30 +260,30 @@ typedef struct {
 /*===========================================================================*/
 
 #if STM32_SERIAL_485_USE_USART1 && !defined(__DOXYGEN__)
-extern Serial485Driver SD4851;
+extern Serial485Driver S485D1;
 #endif
 #if STM32_SERIAL_485_USE_USART2 && !defined(__DOXYGEN__)
-extern Serial485Driver SD4852;
+extern Serial485Driver S485D2;
 #endif
 #if STM32_SERIAL_485_USE_USART3 && !defined(__DOXYGEN__)
-extern Serial485Driver SD4853;
+extern Serial485Driver S485D3;
 #endif
 #if STM32_SERIAL_485_USE_UART4 && !defined(__DOXYGEN__)
-extern Serial485Driver SD4854;
+extern Serial485Driver S485D4;
 #endif
 #if STM32_SERIAL_485_USE_UART5 && !defined(__DOXYGEN__)
-extern Serial485Driver SD4855;
+extern Serial485Driver S485D5;
 #endif
 #if STM32_SERIAL_485_USE_USART6 && !defined(__DOXYGEN__)
-extern Serial485Driver SD4856;
+extern Serial485Driver S485D6;
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void sd485_lld_init(void);
-  void sd485_lld_start(Serial485Driver *sdp, const Serial485Config *config);
-  void sd485_lld_stop(Serial485Driver *sdp);
+  void s485d_lld_init(void);
+  void s485d_lld_start(Serial485Driver *sdp, const Serial485Config *config);
+  void s485d_lld_stop(Serial485Driver *sdp);
 #ifdef __cplusplus
 }
 #endif

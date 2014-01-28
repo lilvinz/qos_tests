@@ -19,11 +19,11 @@
  * @name    Serial status flags
  * @{
  */
-#define SD485_PARITY_ERROR      32  /**< @brief Parity error happened.      */
-#define SD485_FRAMING_ERROR     64  /**< @brief Framing error happened.     */
-#define SD485_OVERRUN_ERROR     128 /**< @brief Overflow happened.          */
-#define SD485_NOISE_ERROR       256 /**< @brief Noise on the line.          */
-#define SD485_BREAK_DETECTED    512 /**< @brief Break detected.             */
+#define S485D_PARITY_ERROR      32  /**< @brief Parity error happened.      */
+#define S485D_FRAMING_ERROR     64  /**< @brief Framing error happened.     */
+#define S485D_OVERRUN_ERROR     128 /**< @brief Overflow happened.          */
+#define S485D_NOISE_ERROR       256 /**< @brief Noise on the line.          */
+#define S485D_BREAK_DETECTED    512 /**< @brief Break detected.             */
 /** @} */
 
 /*===========================================================================*/
@@ -71,10 +71,10 @@
  * @brief Driver state machine possible states.
  */
 typedef enum {
-  SD485_UNINIT = 0,                 /**< Not initialized.                   */
-  SD485_STOP = 1,                   /**< Stopped.                           */
-  SD485_READY = 2                   /**< Ready.                             */
-} sd485state_t;
+  S485D_UNINIT = 0,                 /**< Not initialized.                   */
+  S485D_STOP = 1,                   /**< Stopped.                           */
+  S485D_READY = 2                   /**< Ready.                             */
+} s485dstate_t;
 
 /**
  * @brief   Structure representing a serial driver.
@@ -130,7 +130,7 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485PutWouldBlock(sdp) chOQIsFullI(&(sdp)->oqueue)
+#define s485dPutWouldBlock(s485dp) chOQIsFullI(&(s485dp)->oqueue)
 
 /**
  * @brief   Direct input check on a @p Serial485Driver.
@@ -142,7 +142,7 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485GetWouldBlock(sdp) chIQIsEmptyI(&(sdp)->iqueue)
+#define s485dGetWouldBlock(s485dp) chIQIsEmptyI(&(s485dp)->iqueue)
 
 /**
  * @brief   Direct write to a @p Serial485Driver.
@@ -154,7 +154,7 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485Put(sdp, b) chOQPut(&(sdp)->oqueue, b)
+#define s485dPut(s485dp, b) chOQPut(&(s485dp)->oqueue, b)
 
 /**
  * @brief   Direct write to a @p Serial485Driver with timeout specification.
@@ -166,7 +166,7 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485PutTimeout(sdp, b, t) chOQPutTimeout(&(sdp)->oqueue, b, t)
+#define s485dPutTimeout(s485dp, b, t) chOQPutTimeout(&(s485dp)->oqueue, b, t)
 
 /**
  * @brief   Direct read from a @p Serial485Driver.
@@ -178,7 +178,7 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485Get(sdp) chIQGet(&(sdp)->iqueue)
+#define s485dGet(s485dp) chIQGet(&(s485dp)->iqueue)
 
 /**
  * @brief   Direct read from a @p Serial485Driver with timeout specification.
@@ -190,7 +190,7 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485GetTimeout(sdp, t) chIQGetTimeout(&(sdp)->iqueue, t)
+#define s485dGetTimeout(s485dp, t) chIQGetTimeout(&(s485dp)->iqueue, t)
 
 /**
  * @brief   Direct blocking write to a @p Serial485Driver.
@@ -202,8 +202,8 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485Write(sdp, b, n)                                                 \
-  chOQWriteTimeout(&(sdp)->oqueue, b, n, TIME_INFINITE)
+#define s485dWrite(s485dp, b, n)                                              \
+  chOQWriteTimeout(&(s485dp)->oqueue, b, n, TIME_INFINITE)
 
 /**
  * @brief   Direct blocking write to a @p Serial485Driver with timeout
@@ -216,8 +216,8 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485WriteTimeout(sdp, b, n, t)                                       \
-  chOQWriteTimeout(&(sdp)->oqueue, b, n, t)
+#define s485dWriteTimeout(s485dp, b, n, t)                                    \
+  chOQWriteTimeout(&(s485dp)->oqueue, b, n, t)
 
 /**
  * @brief   Direct non-blocking write to a @p Serial485Driver.
@@ -229,8 +229,8 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485AsynchronousWrite(sdp, b, n)                                     \
-  chOQWriteTimeout(&(sdp)->oqueue, b, n, TIME_IMMEDIATE)
+#define s485dAsynchronousWrite(s485dp, b, n)                                  \
+  chOQWriteTimeout(&(s485dp)->oqueue, b, n, TIME_IMMEDIATE)
 
 /**
  * @brief   Direct blocking read from a @p Serial485Driver.
@@ -242,8 +242,8 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485Read(sdp, b, n)                                                  \
-  chIQReadTimeout(&(sdp)->iqueue, b, n, TIME_INFINITE)
+#define s485dRead(s485dp, b, n)                                               \
+  chIQReadTimeout(&(s485dp)->iqueue, b, n, TIME_INFINITE)
 
 /**
  * @brief   Direct blocking read from a @p Serial485Driver with timeout
@@ -256,8 +256,8 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485ReadTimeout(sdp, b, n, t)                                        \
-  chIQReadTimeout(&(sdp)->iqueue, b, n, t)
+#define s485dReadTimeout(s485dp, b, n, t)                                     \
+  chIQReadTimeout(&(s485dp)->iqueue, b, n, t)
 
 /**
  * @brief   Direct non-blocking read from a @p Serial485Driver.
@@ -269,8 +269,8 @@ struct Serial485Driver {
  *
  * @api
  */
-#define sd485AsynchronousRead(sdp, b, n)                                      \
-  chIQReadTimeout(&(sdp)->iqueue, b, n, TIME_IMMEDIATE)
+#define s485dAsynchronousRead(s485dp, b, n)                                   \
+  chIQReadTimeout(&(s485dp)->iqueue, b, n, TIME_IMMEDIATE)
 /** @} */
 
 /*===========================================================================*/
@@ -280,12 +280,12 @@ struct Serial485Driver {
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void sd485Init(void);
-  void sd485ObjectInit(Serial485Driver *sdp, qnotify_t inotify, qnotify_t onotify);
-  void sd485Start(Serial485Driver *sdp, const Serial485Config *config);
-  void sd485Stop(Serial485Driver *sdp);
-  void sd485IncomingDataI(Serial485Driver *sdp, uint8_t b);
-  msg_t sd485RequestDataI(Serial485Driver *sdp);
+  void s485dInit(void);
+  void s485dObjectInit(Serial485Driver *s485dp, qnotify_t inotify, qnotify_t onotify);
+  void s485dStart(Serial485Driver *s485dp, const Serial485Config *config);
+  void s485dStop(Serial485Driver *s485dp);
+  void s485dIncomingDataI(Serial485Driver *s485dp, uint8_t b);
+  msg_t s485dRequestDataI(Serial485Driver *s485dp);
 #ifdef __cplusplus
 }
 #endif

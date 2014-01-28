@@ -21,32 +21,32 @@
 
 /** @brief USART1 serial driver identifier.*/
 #if STM32_SERIAL_485_USE_USART1 || defined(__DOXYGEN__)
-Serial485Driver SD4851;
+Serial485Driver S485D1;
 #endif
 
 /** @brief USART2 serial driver identifier.*/
 #if STM32_SERIAL_485_USE_USART2 || defined(__DOXYGEN__)
-Serial485Driver SD4852;
+Serial485Driver S485D2;
 #endif
 
 /** @brief USART3 serial driver identifier.*/
 #if STM32_SERIAL_485_USE_USART3 || defined(__DOXYGEN__)
-Serial485Driver SD4853;
+Serial485Driver S485D3;
 #endif
 
 /** @brief UART4 serial driver identifier.*/
 #if STM32_SERIAL_485_USE_UART4 || defined(__DOXYGEN__)
-Serial485Driver SD4854;
+Serial485Driver S485D4;
 #endif
 
 /** @brief UART5 serial driver identifier.*/
 #if STM32_SERIAL_485_USE_UART5 || defined(__DOXYGEN__)
-Serial485Driver SD4855;
+Serial485Driver S485D5;
 #endif
 
 /** @brief USART6 serial driver identifier.*/
 #if STM32_SERIAL_485_USE_USART6 || defined(__DOXYGEN__)
-Serial485Driver SD4856;
+Serial485Driver S485D6;
 #endif
 
 /*===========================================================================*/
@@ -72,17 +72,17 @@ static const Serial485Config default_config =
  * @brief   USART initialization.
  * @details This function must be invoked with interrupts disabled.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver object
+ * @param[in] s485dp    pointer to a @p Serial485Driver object
  * @param[in] config    the architecture-dependent serial driver configuration
  */
-static void usart_init(Serial485Driver *sd485p, const Serial485Config *config) {
-  USART_TypeDef *u = sd485p->usart;
+static void usart_init(Serial485Driver *s485dp, const Serial485Config *config) {
+  USART_TypeDef *u = s485dp->usart;
 
   /* Baud rate setting.*/
 #if STM32_HAS_USART6
-  if ((sd485p->usart == USART1) || (sd485p->usart == USART6))
+  if ((s485dp->usart == USART1) || (s485dp->usart == USART6))
 #else
-  if (sd485p->usart == USART1)
+  if (s485dp->usart == USART1)
 #endif
     u->BRR = STM32_PCLK2 / config->speed;
   else
@@ -99,8 +99,8 @@ static void usart_init(Serial485Driver *sd485p, const Serial485Config *config) {
   (void)u->DR;  /* SR reset step 2.*/
 
   /* Clear driver enable pad. */
-  if (sd485p->config->ssport != NULL)
-    palClearPad(sd485p->config->ssport, sd485p->config->sspad);
+  if (s485dp->config->ssport != NULL)
+    palClearPad(s485dp->config->ssport, s485dp->config->sspad);
 }
 
 /**
@@ -119,37 +119,37 @@ static void usart_deinit(USART_TypeDef *u) {
 /**
  * @brief   Error handling routine.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver object
+ * @param[in] s485dp    pointer to a @p Serial485Driver object
  * @param[in] sr        USART SR register value
  */
-static void set_error(Serial485Driver *sd485p, uint16_t sr) {
+static void set_error(Serial485Driver *s485dp, uint16_t sr) {
   flagsmask_t sts = 0;
 
   if (sr & USART_SR_ORE)
-    sts |= SD485_OVERRUN_ERROR;
+    sts |= S485D_OVERRUN_ERROR;
   if (sr & USART_SR_PE)
-    sts |= SD485_PARITY_ERROR;
+    sts |= S485D_PARITY_ERROR;
   if (sr & USART_SR_FE)
-    sts |= SD485_FRAMING_ERROR;
+    sts |= S485D_FRAMING_ERROR;
   if (sr & USART_SR_NE)
-    sts |= SD485_NOISE_ERROR;
-  chnAddFlagsI(sd485p, sts);
+    sts |= S485D_NOISE_ERROR;
+  chnAddFlagsI(s485dp, sts);
 }
 
 /**
  * @brief   Common IRQ handler.
  *
- * @param[in] sd485p    communication channel associated to the USART
+ * @param[in] s485dp    communication channel associated to the USART
  */
-static void serve_interrupt(Serial485Driver *sd485p) {
-  USART_TypeDef *u = sd485p->usart;
+static void serve_interrupt(Serial485Driver *s485dp) {
+  USART_TypeDef *u = s485dp->usart;
   uint16_t cr1 = u->CR1;
   uint16_t sr = u->SR;
 
   /* Special case, LIN break detection.*/
   if (sr & USART_SR_LBD) {
     chSysLockFromIsr();
-    chnAddFlagsI(sd485p, SD485_BREAK_DETECTED);
+    chnAddFlagsI(s485dp, S485D_BREAK_DETECTED);
     chSysUnlockFromIsr();
     u->SR = ~USART_SR_LBD;
   }
@@ -159,8 +159,8 @@ static void serve_interrupt(Serial485Driver *sd485p) {
   while (sr & USART_SR_RXNE) {
     /* Error condition detection.*/
     if (sr & (USART_SR_ORE | USART_SR_NE | USART_SR_FE  | USART_SR_PE))
-      set_error(sd485p, sr);
-    sd485IncomingDataI(sd485p, u->DR);
+      set_error(s485dp, sr);
+    s485dIncomingDataI(s485dp, u->DR);
     sr = u->SR;
   }
   chSysUnlockFromIsr();
@@ -169,16 +169,16 @@ static void serve_interrupt(Serial485Driver *sd485p) {
   if ((cr1 & USART_CR1_TXEIE) && (sr & USART_SR_TXE)) {
     msg_t b;
     chSysLockFromIsr();
-    b = chOQGetI(&sd485p->oqueue);
+    b = chOQGetI(&s485dp->oqueue);
     if (b < Q_OK) {
-      chnAddFlagsI(sd485p, CHN_OUTPUT_EMPTY);
+      chnAddFlagsI(s485dp, CHN_OUTPUT_EMPTY);
       u->CR1 = (cr1 & ~USART_CR1_TXEIE) | USART_CR1_TCIE;
     }
     else
     {
       /* Set driver enable pad. */
-      if (sd485p->config->ssport != NULL)
-        palSetPad(sd485p->config->ssport, sd485p->config->sspad);
+      if (s485dp->config->ssport != NULL)
+        palSetPad(s485dp->config->ssport, s485dp->config->sspad);
       /* Disable RX. */
       u->CR1 = cr1 & ~USART_CR1_RE;
       u->DR = b;
@@ -189,13 +189,13 @@ static void serve_interrupt(Serial485Driver *sd485p) {
   /* Physical transmission end.*/
   if (sr & USART_SR_TC) {
     chSysLockFromIsr();
-    chnAddFlagsI(sd485p, CHN_TRANSMISSION_END);
+    chnAddFlagsI(s485dp, CHN_TRANSMISSION_END);
     chSysUnlockFromIsr();
     u->CR1 = cr1 & ~(USART_CR1_TXEIE | USART_CR1_TCIE);
     u->SR = ~USART_SR_TC;
     /* Clear driver enable pad. */
-    if (sd485p->config->ssport != NULL)
-      palClearPad(sd485p->config->ssport, sd485p->config->sspad);
+    if (s485dp->config->ssport != NULL)
+      palClearPad(s485dp->config->ssport, s485dp->config->sspad);
     /* Enable RX. */
     u->CR1 = cr1 | USART_CR1_RE;
   }
@@ -266,7 +266,7 @@ CH_IRQ_HANDLER(STM32_USART1_HANDLER) {
 
   CH_IRQ_PROLOGUE();
 
-  serve_interrupt(&SD4851);
+  serve_interrupt(&S485D1);
 
   CH_IRQ_EPILOGUE();
 }
@@ -285,7 +285,7 @@ CH_IRQ_HANDLER(STM32_USART2_HANDLER) {
 
   CH_IRQ_PROLOGUE();
 
-  serve_interrupt(&SD4852);
+  serve_interrupt(&S485D2);
 
   CH_IRQ_EPILOGUE();
 }
@@ -304,7 +304,7 @@ CH_IRQ_HANDLER(STM32_USART3_HANDLER) {
 
   CH_IRQ_PROLOGUE();
 
-  serve_interrupt(&SD4853);
+  serve_interrupt(&S485D3);
 
   CH_IRQ_EPILOGUE();
 }
@@ -323,7 +323,7 @@ CH_IRQ_HANDLER(STM32_UART4_HANDLER) {
 
   CH_IRQ_PROLOGUE();
 
-  serve_interrupt(&SD4854);
+  serve_interrupt(&S485D4);
 
   CH_IRQ_EPILOGUE();
 }
@@ -342,7 +342,7 @@ CH_IRQ_HANDLER(STM32_UART5_HANDLER) {
 
   CH_IRQ_PROLOGUE();
 
-  serve_interrupt(&SD4855);
+  serve_interrupt(&S485D5);
 
   CH_IRQ_EPILOGUE();
 }
@@ -361,7 +361,7 @@ CH_IRQ_HANDLER(STM32_USART6_HANDLER) {
 
   CH_IRQ_PROLOGUE();
 
-  serve_interrupt(&SD4856);
+  serve_interrupt(&S485D6);
 
   CH_IRQ_EPILOGUE();
 }
@@ -376,99 +376,99 @@ CH_IRQ_HANDLER(STM32_USART6_HANDLER) {
  *
  * @notapi
  */
-void sd485_lld_init(void) {
+void s485d_lld_init(void) {
 
 #if STM32_SERIAL_485_USE_USART1
-  sd485ObjectInit(&SD4851, NULL, notify1);
-  SD4851.usart = USART1;
+  s485dObjectInit(&S485D1, NULL, notify1);
+  S485D1.usart = USART1;
 #endif
 
 #if STM32_SERIAL_485_USE_USART2
-  sd485ObjectInit(&SD4852, NULL, notify2);
-  SD4852.usart = USART2;
+  s485dObjectInit(&S485D2, NULL, notify2);
+  S485D2.usart = USART2;
 #endif
 
 #if STM32_SERIAL_485_USE_USART3
-  sd485ObjectInit(&SD4853, NULL, notify3);
-  SD4853.usart = USART3;
+  s485dObjectInit(&S485D3, NULL, notify3);
+  S485D3.usart = USART3;
 #endif
 
 #if STM32_SERIAL_485_USE_UART4
-  sd485ObjectInit(&SD4854, NULL, notify4);
-  SD4854.usart = UART4;
+  s485dObjectInit(&S485D4, NULL, notify4);
+  S485D4.usart = UART4;
 #endif
 
 #if STM32_SERIAL_485_USE_UART5
-  sd485ObjectInit(&SD4855, NULL, notify5);
-  SD4855.usart = UART5;
+  s485dObjectInit(&S485D5, NULL, notify5);
+  S485D5.usart = UART5;
 #endif
 
 #if STM32_SERIAL_485_USE_USART6
-  sd485ObjectInit(&SD4856, NULL, notify6);
-  SD4856.usart = USART6;
+  s485dObjectInit(&S485D6, NULL, notify6);
+  S485D6.usart = USART6;
 #endif
 }
 
 /**
  * @brief   Low level serial driver configuration and (re)start.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver object
+ * @param[in] s485dp    pointer to a @p Serial485Driver object
  * @param[in] config    the architecture-dependent serial driver configuration.
  *                      If this parameter is set to @p NULL then a default
  *                      configuration is used.
  *
  * @notapi
  */
-void sd485_lld_start(Serial485Driver *sd485p, const Serial485Config *config) {
+void s485d_lld_start(Serial485Driver *s485dp, const Serial485Config *config) {
 
   if (config == NULL)
     config = &default_config;
 
-  if (sd485p->state == SD485_STOP) {
+  if (s485dp->state == S485D_STOP) {
 #if STM32_SERIAL_485_USE_USART1
-    if (&SD4851 == sd485p) {
+    if (&S485D1 == s485dp) {
       rccEnableUSART1(FALSE);
       nvicEnableVector(STM32_USART1_NUMBER,
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_USART1_PRIORITY));
     }
 #endif
 #if STM32_SERIAL_485_USE_USART2
-    if (&SD4852 == sd485p) {
+    if (&S485D2 == s485dp) {
       rccEnableUSART2(FALSE);
       nvicEnableVector(STM32_USART2_NUMBER,
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_USART2_PRIORITY));
     }
 #endif
 #if STM32_SERIAL_485_USE_USART3
-    if (&SD4853 == sd485p) {
+    if (&S485D3 == s485dp) {
       rccEnableUSART3(FALSE);
       nvicEnableVector(STM32_USART3_NUMBER,
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_USART3_PRIORITY));
     }
 #endif
 #if STM32_SERIAL_485_USE_UART4
-    if (&SD4854 == sd485p) {
+    if (&S485D4 == s485dp) {
       rccEnableUART4(FALSE);
       nvicEnableVector(STM32_UART4_NUMBER,
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_UART4_PRIORITY));
     }
 #endif
 #if STM32_SERIAL_485_USE_UART5
-    if (&SD4855 == sd485p) {
+    if (&S485D5 == s485dp) {
       rccEnableUART5(FALSE);
       nvicEnableVector(STM32_UART5_NUMBER,
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_UART5_PRIORITY));
     }
 #endif
 #if STM32_SERIAL_485_USE_USART6
-    if (&SD4856 == sd485p) {
+    if (&S485D6 == s485dp) {
       rccEnableUSART6(FALSE);
       nvicEnableVector(STM32_USART6_NUMBER,
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_USART6_PRIORITY));
     }
 #endif
   }
-  usart_init(sd485p, config);
+  usart_init(s485dp, config);
 }
 
 /**
@@ -476,51 +476,51 @@ void sd485_lld_start(Serial485Driver *sd485p, const Serial485Config *config) {
  * @details De-initializes the USART, stops the associated clock, resets the
  *          interrupt vector.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver object
+ * @param[in] s485dp    pointer to a @p Serial485Driver object
  *
  * @notapi
  */
-void sd485_lld_stop(Serial485Driver *sd485p) {
+void s485d_lld_stop(Serial485Driver *s485dp) {
 
-  if (sd485p->state == SD485_READY) {
-    usart_deinit(sd485p->usart);
+  if (s485dp->state == S485D_READY) {
+    usart_deinit(s485dp->usart);
 #if STM32_SERIAL_485_USE_USART1
-    if (&SD4851 == sd485p) {
+    if (&S485D1 == s485dp) {
       rccDisableUSART1(FALSE);
       nvicDisableVector(STM32_USART1_NUMBER);
       return;
     }
 #endif
 #if STM32_SERIAL_485_USE_USART2
-    if (&SD4852 == sd485p) {
+    if (&S485D2 == s485dp) {
       rccDisableUSART2(FALSE);
       nvicDisableVector(STM32_USART2_NUMBER);
       return;
     }
 #endif
 #if STM32_SERIAL_485_USE_USART3
-    if (&SD4853 == sd485p) {
+    if (&S485D3 == s485dp) {
       rccDisableUSART3(FALSE);
       nvicDisableVector(STM32_USART3_NUMBER);
       return;
     }
 #endif
 #if STM32_SERIAL_485_USE_UART4
-    if (&SD4854 == sd485p) {
+    if (&S485D4 == s485dp) {
       rccDisableUART4(FALSE);
       nvicDisableVector(STM32_UART4_NUMBER);
       return;
     }
 #endif
 #if STM32_SERIAL_485_USE_UART5
-    if (&SD4855 == sd485p) {
+    if (&S485D5 == s485dp) {
       rccDisableUART5(FALSE);
       nvicDisableVector(STM32_UART5_NUMBER);
       return;
     }
 #endif
 #if STM32_SERIAL_485_USE_USART6
-    if (&SD4856 == sd485p) {
+    if (&S485D6 == s485dp) {
       rccDisableUSART6(FALSE);
       nvicDisableVector(STM32_USART6_NUMBER);
       return;

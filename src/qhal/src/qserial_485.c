@@ -90,9 +90,9 @@ static const struct Serial485DriverVMT vmt = {
  *
  * @init
  */
-void sd485Init(void) {
+void s485dInit(void) {
 
-  sd485_lld_init();
+  s485d_lld_init();
 }
 
 /**
@@ -100,7 +100,7 @@ void sd485Init(void) {
  * @details The HW dependent part of the initialization has to be performed
  *          outside, usually in the hardware initialization code.
  *
- * @param[out] sd485p   pointer to a @p Serial485Driver structure
+ * @param[out] s485dp   pointer to a @p Serial485Driver structure
  * @param[in] inotify   pointer to a callback function that is invoked when
  *                      some data is read from the Queue. The value can be
  *                      @p NULL.
@@ -110,37 +110,37 @@ void sd485Init(void) {
  *
  * @init
  */
-void sd485ObjectInit(Serial485Driver *sd485p, qnotify_t inotify, qnotify_t onotify) {
+void s485dObjectInit(Serial485Driver *s485dp, qnotify_t inotify, qnotify_t onotify) {
 
-  sd485p->vmt = &vmt;
-  chEvtInit(&sd485p->event);
-  sd485p->state = SD485_STOP;
-  chIQInit(&sd485p->iqueue, sd485p->ib, SERIAL_BUFFERS_SIZE, inotify, sd485p);
-  chOQInit(&sd485p->oqueue, sd485p->ob, SERIAL_BUFFERS_SIZE, onotify, sd485p);
+  s485dp->vmt = &vmt;
+  chEvtInit(&s485dp->event);
+  s485dp->state = S485D_STOP;
+  chIQInit(&s485dp->iqueue, s485dp->ib, SERIAL_BUFFERS_SIZE, inotify, s485dp);
+  chOQInit(&s485dp->oqueue, s485dp->ob, SERIAL_BUFFERS_SIZE, onotify, s485dp);
 }
 
 /**
  * @brief   Configures and starts the driver.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver object
+ * @param[in] s485dp    pointer to a @p Serial485Driver object
  * @param[in] config    the architecture-dependent serial driver configuration.
  *                      If this parameter is set to @p NULL then a default
  *                      configuration is used.
  *
  * @api
  */
-void sd485Start(Serial485Driver *sd485p, const Serial485Config *config) {
+void s485dStart(Serial485Driver *s485dp, const Serial485Config *config) {
 
-  chDbgCheck(sd485p != NULL, "sd485485Start");
+  chDbgCheck(s485dp != NULL, "s485d485Start");
 
   chSysLock();
-  chDbgAssert((sd485p->state == SD485_STOP) || (sd485p->state == SD485_READY),
-              "sd485485Start(), #1",
+  chDbgAssert((s485dp->state == S485D_STOP) || (s485dp->state == S485D_READY),
+              "s485d485Start(), #1",
               "invalid state");
-  sd485p->config = config;
-  sd485_lld_start(sd485p, config);
-  sd485p->state = SD485_READY;
-  chnAddFlagsI(sd485p, CHN_CONNECTED);
+  s485dp->config = config;
+  s485d_lld_start(s485dp, config);
+  s485dp->state = S485D_READY;
+  chnAddFlagsI(s485dp, CHN_CONNECTED);
   chSysUnlock();
 }
 
@@ -149,23 +149,23 @@ void sd485Start(Serial485Driver *sd485p, const Serial485Config *config) {
  * @details Any thread waiting on the driver's queues will be awakened with
  *          the message @p Q_RESET.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver object
+ * @param[in] s485dp    pointer to a @p Serial485Driver object
  *
  * @api
  */
-void sd485Stop(Serial485Driver *sd485p) {
+void s485dStop(Serial485Driver *s485dp) {
 
-  chDbgCheck(sd485p != NULL, "sd485485Stop");
+  chDbgCheck(s485dp != NULL, "s485d485Stop");
 
   chSysLock();
-  chDbgAssert((sd485p->state == SD485_STOP) || (sd485p->state == SD485_READY),
-              "sd485485Stop(), #1",
+  chDbgAssert((s485dp->state == S485D_STOP) || (s485dp->state == S485D_READY),
+              "s485d485Stop(), #1",
               "invalid state");
-  chnAddFlagsI(sd485p, CHN_DISCONNECTED);
-  sd485_lld_stop(sd485p);
-  sd485p->state = SD485_STOP;
-  chOQResetI(&sd485p->oqueue);
-  chIQResetI(&sd485p->iqueue);
+  chnAddFlagsI(s485dp, CHN_DISCONNECTED);
+  s485d_lld_stop(s485dp);
+  s485dp->state = S485D_STOP;
+  chOQResetI(&s485dp->oqueue);
+  chIQResetI(&s485dp->iqueue);
   chSchRescheduleS();
   chSysUnlock();
 }
@@ -181,20 +181,20 @@ void sd485Stop(Serial485Driver *sd485p) {
  *          this function directly but copy this code directly into the
  *          interrupt service routine.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver structure
+ * @param[in] s485dp    pointer to a @p Serial485Driver structure
  * @param[in] b         the byte to be written in the driver's Input Queue
  *
  * @iclass
  */
-void sd485IncomingDataI(Serial485Driver *sd485p, uint8_t b) {
+void s485dIncomingDataI(Serial485Driver *s485dp, uint8_t b) {
 
   chDbgCheckClassI();
-  chDbgCheck(sd485p != NULL, "sd485IncomingDataI");
+  chDbgCheck(s485dp != NULL, "s485dIncomingDataI");
 
-  if (chIQIsEmptyI(&sd485p->iqueue))
-    chnAddFlagsI(sd485p, CHN_INPUT_AVAILABLE);
-  if (chIQPutI(&sd485p->iqueue, b) < Q_OK)
-    chnAddFlagsI(sd485p, SD485_OVERRUN_ERROR);
+  if (chIQIsEmptyI(&s485dp->iqueue))
+    chnAddFlagsI(s485dp, CHN_INPUT_AVAILABLE);
+  if (chIQPutI(&s485dp->iqueue, b) < Q_OK)
+    chnAddFlagsI(s485dp, S485D_OVERRUN_ERROR);
 }
 
 /**
@@ -205,22 +205,22 @@ void sd485IncomingDataI(Serial485Driver *sd485p, uint8_t b) {
  *          this function directly but copy this code directly into the
  *          interrupt service routine.
  *
- * @param[in] sd485p    pointer to a @p Serial485Driver structure
+ * @param[in] s485dp    pointer to a @p Serial485Driver structure
  * @return              The byte value read from the driver's output queue.
  * @retval Q_EMPTY      if the queue is empty (the lower driver usually
  *                      disables the interrupt source when this happens).
  *
  * @iclass
  */
-msg_t sd485RequestDataI(Serial485Driver *sd485p) {
+msg_t s485dRequestDataI(Serial485Driver *s485dp) {
   msg_t  b;
 
   chDbgCheckClassI();
-  chDbgCheck(sd485p != NULL, "sd485RequestDataI");
+  chDbgCheck(s485dp != NULL, "s485dRequestDataI");
 
-  b = chOQGetI(&sd485p->oqueue);
+  b = chOQGetI(&s485dp->oqueue);
   if (b < Q_OK)
-    chnAddFlagsI(sd485p, CHN_OUTPUT_EMPTY);
+    chnAddFlagsI(s485dp, CHN_OUTPUT_EMPTY);
   return b;
 }
 
