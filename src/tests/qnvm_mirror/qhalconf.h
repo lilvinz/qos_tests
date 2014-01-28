@@ -71,50 +71,18 @@
  *          default configuration.
  */
 #if !defined(SERIAL_485_DEFAULT_BITRATE) || defined(__DOXYGEN__)
-#define SERIAL_485_DEFAULT_BITRATE          38400
+#define SERIAL_485_DEFAULT_BITRATE  38400
 #endif
 
 /**
- * @brief   Serial buffers size.
+ * @brief   Serial 485 buffers size.
  * @details Configuration parameter, you can change the depth of the queue
  *          buffers depending on the requirements of your application.
- * @note    The default is 16 bytes for both the transmission and receive
+ * @note    The default is 64 bytes for both the transmission and receive
  *          buffers.
  */
 #if !defined(SERIAL_485_BUFFERS_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_BUFFERS_SIZE             16
-#endif
-
-/**
- * @brief   Serial buffer size RX.
- * @details Configuration parameter, you can change the depth of the RX
- *          buffer depending on the requirements of your application.
- * @note    The default is 1 byte. Read completes only when buffer has been
- *          filled completely.
- */
-#if !defined(SERIAL_485_UART_RX_BUFFER_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_UART_RX_BUFFER_SIZE      1
-#endif
-
-/**
- * @brief   Serial buffer size TX.
- * @details Configuration parameter, you can change the depth of the TX
- *          buffer depending on the requirements of your application.
- * @note    The default is 16 bytes.
- */
-#if !defined(SERIAL_485_UART_TX_BUFFER_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_UART_TX_BUFFER_SIZE      16
-#endif
-
-/**
- * @brief   Uart driver upper pointer
- * @details Required pointer to upper level driver
- * @note    This is required for 485 driver to work
- */
-#if defined(HAL_USE_SERIAL_485)
-#if !defined(UART_DRIVER_EXT_FIELDS)
-#define UART_DRIVER_EXT_FIELDS void* uldp;
-#endif
+#define SERIAL_485_BUFFERS_SIZE     16
 #endif
 
 /*===========================================================================*/
