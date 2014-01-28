@@ -206,6 +206,8 @@ void sd485Start(Serial485Driver *sd485p, const Serial485Config *config)
     uartStartReceiveI(sd485p->config->uartp, sizeof(sd485p->uart_ib),
             sd485p->uart_ib);
 
+    chnAddFlagsI(sd485p, CHN_CONNECTED);
+
     chSysUnlock();
 }
 
