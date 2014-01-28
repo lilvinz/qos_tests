@@ -1,6 +1,6 @@
 /**
- * @file    STM32F4xx/qhal_lld.h
- * @brief   STM32F4xx HAL subsystem low level driver header.
+ * @file    STM32F2xx/qhal_lld.h
+ * @brief   STM32F2xx HAL subsystem low level driver header.
  * @pre     This module requires the following macros to be defined in the
  *          @p board.h file:
  *          - STM32_LSECLK.
@@ -10,10 +10,7 @@
  *          - STM32_VDD (as hundredths of Volt).
  *          .
  *          One of the following macros must also be defined:
- *          - STM32F401xx for High-performance STM32 F-4 devices.
- *          - STM32F40_41xxx for High-performance STM32 F-4 devices.
- *          - STM32F427_437xx for High-performance STM32 F-4 devices.
- *          - STM32F429_439xx for High-performance STM32 F-4 devices.
+ *          - STM32F2XX for High-performance STM32 F-2 devices.
  *          .
  *
  * @addtogroup QHAL
@@ -34,7 +31,7 @@
 /*===========================================================================*/
 
 /**
- * @name    STM32F4xx capabilities
+ * @name    STM32F2xx capabilities
  * @{
  */
 
