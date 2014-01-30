@@ -61,6 +61,20 @@
 #define HAL_USE_FLASH               FALSE
 #endif
 
+/**
+ * @brief   Enables the LED subsystem.
+ */
+#if !defined(HAL_USE_LED) || defined(__DOXYGEN__)
+#define HAL_USE_LED                 FALSE
+#endif
+
+/**
+ * @brief   Enables the WDG subsystem.
+ */
+#if !defined(HAL_USE_WDG) || defined(__DOXYGEN__)
+#define HAL_USE_WDG                 TRUE
+#endif
+
 /*===========================================================================*/
 /* SERIAL_485 driver related settings.                                       */
 /*===========================================================================*/

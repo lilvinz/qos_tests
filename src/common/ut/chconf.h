@@ -558,6 +558,15 @@
    in the project options.*/
 #define CORTEX_USE_FPU                  FALSE
 
+/*===========================================================================*/
+/* Various settings.                                                         */
+/*===========================================================================*/
+
+/**
+ * @brief   Float type support.
+ */
+#define CHPRINTF_USE_FLOAT              TRUE
+
 #endif  /* _CHCONF_H_ */
 
 /** @} */
