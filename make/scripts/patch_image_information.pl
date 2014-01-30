@@ -248,6 +248,7 @@ foreach (@elf_file_data_unpacked)
 		if ($pos_in_sequence == @sequence)
 		{
 			push (@found_locations, $pos_in_file - @sequence);
+			#printf "Location found at 0x%08X\n", $pos_in_file - @sequence;
 		}
 	}
 	else
@@ -256,7 +257,7 @@ foreach (@elf_file_data_unpacked)
 	}
 } 
 
-if (@found_locations > 2)
+if (scalar(@found_locations) != 1)
 {
 	printf "Error location found %i times\n", scalar(@found_locations);
 	exit(-1);
