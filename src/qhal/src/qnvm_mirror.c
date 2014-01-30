@@ -580,8 +580,8 @@ bool_t nvmmirrorMassErase(NVMMirrorDriver* nvmmirrorp)
 
     return nvmErase(nvmmirrorp->config->nvmp,
             nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->config->sector_header_num,
-            nvmmirrorp->llnvmdi.sector_size * nvmmirrorp->llnvmdi.sector_num
-                - nvmmirrorp->config->sector_header_num);
+            nvmmirrorp->llnvmdi.sector_size *
+            (nvmmirrorp->llnvmdi.sector_num - nvmmirrorp->config->sector_header_num));
 }
 
 /**
