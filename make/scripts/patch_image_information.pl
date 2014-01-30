@@ -256,23 +256,28 @@ foreach (@elf_file_data_unpacked)
 	}
 } 
 
-if (@found_locations != 1)
+if (@found_locations > 2)
 {
-	printf "Error location found %i times\n", @found_locations;
+	printf "Error location found %i times\n", scalar(@found_locations);
 	exit(-1);
 }
 
 #printf "Location found at 0x%08X\n", $found_locations[0];
 
-$elf_file_data_unpacked[$found_locations[0] + 0] = ($checksum >> 0) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 1] = ($checksum >> 8) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 2] = ($checksum >> 16) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 3] = ($checksum >> 24) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 4] = ($binary_file_length >> 0) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 5] = ($binary_file_length >> 8) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 6] = ($binary_file_length >> 16) & 0xff;
-$elf_file_data_unpacked[$found_locations[0] + 7] = ($binary_file_length >> 24) & 0xff;
+foreach $location (@found_locations)
+{
+	$elf_file_data_unpacked[$location + 0] = ($checksum >> 0) & 0xff;
+	$elf_file_data_unpacked[$location + 1] = ($checksum >> 8) & 0xff;
+	$elf_file_data_unpacked[$location + 2] = ($checksum >> 16) & 0xff;
+	$elf_file_data_unpacked[$location + 3] = ($checksum >> 24) & 0xff;
+	$elf_file_data_unpacked[$location + 4] = ($binary_file_length >> 0) & 0xff;
+	$elf_file_data_unpacked[$location + 5] = ($binary_file_length >> 8) & 0xff;
+	$elf_file_data_unpacked[$location + 6] = ($binary_file_length >> 16) & 0xff;
+	$elf_file_data_unpacked[$location + 7] = ($binary_file_length >> 24) & 0xff;
+}
+
 $elf_file_data = pack("C*", @elf_file_data_unpacked);
+
 
 if (open(OUTPUT, "> $elf_file") == false)
 {
