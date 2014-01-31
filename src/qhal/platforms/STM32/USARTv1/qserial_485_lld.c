@@ -97,10 +97,6 @@ static void usart_init(Serial485Driver *s485dp, const Serial485Config *config) {
   u->SR = 0;
   (void)u->SR;  /* SR reset step 1.*/
   (void)u->DR;  /* SR reset step 2.*/
-
-  /* Clear driver enable pad. */
-  if (s485dp->config->ssport != NULL)
-    palClearPad(s485dp->config->ssport, s485dp->config->sspad);
 }
 
 /**
@@ -158,12 +154,27 @@ static void serve_interrupt(Serial485Driver *s485dp) {
   chSysLockFromIsr();
   while (sr & USART_SR_RXNE) {
     /* Error condition detection.*/
-    if (sr & (USART_SR_ORE | USART_SR_NE | USART_SR_FE  | USART_SR_PE))
+    if (sr & (USART_SR_ORE | USART_SR_NE | USART_SR_FE | USART_SR_PE))
       set_error(s485dp, sr);
     s485dIncomingDataI(s485dp, u->DR);
     sr = u->SR;
   }
   chSysUnlockFromIsr();
+
+  /* Physical transmission end.
+   * Note: This must be handled before TXE to prevent a startup glitch
+   * on the driver enable pin because TC fires once on driver startup.
+   */
+  if (sr & USART_SR_TC) {
+    /* Clear driver enable pad. */
+    if (s485dp->config->ssport != NULL)
+      palClearPad(s485dp->config->ssport, s485dp->config->sspad);
+    chSysLockFromIsr();
+    chnAddFlagsI(s485dp, CHN_TRANSMISSION_END);
+    chSysUnlockFromIsr();
+    u->CR1 = (cr1 & ~(USART_CR1_TXEIE | USART_CR1_TCIE)) | USART_CR1_RE;
+    u->SR = ~USART_SR_TC;
+  }
 
   /* Transmission buffer empty.*/
   if ((cr1 & USART_CR1_TXEIE) && (sr & USART_SR_TXE)) {
@@ -176,28 +187,15 @@ static void serve_interrupt(Serial485Driver *s485dp) {
     }
     else
     {
+      /* Disable RX if enabled. */
+      if (cr1 & USART_CR1_RE)
+        u->CR1 = cr1 & ~USART_CR1_RE;
       /* Set driver enable pad. */
       if (s485dp->config->ssport != NULL)
         palSetPad(s485dp->config->ssport, s485dp->config->sspad);
-      /* Disable RX. */
-      u->CR1 = cr1 & ~USART_CR1_RE;
       u->DR = b;
     }
     chSysUnlockFromIsr();
-  }
-
-  /* Physical transmission end.*/
-  if (sr & USART_SR_TC) {
-    chSysLockFromIsr();
-    chnAddFlagsI(s485dp, CHN_TRANSMISSION_END);
-    chSysUnlockFromIsr();
-    u->CR1 = cr1 & ~(USART_CR1_TXEIE | USART_CR1_TCIE);
-    u->SR = ~USART_SR_TC;
-    /* Clear driver enable pad. */
-    if (s485dp->config->ssport != NULL)
-      palClearPad(s485dp->config->ssport, s485dp->config->sspad);
-    /* Enable RX. */
-    u->CR1 = cr1 | USART_CR1_RE;
   }
 }
 
@@ -467,6 +465,9 @@ void s485d_lld_start(Serial485Driver *s485dp, const Serial485Config *config) {
                        CORTEX_PRIORITY_MASK(STM32_SERIAL_485_USART6_PRIORITY));
     }
 #endif
+    /* Clear driver enable pad. */
+    if (s485dp->config->ssport != NULL)
+      palClearPad(s485dp->config->ssport, s485dp->config->sspad);
   }
   usart_init(s485dp, config);
 }
@@ -526,6 +527,9 @@ void s485d_lld_stop(Serial485Driver *s485dp) {
       return;
     }
 #endif
+    /* Clear driver enable pad. */
+    if (s485dp->config->ssport != NULL)
+      palClearPad(s485dp->config->ssport, s485dp->config->sspad);
   }
 }
 
