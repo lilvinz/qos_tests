@@ -72,6 +72,50 @@ TEST_F(NVMFile, nvmfileErase)
     EXPECT_EQ(nvmfileErase(&_nvmfile, 0, nvmfilecfg.sector_size), CH_SUCCESS);
 
     EXPECT_EQ(nvmfileErase(&_nvmfile, nvmfilecfg.sector_num * nvmfilecfg.sector_size - nvmfilecfg.sector_size, nvmfilecfg.sector_size), CH_SUCCESS);
+
+
+    static const char magic[] = "magic string marker\0";
+    char buffer[100];
+
+    /* Verify bounds of erase 1. */
+    EXPECT_EQ(nvmfileWrite(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(magic), (const uint8_t*)magic), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 0, nvmfilecfg.sector_size), CH_SUCCESS);
+    EXPECT_EQ(nvmfileRead(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(buffer), (uint8_t*)buffer), CH_SUCCESS);
+    EXPECT_STREQ(magic, buffer);
+
+    /* Verify bounds of erase 2. */
+    EXPECT_EQ(nvmfileWrite(&_nvmfile, 2 * nvmfilecfg.sector_size, sizeof(magic), (const uint8_t*)magic), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 1, nvmfilecfg.sector_size), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 1, nvmfilecfg.sector_size - 1), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 0, nvmfilecfg.sector_size * 2), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 0, nvmfilecfg.sector_size * 2 - 1), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 0, nvmfilecfg.sector_size * 1 + 1), CH_SUCCESS);
+    EXPECT_EQ(nvmfileRead(&_nvmfile, 2 * nvmfilecfg.sector_size, sizeof(buffer), (uint8_t*)buffer), CH_SUCCESS);
+    EXPECT_STREQ(magic, buffer);
+
+    /* Verify bounds of erase 3. */
+    EXPECT_EQ(nvmfileWrite(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(magic), (const uint8_t*)magic), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, 1, nvmfilecfg.sector_size), CH_SUCCESS);
+    EXPECT_EQ(nvmfileRead(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(buffer), (uint8_t*)buffer), CH_SUCCESS);
+    EXPECT_STRNE(magic, buffer);
+
+    /* Verify bounds of erase 4. */
+    EXPECT_EQ(nvmfileWrite(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(magic), (const uint8_t*)magic), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, nvmfilecfg.sector_size - 1, nvmfilecfg.sector_size), CH_SUCCESS);
+    EXPECT_EQ(nvmfileRead(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(buffer), (uint8_t*)buffer), CH_SUCCESS);
+    EXPECT_STRNE(magic, buffer);
+
+    /* Verify bounds of erase 5. */
+    EXPECT_EQ(nvmfileWrite(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(magic), (const uint8_t*)magic), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, nvmfilecfg.sector_size - 1, 1), CH_SUCCESS);
+    EXPECT_EQ(nvmfileRead(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(buffer), (uint8_t*)buffer), CH_SUCCESS);
+    EXPECT_STREQ(magic, buffer);
+
+    /* Verify bounds of erase 6. */
+    EXPECT_EQ(nvmfileWrite(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(magic), (const uint8_t*)magic), CH_SUCCESS);
+    EXPECT_EQ(nvmfileErase(&_nvmfile, nvmfilecfg.sector_size - 1, 2), CH_SUCCESS);
+    EXPECT_EQ(nvmfileRead(&_nvmfile, 1 * nvmfilecfg.sector_size, sizeof(buffer), (uint8_t*)buffer), CH_SUCCESS);
+    EXPECT_STRNE(magic, buffer);
 }
 
 TEST_F(NVMFile, EraseWriteReadVerify)

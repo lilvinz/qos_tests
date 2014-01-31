@@ -281,14 +281,12 @@ bool_t nvmfileErase(NVMFileDriver* nvmfilep, uint32_t startaddr, uint32_t n)
 
     uint32_t first_sector_addr =
             startaddr - (startaddr % nvmfilep->config->sector_size);
-    uint32_t last_sector_addr =
-            (startaddr + n) - ((startaddr + n) % nvmfilep->config->sector_size);
 
     if (fseek(nvmfilep->file, first_sector_addr, SEEK_SET) != 0)
         return CH_FAILED;
 
     for (uint32_t addr = first_sector_addr;
-            addr <= last_sector_addr;
+            addr < startaddr + n;
             addr += nvmfilep->config->sector_size)
     {
         static const uint8_t erased = 0xff;
