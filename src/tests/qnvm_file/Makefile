@@ -5,7 +5,7 @@
 # Common UT
 include $(ROOT_DIR)/src/common/ut/library.mk
 # ChibiOS with Quantec HAL
-include $(ROOT_DIR)/src/qhal/platforms/Posix/library.mk
+include $(ROOT_DIR)/src/qos/hal/platforms/Posix/library.mk
 
 CFLAGS += -Os
 CFLAGS += -Wall -Werror -Wshadow
