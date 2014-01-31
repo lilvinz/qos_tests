@@ -595,11 +595,9 @@ bool_t fjsErase(FlashJedecSPIDriver* fjsp, uint32_t startaddr, uint32_t n)
 
     uint32_t first_sector_addr =
             startaddr - (startaddr % fjsp->config->sector_size);
-    uint32_t last_sector_addr =
-            (startaddr + n) - ((startaddr + n) % fjsp->config->sector_size);
 
     for (uint32_t addr = first_sector_addr;
-            addr <= last_sector_addr;
+            addr < startaddr + n;
             addr += fjsp->config->sector_size)
     {
         /* Check if device supports erase command. */
