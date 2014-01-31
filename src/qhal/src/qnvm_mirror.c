@@ -214,7 +214,7 @@ static bool_t nvm_mirror_state_update(NVMMirrorDriver* nvmmirrorp,
     {
         new_state_addr = 0;
         bool_t result = nvmErase(nvmmirrorp->config->nvmp, header_orig,
-                nvmmirrorp->config->sector_header_num * nvmmirrorp->llnvmdi.sector_size);
+                header_size);
         if (result != CH_SUCCESS)
             return result;
     }
