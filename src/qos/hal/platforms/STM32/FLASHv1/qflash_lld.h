@@ -1,5 +1,5 @@
 /**
- * @file    STM32/FLASHv2/qflash.c
+ * @file    STM32/FLASHv1/qflash.c
  * @brief   STM32 low level FLASH driver header.
  *
  * @addtogroup FLASH
@@ -14,65 +14,6 @@
 /*===========================================================================*/
 /* Driver constants.                                                         */
 /*===========================================================================*/
-
-/**
- * @brief   FLASH readout protection options
- *
- *          LEVEL 0: no read protection
- *          When the read protection level is set to LEVEL 0 by writing 0xAA into the read protection
- *          option byte (RDP), all read/write operations (if no write protection is set) from/to the
- *          Flash memory or the backup SRAM are possible in all boot configurations (Flash user
- *          boot, debug or boot from RAM).
- *
- *          LEVEL 1: memory read protection.
- *          It is the default read protection level after option byte erase. The read protection LEVEL 1
- *          is activated by writing any value (except for 0xAA and 0xCC used to set LEVEL 0 and
- *          LEVEL 2, respectively) into the RDP option byte. When the read protection LEVEL 1 is set:
- *
- *          - No Flash memory access (read, erase, program) is performed while the debug
- *            features are connected or boot is executed from RAM. A bus error is generated in
- *            case of a Flash memory read request. Otherwise all operations are possible when
- *            Flash user boot is used or when operating in System memory boot mode.
- *
- *          - When LEVEL 1 is active, programming the protection option byte (RDP) to LEVEL 0
- *            causes the Flash memory and the backup SRAM to be mass-erased. As a result
- *            the user code area is cleared before the read protection is removed. The mass
- *            erase only erases the user code area. The other option bytes including write
- *            protections remain unchanged from before the mass-erase operation. The OTP
- *            area is not affected by mass erase and remains unchanged.
- *
- *          Mass erase is performed only when LEVEL 1 is active and LEVEL 0 requested. When
- *          the protection level is increased (0->1, 1->2, 0->2) there is no mass erase.
- *
- *          LEVEL 2: Disable debug/chip read protection
- *          When the read protection LEVEL 2 is activated by writing 0xCC to the RDP option byte,
- *          all protections provided by LEVEL 1 are active, system memory and all debug features
- *          (CPU JTAG and single-wire) are disabled when booting from SRAM or from system
- *          memory, and user options can no longer be changed.
- *          Memory read protection LEVEL 2 is an irreversible operation. When LEVEL 2 is activated,
- *          the level of protection cannot be decreased to LEVEL 0 or LEVEL 1
- * @{
- */
-typedef enum
-{
-    OB_RDP_LEVEL_0 = 0xAA,
-    OB_RDP_LEVEL_1 = 0x55,
-    OB_RDP_LEVEL_2 = 0xCC,
-} ob_rdp_level_e;
-/** @} */
-
-/**
- * @brief   LEVEL of brown-out detection circuit
- * @{
- */
-typedef enum
-{
-    OB_BOR_LEVEL_OFF = FLASH_OPTCR_BOR_LEV_1 | FLASH_OPTCR_BOR_LEV_0,
-    OB_BOR_LEVEL_1 = FLASH_OPTCR_BOR_LEV_1,
-    OB_BOR_LEVEL_2 = FLASH_OPTCR_BOR_LEV_0,
-    OB_BOR_LEVEL_3 = 0x00,
-} ob_bor_level_e;
-/** @} */
 
 /**
  * @brief   User option bits
@@ -107,16 +48,16 @@ typedef enum
  */
 enum
 {
-    OB_USER_no_WDG_HW = FLASH_OPTCR_WDG_SW,
+    OB_USER_no_WDG_HW = FLASH_OBR_WDG_SW >> 2,
     OB_USER_WDG_HW = 0,
-    OB_USER_no_RST_STOP = FLASH_OPTCR_nRST_STOP,
+    OB_USER_no_RST_STOP = FLASH_OBR_nRST_STOP >> 2,
     OB_USER_RST_STOP = 0,
-    OB_USER_no_RST_STDBY = FLASH_OPTCR_nRST_STDBY,
+    OB_USER_no_RST_STDBY = FLASH_OBR_nRST_STDBY >> 2,
     OB_USER_RST_STDBY = 0,
-#if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN)
+#if defined(STM32F10X_XL)
     OB_USER_no_BFB2 = 0,
-    OB_USER_BFB2 = (uint32_t)0x00000020, /* Definition is missing in st header. */
-#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
+    OB_USER_BFB2 = FLASH_OBR_BFB2 >> 2,
+#endif
 };
 /** @} */
 
@@ -127,6 +68,63 @@ enum
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
+
+/* Check for supported devices. */
+#if defined(STM32F10X_LD) ||                     \
+        defined(STM32F10X_LD_VL) ||             \
+        defined(STM32F10X_MD) ||                \
+        defined(STM32F10X_MD_VL) ||             \
+        defined(STM32F10X_HD) ||                \
+        defined(STM32F10X_HD_VL) ||             \
+        defined(STM32F10X_CL)
+#else
+#error "device unsupported by FLASHv1 driver"
+#endif
+
+/**
+ * @brief   FLASH readout protection options
+ *
+ *          LEVEL 0: no read protection
+ *          When the read protection level is set to LEVEL 0 by writing 0xa5 into the read protection
+ *          option byte (RDP), all read/write operations (if no write protection is set) from/to the
+ *          Flash memory or the backup SRAM are possible in all boot configurations (Flash user
+ *          boot, debug or boot from RAM).
+ *
+ *          LEVEL 1: memory read protection.
+ *          It is the default read protection level after option byte erase. The read protection LEVEL 1
+ *          is activated by writing any value (except for 0x45 used to set LEVEL 0
+ *          into the RDP option byte. When the read protection LEVEL 1 is set:
+ *
+ *          - No Flash memory access (read, erase, program) is performed while the debug
+ *            features are connected or boot is executed from RAM. A bus error is generated in
+ *            case of a Flash memory read request. Otherwise all operations are possible when
+ *            Flash user boot is used or when operating in System memory boot mode.
+ *
+ *          - When LEVEL 1 is active, programming the protection option byte (RDP) to LEVEL 0
+ *            causes the Flash memory and the backup SRAM to be mass-erased. As a result
+ *            the user code area is cleared before the read protection is removed. The mass
+ *            erase only erases the user code area. The other option bytes including write
+ *            protections remain unchanged from before the mass-erase operation.
+ *
+ *          Mass erase is performed only when LEVEL 1 is active and LEVEL 0 requested. When
+ *          the protection level is increased (0->1) there is no mass erase.
+ * @{
+ */
+typedef enum
+{
+#if defined(STM32F10X_LD) ||                \
+        defined(STM32F10X_LD_VL) ||         \
+        defined(STM32F10X_MD) ||            \
+        defined(STM32F10X_MD_VL) ||         \
+        defined(STM32F10X_HD) ||            \
+        defined(STM32F10X_HD_VL) ||         \
+        defined(STM32F10X_XL) ||            \
+        defined(STM32F10X_CL)
+    OB_RDP_LEVEL_0 = 0xa5,
+#endif
+    OB_RDP_LEVEL_1 = 0x00,
+} ob_rdp_level_e;
+/** @} */
 
 /*===========================================================================*/
 /* Driver data structures and types.                                         */
@@ -192,6 +190,7 @@ typedef struct
     uint32_t sector;
     uint32_t origin;
     uint32_t size;
+    uint8_t wrp_bit;
 } FLASHSectorInfo;
 
 /*===========================================================================*/
@@ -227,18 +226,6 @@ extern "C" {
     void flash_lld_writeunprotect_mass(FLASHDriver* flashp);
     void flash_lld_ob_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
     void flash_lld_ob_user(FLASHDriver* flashp, uint8_t user);
-    void flash_lld_ob_bor(FLASHDriver* flashp, ob_bor_level_e level);
-#if defined(STM32F427_437xx) || defined(STM32F429_439xx) || defined(__DOXYGEN)
-    void flash_lld1_writeprotect_sector(FLASHDriver* flashp,
-            uint32_t startaddr);
-    void flash_lld1_writeprotect_mass(FLASHDriver* flashp);
-    void flash_lld1_writeunprotect_sector(FLASHDriver* flashp,
-            uint32_t startaddr);
-    void flash_lld1_writeunprotect_mass(FLASHDriver* flashp);
-    void flash_lld1_ob_rdp(FLASHDriver* flashp, ob_rdp_level_e level);
-    void flash_lld1_ob_user(FLASHDriver* flashp, uint8_t user);
-    void flash_lld1_ob_bor(FLASHDriver* flashp, ob_bor_level_e level);
-#endif /* defined(STM32F427_437xx) || defined(STM32F429_439xx) */
 #ifdef __cplusplus
 }
 #endif
