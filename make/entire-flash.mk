@@ -9,10 +9,8 @@ TARGET_ELF := $(OUTDIR)/$(BUILD_PREFIX)_$(BOARD_NAME).elf
 .PHONY: all
 all: $(TARGET_BIN) $(TARGET_ELF)
 
-FORCE:
-
 # Enforce this target as we can't tell if any external dependency has changed
-$(TARGET_BIN): FORCE
+.PHONY: $(TARGET_BIN)
 $(TARGET_BIN): $(BL_ELF) $(FW_ELF) | $(OUTDIR)
 	$(V0) @echo $(MSG_PADDING) $(call toprel, $@)
 	$(V1) $(OBJCOPY) --pad-to=$(FW_ORIGIN) --gap-fill=0xff -O binary $(BL_ELF) $@
