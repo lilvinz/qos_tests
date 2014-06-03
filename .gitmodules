@@ -1,3 +1,9 @@
 [submodule "submodules/flashtool"]
 	path = submodules/flashtool
 	url = ssh://git@gitlab/quantec/flashtool.git
+[submodule "submodules/qos"]
+	path = submodules/qos
+	url = ssh://git@gitlab/quantec/qos.git
+[submodule "submodules/chibios"]
+	path = submodules/chibios
+	url = ssh://git@gitlab/quantec/chibios.git
