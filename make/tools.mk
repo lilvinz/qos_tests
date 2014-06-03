@@ -4,10 +4,10 @@
 #
 ###########################################################################################################
 
-ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_8-2013q4
+ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_8-2014q1
 
 .PHONY: arm_sdk_install
-arm_sdk_install: ARM_SDK_URL := https://launchpad.net/gcc-arm-embedded/4.8/4.8-2013-q4-major/+download/gcc-arm-none-eabi-4_8-2013q4-20131204-linux.tar.bz2
+arm_sdk_install: ARM_SDK_URL := https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q1-update/+download/gcc-arm-none-eabi-4_8-2014q1-20140314-linux.tar.bz2
 arm_sdk_install: ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
 # order-only prereq on directory existance:
 arm_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
@@ -34,7 +34,7 @@ OPENOCD_BUILD_DIR := $(DL_DIR)/openocd-build
 .PHONY: openocd_install
 openocd_install: | $(DL_DIR) $(TOOLS_DIR)
 openocd_install: OPENOCD_URL := https://github.com/lilvinz/openocd
-openocd_install: OPENOCD_REV := v0.7.0_freertos_cm4_stacking
+openocd_install: OPENOCD_REV := d7cbdee3e98d5dec9c8760f730d7a5096717ed73
 openocd_install: OPENOCD_OPTIONS := --enable-maintainer-mode --prefix="$(OPENOCD_DIR)" --enable-ftdi --enable-stlink
 openocd_install: openocd_clean
     # download the source
@@ -52,7 +52,6 @@ openocd_install: openocd_clean
 	$(V1) mkdir -p "$(OPENOCD_DIR)"
 	$(V1) ( \
 	    cd $(OPENOCD_BUILD_DIR) ; \
-	    git apply $(ROOT_DIR)/make/openocd/patchset/0001-freertos-configured-for-v7.6.0-MPU.patch ; \
 	    ./bootstrap ; \
 	    ./configure  $(OPENOCD_OPTIONS) ; \
 	    $(MAKE) ; \
