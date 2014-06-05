@@ -4,6 +4,8 @@ include $(ROOT_DIR)/make/firmware-defs.mk
 # Flags passed to the preprocessor.
 CPPFLAGS += -I$(GTEST_DIR)/include
 
+CFLAGS += -MMD -MP -MF $(OUTDIR)/$(@F).d
+
 # Google Test needs the pthread library
 LDFLAGS += -lpthread
 
