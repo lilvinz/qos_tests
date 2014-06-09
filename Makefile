@@ -270,7 +270,7 @@ all_$(1)_clean: $$(addsuffix _clean, $$(filter sim_$(1), $$(SIM_TARGETS)))
 endef
 
 # Include all board definitions from targets dir
-include $(ROOT_DIR)/src/targets/*/target-defs.mk
+-include $(ROOT_DIR)/src/targets/*/target-defs.mk
 
 # Generate the targets
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
