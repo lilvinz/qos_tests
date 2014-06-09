@@ -7,3 +7,6 @@
 [submodule "submodules/chibios"]
 	path = submodules/chibios
 	url = ssh://git@gitlab/quantec/chibios.git
+[submodule "submodules/format"]
+	path = submodules/format
+	url = ssh://git@gitlab/quantec/format.git
