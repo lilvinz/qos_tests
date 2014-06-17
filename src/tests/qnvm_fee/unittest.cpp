@@ -200,3 +200,52 @@ TEST_F(NVMFee, MaximumWrite)
     for (uint32_t i = 0; i < info.sector_num * info.sector_size; ++i)
         EXPECT_EQ(nvmWrite(&nvmfee_test, i, sizeof(temp), &temp), CH_SUCCESS);
 }
+
+TEST_F(NVMFee, Overwrite)
+{
+    uint32_t temp;
+    uint32_t temp2;
+
+    temp = 9600;
+    EXPECT_EQ(nvmWrite(&nvmfee_test, 0x230, sizeof(temp), (const uint8_t*)&temp), CH_SUCCESS);
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+
+    temp = 19200;
+    EXPECT_EQ(nvmWrite(&nvmfee_test, 0x230, sizeof(temp), (const uint8_t*)&temp), CH_SUCCESS);
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+
+    temp = 38400;
+    EXPECT_EQ(nvmWrite(&nvmfee_test, 0x230, sizeof(temp), (const uint8_t*)&temp), CH_SUCCESS);
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+}
+
+TEST_F(NVMFee, Reload)
+{
+    uint32_t temp;
+    uint32_t temp2;
+
+    temp = 9600;
+    EXPECT_EQ(nvmWrite(&nvmfee_test, 0x230, sizeof(temp), (const uint8_t*)&temp), CH_SUCCESS);
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+
+    temp = 19200;
+    EXPECT_EQ(nvmWrite(&nvmfee_test, 0x230, sizeof(temp), (const uint8_t*)&temp), CH_SUCCESS);
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+
+    temp = 38400;
+    EXPECT_EQ(nvmWrite(&nvmfee_test, 0x230, sizeof(temp), (const uint8_t*)&temp), CH_SUCCESS);
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+
+    nvmfeeStop(&nvmfee_test);
+    nvmfeeStart(&nvmfee_test, &nvmfeecfg_test);
+
+    temp = 38400;
+    EXPECT_EQ(nvmRead(&nvmfee_test, 0x230, sizeof(temp2), (uint8_t*)&temp2), CH_SUCCESS);
+    EXPECT_EQ(temp, temp2);
+}
