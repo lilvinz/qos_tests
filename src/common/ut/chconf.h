@@ -143,7 +143,7 @@
  * @note    The default is @p TRUE.
  */
 #if !defined(CH_USE_WAITEXIT) || defined(__DOXYGEN__)
-#define CH_USE_WAITEXIT                 FALSE
+#define CH_USE_WAITEXIT                 TRUE
 #endif
 
 /**
