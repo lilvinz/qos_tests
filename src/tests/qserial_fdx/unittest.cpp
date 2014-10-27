@@ -83,6 +83,9 @@ TEST_F(SerialFdx, test_a_to_b)
     chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
+
+    EXPECT_EQ(sdfdx_master.connected, true);
+    EXPECT_EQ(sdfdx_slave.connected, true);
 }
 
 TEST_F(SerialFdx, test_b_to_a)
@@ -95,6 +98,9 @@ TEST_F(SerialFdx, test_b_to_a)
     chnReadTimeout(&sdfdx_master, (uint8_t*)temp, sizeof(temp), S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
+
+    EXPECT_EQ(sdfdx_master.connected, true);
+	EXPECT_EQ(sdfdx_slave.connected, true);
 }
 
 TEST_F(SerialFdx, test_a_to_b_over_mtu)
@@ -123,10 +129,10 @@ static msg_t loop_a_pump_worker(void *arg)
 
     chRegSetThreadName("loop_a_pump_worker");
 
-    EventListener listener_b;
+    EventListener listener_slave;
     static const uint32_t event_b_id = 1;
     chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
-            &listener_b, event_b_id);
+            &listener_slave, event_b_id);
 
     while (true)
     {
@@ -134,7 +140,7 @@ static msg_t loop_a_pump_worker(void *arg)
 
         if (events & EVENT_MASK(event_b_id))
         {
-            flagsmask_t flags = chEvtGetAndClearFlags(&listener_b);
+            flagsmask_t flags = chEvtGetAndClearFlags(&listener_slave);
             if (flags & CHN_INPUT_AVAILABLE)
             {
                 msg_t c;
@@ -146,7 +152,7 @@ static msg_t loop_a_pump_worker(void *arg)
                     {
                         chEvtUnregister(
                                 chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
-                                &listener_b);
+                                &listener_slave);
 
                         return 0;
                     }
@@ -185,4 +191,82 @@ TEST_F(SerialFdx, test_events)
 
     /* Wait for thread to exit. */
     chThdWait(loop_a_pumpp);
+}
+
+/*
+ * Worker thread moving data from sdfdx_a to sdfdx_b and back.
+ */
+static msg_t connectionevents_a_pump_worker(void *arg)
+{
+    (void) arg;
+
+    chRegSetThreadName("connectionevents_a_pump_worker");
+
+    EventListener listener_slave;
+    static const uint32_t event_b_id = 1;
+    chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
+            &listener_slave, event_b_id);
+
+    while (true)
+    {
+        uint32_t events = chEvtWaitOneTimeout(EVENT_MASK(event_b_id), S2ST(2));
+
+        if (events & EVENT_MASK(event_b_id))
+        {
+            flagsmask_t flags = chEvtGetAndClearFlags(&listener_slave);
+            if (flags & CHN_CONNECTED)
+            {
+            	 qchprintf((BaseSequentialStream*)&sdfdx_slave, "Test234\n");
+            	 chEvtUnregister(
+					 chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
+					 &listener_slave);
+
+            	 return 0;
+            }
+        }
+    }
+}
+TEST_F(SerialFdx, test_connected_event)
+{
+	static WORKING_AREA(wa_connectionevents_a_pump_worker, 1024);
+	Thread* loop_a_pumpp = chThdCreateStatic(wa_connectionevents_a_pump_worker,
+			sizeof(wa_connectionevents_a_pump_worker),
+			HIGHPRIO, connectionevents_a_pump_worker, NULL);
+
+	/* Force context switch to give loop_a_pump a chance to register events. */
+	chSysLock();
+	chSchRescheduleS();
+	chSysUnlock();
+
+	char temp[200];
+	memset(temp, 0, sizeof(temp));
+
+	chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, S2ST(5));
+
+	EXPECT_STREQ("Test234\n", temp);
+
+	/* Wait for thread to exit. */
+	chThdWait(loop_a_pumpp);
+}
+
+TEST_F(SerialFdx, test_connected)
+{
+	chThdSleepMilliseconds(1000);
+	EXPECT_TRUE(sdfdx_master.connected);
+	EXPECT_TRUE(sdfdx_slave.connected);
+
+	//stop slave to initiate a disconnect
+	//master should handle timeout
+	sfdxdStop(&sdfdx_slave);
+	chThdSleepMilliseconds(2000);
+	EXPECT_FALSE(sdfdx_master.connected);
+	EXPECT_FALSE(sdfdx_slave.connected);
+
+	//start slave again to reconnect
+	sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
+
+	chThdSleepMilliseconds(2000);
+	EXPECT_TRUE(sdfdx_master.connected);
+	EXPECT_TRUE(sdfdx_slave.connected);
+
 }
