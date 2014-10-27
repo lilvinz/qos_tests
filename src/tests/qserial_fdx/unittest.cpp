@@ -83,9 +83,6 @@ TEST_F(SerialFdx, test_a_to_b)
     chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
-
-    EXPECT_EQ(sdfdx_master.connected, true);
-    EXPECT_EQ(sdfdx_slave.connected, true);
 }
 
 TEST_F(SerialFdx, test_b_to_a)
@@ -98,9 +95,6 @@ TEST_F(SerialFdx, test_b_to_a)
     chnReadTimeout(&sdfdx_master, (uint8_t*)temp, sizeof(temp), S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
-
-    EXPECT_EQ(sdfdx_master.connected, true);
-	EXPECT_EQ(sdfdx_slave.connected, true);
 }
 
 TEST_F(SerialFdx, test_a_to_b_over_mtu)
@@ -268,5 +262,25 @@ TEST_F(SerialFdx, test_connected)
 	chThdSleepMilliseconds(2000);
 	EXPECT_TRUE(sdfdx_master.connected);
 	EXPECT_TRUE(sdfdx_slave.connected);
+
+}
+
+TEST_F(SerialFdx, test_escaping)
+{
+	char src[4];
+	src[0] = SFDX_FRAME_BEGIN;
+	src[1] = SFDX_FRAME_END;
+	src[2] = SFDX_BYTE_ESC;
+	src[3] = 0;
+
+	qchprintf((BaseSequentialStream*)&sdfdx_master, src);
+
+	char temp[200];
+	memset(temp, 0, sizeof(temp));
+
+	chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
+
+	EXPECT_STREQ(src, temp);
+
 
 }
