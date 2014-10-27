@@ -7,26 +7,36 @@ extern "C"
 #include "qchprintf.h"
 }
 
-static SerialFdxDriver sdfdx_a;
-static SerialFdxDriver sdfdx_b;
-static SerialFdxDriver sdfdx_loop;
+static SerialVirtualDriver sdvirtual_a;
+static SerialVirtualDriver sdvirtual_b;
 
-static const SerialFdxConfig sdfdx_a_cfg =
+static SerialFdxDriver sdfdx_master;
+static SerialFdxDriver sdfdx_slave;
+
+static const SerialVirtualConfig sdvirtual_a_cfg =
 {
     /* Pointer to the far end. */
-    &sdfdx_b,
+    &sdvirtual_b,
 };
 
-static const SerialFdxConfig sdfdx_b_cfg =
+static const SerialVirtualConfig sdvirtual_b_cfg =
 {
     /* Pointer to the far end. */
-    &sdfdx_a,
+    &sdvirtual_a,
 };
 
-static const SerialFdxConfig sdfdx_loop_cfg =
+static const SerialFdxConfig sdfdx_master_cfg =
 {
     /* Pointer to the far end. */
-    &sdfdx_loop,
+    (BaseAsynchronousChannel*)&sdvirtual_a,
+    SFDXD_MASTER,
+};
+
+static const SerialFdxConfig sdfdx_slave_cfg =
+{
+    /* Pointer to the far end. */
+	(BaseAsynchronousChannel*)&sdvirtual_b,
+    SFDXD_SLAVE,
 };
 
 class SerialFdx: public ::testing::Test
@@ -38,21 +48,26 @@ protected:
         qhalInit();
         chSysInit();
 
-        sdfdxObjectInit(&sdfdx_a);
-        sdfdxStart(&sdfdx_a, &sdfdx_a_cfg);
+        sdvirtualObjectInit(&sdvirtual_a);
+        sdvirtualStart(&sdvirtual_a, &sdvirtual_a_cfg);
 
-        sdfdxObjectInit(&sdfdx_b);
-        sdfdxStart(&sdfdx_b, &sdfdx_b_cfg);
+        sdvirtualObjectInit(&sdvirtual_b);
+        sdvirtualStart(&sdvirtual_b, &sdvirtual_b_cfg);
 
-        sdfdxObjectInit(&sdfdx_loop);
-        sdfdxStart(&sdfdx_loop, &sdfdx_loop_cfg);
+        sfdxdObjectInit(&sdfdx_master);
+		sfdxdStart(&sdfdx_master, &sdfdx_master_cfg);
+
+		sfdxdObjectInit(&sdfdx_slave);
+		sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
     }
 
     virtual void TearDown()
     {
-        sdfdxStop(&sdfdx_loop);
-        sdfdxStop(&sdfdx_b);
-        sdfdxStop(&sdfdx_a);
+    	sfdxdStop(&sdfdx_slave);
+    	sfdxdStop(&sdfdx_master);
+
+    	sdvirtualStop(&sdvirtual_b);
+    	sdvirtualStop(&sdvirtual_a);
 
         chSysDisable();
     }
@@ -60,37 +75,24 @@ protected:
 
 TEST_F(SerialFdx, test_a_to_b)
 {
-    qchprintf((BaseSequentialStream*)&sdfdx_a, "Test234\n");
+    qchprintf((BaseSequentialStream*)&sdfdx_master, "Test234\n");
 
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_b, (uint8_t*)temp, sizeof(temp), TIME_IMMEDIATE);
+    chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
 }
 
 TEST_F(SerialFdx, test_b_to_a)
 {
-    qchprintf((BaseSequentialStream*)&sdfdx_b, "Test234\n");
+    qchprintf((BaseSequentialStream*)&sdfdx_slave, "Test234\n");
 
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_a, (uint8_t*)temp, sizeof(temp), TIME_IMMEDIATE);
-
-    EXPECT_STREQ("Test234\n", temp);
-}
-
-TEST_F(SerialFdx, test_loop)
-{
-    qchprintf((BaseSequentialStream*)&sdfdx_loop, "Test234\n");
-
-    char temp[200];
-    memset(temp, 0, sizeof(temp));
-
-    chnReadTimeout(&sdfdx_loop, (uint8_t*)temp, sizeof(temp),
-            TIME_IMMEDIATE);
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, sizeof(temp), S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
 }
@@ -106,7 +108,7 @@ static msg_t loop_a_pump_worker(void *arg)
 
     EventListener listener_b;
     static const uint32_t event_b_id = 1;
-    chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_b),
+    chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
             &listener_b, event_b_id);
 
     while (true)
@@ -120,20 +122,20 @@ static msg_t loop_a_pump_worker(void *arg)
             {
                 msg_t c;
                 while ((c = chnGetTimeout(
-                        (BaseAsynchronousChannel*)&sdfdx_b, TIME_IMMEDIATE))
+                        (BaseAsynchronousChannel*)&sdfdx_slave, TIME_IMMEDIATE))
                         >= Q_OK)
                 {
                     if (c == 'q')
                     {
                         chEvtUnregister(
-                                chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_b),
+                                chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
                                 &listener_b);
 
                         return 0;
                     }
                     else
                     {
-                        chSequentialStreamPut((BaseSequentialStream*)&sdfdx_b, c);
+                    	chnPutTimeout((BaseAsynchronousChannel*)&sdfdx_slave, c, S2ST(1));
                     }
                 }
             }
@@ -153,16 +155,16 @@ TEST_F(SerialFdx, test_events)
     chSchRescheduleS();
     chSysUnlock();
 
-    qchprintf((BaseSequentialStream*)&sdfdx_a, "Test234\n");
+    qchprintf((BaseSequentialStream*)&sdfdx_master, "Test234\n");
 
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_a, (uint8_t*)temp, 8, S2ST(1));
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, S2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
 
-    qchprintf((BaseSequentialStream*)&sdfdx_a, "q");
+    qchprintf((BaseSequentialStream*)&sdfdx_master, "q");
 
     /* Wait for thread to exit. */
     chThdWait(loop_a_pumpp);
