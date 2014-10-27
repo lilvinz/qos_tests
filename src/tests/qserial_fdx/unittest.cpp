@@ -97,6 +97,23 @@ TEST_F(SerialFdx, test_b_to_a)
     EXPECT_STREQ("Test234\n", temp);
 }
 
+TEST_F(SerialFdx, test_a_to_b_over_mtu)
+{
+	char src[SERIAL_FDX_MTU * 2];
+	memset((void*)src, 'a', sizeof(src) - 1);
+	src[sizeof(src) - 2] = '\n';
+	src[sizeof(src) - 1] = 0;
+
+    qchprintf((BaseSequentialStream*)&sdfdx_master, src);
+
+    char temp[SERIAL_FDX_MTU * 3];
+    memset(temp, 0, sizeof(temp));
+
+    chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
+
+    EXPECT_STREQ(src, temp);
+}
+
 /*
  * Worker thread moving data from sdfdx_a to sdfdx_b and back.
  */
