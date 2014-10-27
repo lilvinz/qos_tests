@@ -28,15 +28,13 @@ static const SerialVirtualConfig sdvirtual_b_cfg =
 static const SerialFdxConfig sdfdx_master_cfg =
 {
     /* Pointer to the far end. */
-    (BaseAsynchronousChannel*)&sdvirtual_a,
-    SFDXD_MASTER,
+    (BaseAsynchronousChannel*)&sdvirtual_a, SFDXD_MASTER,
 };
 
 static const SerialFdxConfig sdfdx_slave_cfg =
 {
     /* Pointer to the far end. */
-	(BaseAsynchronousChannel*)&sdvirtual_b,
-    SFDXD_SLAVE,
+    (BaseAsynchronousChannel*)&sdvirtual_b, SFDXD_SLAVE,
 };
 
 class SerialFdx: public ::testing::Test
@@ -55,19 +53,19 @@ protected:
         sdvirtualStart(&sdvirtual_b, &sdvirtual_b_cfg);
 
         sfdxdObjectInit(&sdfdx_master);
-		sfdxdStart(&sdfdx_master, &sdfdx_master_cfg);
+        sfdxdStart(&sdfdx_master, &sdfdx_master_cfg);
 
-		sfdxdObjectInit(&sdfdx_slave);
-		sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
+        sfdxdObjectInit(&sdfdx_slave);
+        sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
     }
 
     virtual void TearDown()
     {
-    	sfdxdStop(&sdfdx_slave);
-    	sfdxdStop(&sdfdx_master);
+        sfdxdStop(&sdfdx_slave);
+        sfdxdStop(&sdfdx_master);
 
-    	sdvirtualStop(&sdvirtual_b);
-    	sdvirtualStop(&sdvirtual_a);
+        sdvirtualStop(&sdvirtual_b);
+        sdvirtualStop(&sdvirtual_a);
 
         chSysDisable();
     }
@@ -99,10 +97,10 @@ TEST_F(SerialFdx, test_b_to_a)
 
 TEST_F(SerialFdx, test_a_to_b_over_mtu)
 {
-	char src[SERIAL_FDX_MTU * 2];
-	memset((void*)src, 'a', sizeof(src) - 1);
-	src[sizeof(src) - 2] = '\n';
-	src[sizeof(src) - 1] = 0;
+    char src[SERIAL_FDX_MTU * 2];
+    memset((void*)src, 'a', sizeof(src) - 1);
+    src[sizeof(src) - 2] = '\n';
+    src[sizeof(src) - 1] = 0;
 
     qchprintf((BaseSequentialStream*)&sdfdx_master, src);
 
@@ -138,21 +136,18 @@ static msg_t loop_a_pump_worker(void *arg)
             if (flags & CHN_INPUT_AVAILABLE)
             {
                 msg_t c;
-                while ((c = chnGetTimeout(
-                        (BaseAsynchronousChannel*)&sdfdx_slave, TIME_IMMEDIATE))
-                        >= Q_OK)
+                while ((c = chnGetTimeout((BaseAsynchronousChannel*)&sdfdx_slave, TIME_IMMEDIATE)) >= Q_OK)
                 {
                     if (c == 'q')
                     {
-                        chEvtUnregister(
-                                chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
+                        chEvtUnregister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
                                 &listener_slave);
 
                         return 0;
                     }
                     else
                     {
-                    	chnPutTimeout((BaseAsynchronousChannel*)&sdfdx_slave, c, S2ST(1));
+                        chnPutTimeout((BaseAsynchronousChannel*)&sdfdx_slave, c, S2ST(1));
                     }
                 }
             }
@@ -188,7 +183,7 @@ TEST_F(SerialFdx, test_events)
 }
 
 /*
- * Worker thread moving data from sdfdx_a to sdfdx_b and back.
+ * Worker thread to send a message after a connection event occured
  */
 static msg_t connectionevents_a_pump_worker(void *arg)
 {
@@ -210,78 +205,75 @@ static msg_t connectionevents_a_pump_worker(void *arg)
             flagsmask_t flags = chEvtGetAndClearFlags(&listener_slave);
             if (flags & CHN_CONNECTED)
             {
-            	 qchprintf((BaseSequentialStream*)&sdfdx_slave, "Test234\n");
-            	 chEvtUnregister(
-					 chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
-					 &listener_slave);
+                qchprintf((BaseSequentialStream*) &sdfdx_slave, "Test234\n");
+                chEvtUnregister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
+                        &listener_slave);
 
-            	 return 0;
+                return 0;
             }
         }
     }
 }
+
 TEST_F(SerialFdx, test_connected_event)
 {
-	static WORKING_AREA(wa_connectionevents_a_pump_worker, 1024);
-	Thread* loop_a_pumpp = chThdCreateStatic(wa_connectionevents_a_pump_worker,
-			sizeof(wa_connectionevents_a_pump_worker),
-			HIGHPRIO, connectionevents_a_pump_worker, NULL);
+    static WORKING_AREA(wa_connectionevents_a_pump_worker, 1024);
+    Thread* loop_a_pumpp = chThdCreateStatic(wa_connectionevents_a_pump_worker,
+            sizeof(wa_connectionevents_a_pump_worker),
+            HIGHPRIO, connectionevents_a_pump_worker, NULL);
 
-	/* Force context switch to give loop_a_pump a chance to register events. */
-	chSysLock();
-	chSchRescheduleS();
-	chSysUnlock();
+    /* Force context switch to give loop_a_pump a chance to register events. */
+    chSysLock();
+    chSchRescheduleS();
+    chSysUnlock();
 
-	char temp[200];
-	memset(temp, 0, sizeof(temp));
+    char temp[200];
+    memset(temp, 0, sizeof(temp));
 
-	chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, S2ST(5));
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, S2ST(5));
 
-	EXPECT_STREQ("Test234\n", temp);
+    EXPECT_STREQ("Test234\n", temp);
 
-	/* Wait for thread to exit. */
-	chThdWait(loop_a_pumpp);
+    /* Wait for thread to exit. */
+    chThdWait(loop_a_pumpp);
 }
 
 TEST_F(SerialFdx, test_connected)
 {
-	chThdSleepMilliseconds(1000);
-	EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
-	EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
 
-	//stop slave to initiate a disconnect
-	//master should handle timeout
-	sfdxdStop(&sdfdx_slave);
-	chThdSleepMilliseconds(2000);
-	EXPECT_FALSE(sfdxdConnected(&sdfdx_master));
-	EXPECT_FALSE(sfdxdConnected(&sdfdx_slave));
+    /*
+     * stop slave to initiate a disconnect
+     * master should handle timeout
+     */
+    sfdxdStop(&sdfdx_slave);
+    chThdSleepMilliseconds(2000);
+    EXPECT_FALSE(sfdxdConnected(&sdfdx_master));
+    EXPECT_FALSE(sfdxdConnected(&sdfdx_slave));
 
-	//start slave again to reconnect
-	sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
+    /* start slave again to reconnect */
+    sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
 
-	chThdSleepMilliseconds(2000);
-	EXPECT_TRUE(sdfdx_master.connected);
-	EXPECT_TRUE(sdfdx_slave.connected);
-	EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
-	EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
 }
 
 TEST_F(SerialFdx, test_escaping)
 {
-	char src[4];
-	src[0] = SFDX_FRAME_BEGIN;
-	src[1] = SFDX_FRAME_END;
-	src[2] = SFDX_BYTE_ESC;
-	src[3] = 0;
+    /* use special characters as message */
+    char src[] = {SFDX_FRAME_BEGIN, SFDX_FRAME_END, SFDX_BYTE_ESC, 0};
 
-	qchprintf((BaseSequentialStream*)&sdfdx_master, src);
+    chnWrite(&sdfdx_master, (uint8_t*)src, sizeof(src));
 
-	char temp[200];
-	memset(temp, 0, sizeof(temp));
+    char temp[200];
+    memset(temp, 0, sizeof(temp));
 
-	chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
+    msg_t rb = chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(src), S2ST(4));
 
-	EXPECT_STREQ(src, temp);
-
-
+    EXPECT_STREQ(src, temp);
+    EXPECT_EQ(4, rb);
 }
