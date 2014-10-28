@@ -246,15 +246,15 @@ TEST_F(SerialFdx, test_connected_event)
 TEST_F(SerialFdx, test_connected)
 {
 	chThdSleepMilliseconds(1000);
-	EXPECT_TRUE(sdfdx_master.connected);
-	EXPECT_TRUE(sdfdx_slave.connected);
+	EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+	EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
 
 	//stop slave to initiate a disconnect
 	//master should handle timeout
 	sfdxdStop(&sdfdx_slave);
 	chThdSleepMilliseconds(2000);
-	EXPECT_FALSE(sdfdx_master.connected);
-	EXPECT_FALSE(sdfdx_slave.connected);
+	EXPECT_FALSE(sfdxdConnected(&sdfdx_master));
+	EXPECT_FALSE(sfdxdConnected(&sdfdx_slave));
 
 	//start slave again to reconnect
 	sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
@@ -262,7 +262,8 @@ TEST_F(SerialFdx, test_connected)
 	chThdSleepMilliseconds(2000);
 	EXPECT_TRUE(sdfdx_master.connected);
 	EXPECT_TRUE(sdfdx_slave.connected);
-
+	EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+	EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
 }
 
 TEST_F(SerialFdx, test_escaping)
