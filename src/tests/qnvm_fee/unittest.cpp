@@ -88,8 +88,6 @@ TEST_F(NVMFee, nvmfeeErase)
     EXPECT_EQ(nvmRead(&nvmfee_test, 0x00000003, sizeof(temp2), (uint8_t*)temp2), CH_SUCCESS);
 
     EXPECT_EQ(memcmp(temp2, temp3, sizeof(temp2)), 0);
-
-    return;
 }
 
 TEST_F(NVMFee, nvmfeeWrite)
