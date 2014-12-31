@@ -44,14 +44,14 @@
  * @brief   Enables the NVM partition subsystem.
  */
 #if !defined(HAL_USE_NVM_PARTITION) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_PARTITION       TRUE
+#define HAL_USE_NVM_PARTITION       FALSE
 #endif
 
 /**
  * @brief   Enables the NVM mirror subsystem.
  */
 #if !defined(HAL_USE_NVM_MIRROR) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_MIRROR          TRUE
+#define HAL_USE_NVM_MIRROR          FALSE
 #endif
 
 /**
@@ -79,7 +79,7 @@
  * @brief   Enables the WDG subsystem.
  */
 #if !defined(HAL_USE_WDG) || defined(__DOXYGEN__)
-#define HAL_USE_WDG                 TRUE
+#define HAL_USE_WDG                 FALSE
 #endif
 
 /*===========================================================================*/
