@@ -29,6 +29,9 @@ protected:
 
     virtual void SetUp()
     {
+        qhalInit();
+        chSysInit();
+
         nvmmemoryObjectInit(&_nvmmemory);
         nvmmemoryStart(&_nvmmemory, &_nvmmemory_cfg);
 
@@ -39,6 +42,8 @@ protected:
     {
         nvmmemorySync(&_nvmmemory);
         nvmmemoryStop(&_nvmmemory);
+
+        chSysDisable();
     }
 };
 
