@@ -58,7 +58,7 @@
  * @brief   Enables the NVM flash eeprom emulation subsystem.
  */
 #if !defined(HAL_USE_NVM_FEE) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_FEE             TRUE
+#define HAL_USE_NVM_FEE             FALSE
 #endif
 
 /**
