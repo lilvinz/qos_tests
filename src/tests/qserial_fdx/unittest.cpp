@@ -73,6 +73,11 @@ protected:
 
 TEST_F(SerialFdx, test_a_to_b)
 {
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
+
     qchprintf((BaseSequentialStream*)&sdfdx_master, "Test234\n");
 
     char temp[200];
@@ -85,6 +90,11 @@ TEST_F(SerialFdx, test_a_to_b)
 
 TEST_F(SerialFdx, test_b_to_a)
 {
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
+
     qchprintf((BaseSequentialStream*)&sdfdx_slave, "Test234\n");
 
     char temp[200];
@@ -97,6 +107,11 @@ TEST_F(SerialFdx, test_b_to_a)
 
 TEST_F(SerialFdx, test_a_to_b_over_mtu)
 {
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
+
     char src[SERIAL_FDX_MTU * 2];
     memset((void*)src, 'a', sizeof(src) - 1);
     src[sizeof(src) - 2] = '\n';
@@ -162,10 +177,10 @@ TEST_F(SerialFdx, test_events)
             sizeof(wa_loop_a_pump_worker),
             HIGHPRIO, loop_a_pump_worker, NULL);
 
-    /* Force context switch to give loop_a_pump a chance to register events. */
-    chSysLock();
-    chSchRescheduleS();
-    chSysUnlock();
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
 
     qchprintf((BaseSequentialStream*)&sdfdx_master, "Test234\n");
 
@@ -183,11 +198,11 @@ TEST_F(SerialFdx, test_events)
 }
 
 /*
- * Worker thread to send a message after a connection event occured
+ * Worker thread to send a message after a connection event occurred
  */
 static msg_t connectionevents_a_pump_worker(void *arg)
 {
-    (void) arg;
+    (void)arg;
 
     chRegSetThreadName("connectionevents_a_pump_worker");
 
@@ -205,7 +220,7 @@ static msg_t connectionevents_a_pump_worker(void *arg)
             flagsmask_t flags = chEvtGetAndClearFlags(&listener_slave);
             if (flags & CHN_CONNECTED)
             {
-                qchprintf((BaseSequentialStream*) &sdfdx_slave, "Test234\n");
+                qchprintf((BaseSequentialStream*)&sdfdx_slave, "Test234\n");
                 chEvtUnregister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
                         &listener_slave);
 
@@ -222,15 +237,15 @@ TEST_F(SerialFdx, test_connected_event)
             sizeof(wa_connectionevents_a_pump_worker),
             HIGHPRIO, connectionevents_a_pump_worker, NULL);
 
-    /* Force context switch to give loop_a_pump a chance to register events. */
-    chSysLock();
-    chSchRescheduleS();
-    chSysUnlock();
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
 
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, S2ST(5));
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, MS2ST(1));
 
     EXPECT_STREQ("Test234\n", temp);
 
@@ -264,6 +279,11 @@ TEST_F(SerialFdx, test_connected)
 
 TEST_F(SerialFdx, test_escaping)
 {
+    /* wait to make sure master and slave are connected */
+    chThdSleepMilliseconds(10);
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_master));
+    EXPECT_TRUE(sfdxdConnected(&sdfdx_slave));
+
     /* use special characters as message */
     char src[] = {SFDX_FRAME_BEGIN, SFDX_FRAME_END, SFDX_BYTE_ESC, 0};
 
