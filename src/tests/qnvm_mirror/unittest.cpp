@@ -56,7 +56,7 @@ protected:
 TEST_F(NVMMirror, nvmmirrorGetInfo)
 {
     NVMDeviceInfo info;
-    EXPECT_EQ(nvmmirrorGetInfo(&nvmmirror_test, &info), CH_SUCCESS);
+    EXPECT_EQ(nvmmirrorGetInfo(&nvmmirror_test, &info), HAL_SUCCESS);
 
     EXPECT_EQ(info.sector_size, nvmfile_extfram.config->sector_size);
 
@@ -65,27 +65,27 @@ TEST_F(NVMMirror, nvmmirrorGetInfo)
 
 TEST_F(NVMMirror, nvmmirrorErase)
 {
-    EXPECT_EQ(nvmmirrorErase(&nvmmirror_test, 0, nvmfilecfg_extfram.sector_size), CH_SUCCESS);
+    EXPECT_EQ(nvmmirrorErase(&nvmmirror_test, 0, nvmfilecfg_extfram.sector_size), HAL_SUCCESS);
 }
 
 TEST_F(NVMMirror, nvmmirrorWrite)
 {
     uint8_t buffer[nvmfilecfg_extfram.sector_size];
 
-    EXPECT_EQ(nvmmirrorWrite(&nvmmirror_test, 0, sizeof(buffer), buffer), CH_SUCCESS);
+    EXPECT_EQ(nvmmirrorWrite(&nvmmirror_test, 0, sizeof(buffer), buffer), HAL_SUCCESS);
 }
 
 TEST_F(NVMMirror, nvmmirrorRead)
 {
     uint8_t buffer[nvmfilecfg_extfram.sector_size];
 
-    EXPECT_EQ(nvmmirrorRead(&nvmmirror_test, 0, sizeof(buffer), buffer), CH_SUCCESS);
+    EXPECT_EQ(nvmmirrorRead(&nvmmirror_test, 0, sizeof(buffer), buffer), HAL_SUCCESS);
 }
 
 TEST_F(NVMMirror, EraseWriteReadVerify)
 {
     NVMDeviceInfo info;
-    EXPECT_EQ(nvmmirrorGetInfo(&nvmmirror_test, &info), CH_SUCCESS);
+    EXPECT_EQ(nvmmirrorGetInfo(&nvmmirror_test, &info), HAL_SUCCESS);
 
     uint8_t buffer[info.sector_size];
 
@@ -103,11 +103,11 @@ TEST_F(NVMMirror, EraseWriteReadVerify)
         for (size_t i = 0; i < block_length; ++i)
             buffer[i] = pattern ^ i;
 
-        EXPECT_EQ(nvmErase(&nvmmirror_test, addr, block_length), CH_SUCCESS);
+        EXPECT_EQ(nvmErase(&nvmmirror_test, addr, block_length), HAL_SUCCESS);
 
-        EXPECT_EQ(nvmWrite(&nvmmirror_test, addr, block_length, buffer), CH_SUCCESS);
+        EXPECT_EQ(nvmWrite(&nvmmirror_test, addr, block_length, buffer), HAL_SUCCESS);
 
-        EXPECT_EQ(nvmRead(&nvmmirror_test, addr, block_length, buffer), CH_SUCCESS);
+        EXPECT_EQ(nvmRead(&nvmmirror_test, addr, block_length, buffer), HAL_SUCCESS);
 
         for (size_t i = 0; i < block_length; ++i)
         {

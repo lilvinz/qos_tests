@@ -98,13 +98,13 @@ TEST_F(SerialVirtual, test_loop)
 /*
  * Worker thread moving data from sdvirtual_a to sdvirtual_b and back.
  */
-static msg_t loop_a_pump_worker(void *arg)
+static void loop_a_pump_worker(void *arg)
 {
     (void) arg;
 
     chRegSetThreadName("loop_a_pump_worker");
 
-    EventListener listener_b;
+    event_listener_t listener_b;
     static const uint32_t event_b_id = 1;
     chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdvirtual_b),
             &listener_b, event_b_id);
@@ -115,7 +115,7 @@ static msg_t loop_a_pump_worker(void *arg)
 
         if (events & EVENT_MASK(event_b_id))
         {
-            flagsmask_t flags = chEvtGetAndClearFlags(&listener_b);
+            eventflags_t flags = chEvtGetAndClearFlags(&listener_b);
             if (flags & CHN_INPUT_AVAILABLE)
             {
                 msg_t c;
@@ -129,7 +129,7 @@ static msg_t loop_a_pump_worker(void *arg)
                                 chnGetEventSource((BaseAsynchronousChannel*)&sdvirtual_b),
                                 &listener_b);
 
-                        return 0;
+                        return;
                     }
                     else
                     {
@@ -143,8 +143,8 @@ static msg_t loop_a_pump_worker(void *arg)
 
 TEST_F(SerialVirtual, test_events)
 {
-    static WORKING_AREA(wa_loop_a_pump_worker, 1024);
-    Thread* loop_a_pumpp = chThdCreateStatic(wa_loop_a_pump_worker,
+    static THD_WORKING_AREA(wa_loop_a_pump_worker, 1024);
+    thread_reference_t loop_a_pumpp = chThdCreateStatic(wa_loop_a_pump_worker,
             sizeof(wa_loop_a_pump_worker),
             HIGHPRIO, loop_a_pump_worker, NULL);
 
@@ -171,13 +171,13 @@ TEST_F(SerialVirtual, test_events)
 /*
  * Worker thread reading data from sdvirtual_b. Data will be lost.
  */
-static msg_t loop_a_read_worker(void *arg)
+static void loop_a_read_worker(void *arg)
 {
     (void) arg;
 
     chRegSetThreadName("loop_a_read_worker");
 
-    EventListener listener_b;
+    event_listener_t listener_b;
     static const uint32_t event_b_id = 1;
     chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdvirtual_b),
             &listener_b, event_b_id);
@@ -189,7 +189,7 @@ static msg_t loop_a_read_worker(void *arg)
 
         if (events & EVENT_MASK(event_b_id))
         {
-            flagsmask_t flags = chEvtGetAndClearFlags(&listener_b);
+            eventflags_t flags = chEvtGetAndClearFlags(&listener_b);
             if (flags & CHN_INPUT_AVAILABLE)
             {
                 msg_t c;
@@ -204,7 +204,7 @@ static msg_t loop_a_read_worker(void *arg)
                                 chnGetEventSource((BaseAsynchronousChannel*)&sdvirtual_b),
                                 &listener_b);
 
-                        return 0;
+                        return;
                     }
                 }
             }
@@ -224,8 +224,8 @@ static void fill_buffer(uint8_t* buffer, int n)
 TEST_F(SerialVirtual, test_write_large_buffer)
 {
     size_t bytes_r = 0;
-    static WORKING_AREA(wa_loop_a_read_worker, 1024);
-    Thread* loop_a_pumpp = chThdCreateStatic(wa_loop_a_read_worker,
+    static THD_WORKING_AREA(wa_loop_a_read_worker, 1024);
+    thread_reference_t loop_a_pumpp = chThdCreateStatic(wa_loop_a_read_worker,
             sizeof(wa_loop_a_read_worker),
             HIGHPRIO, loop_a_read_worker, (void*)&bytes_r);
 

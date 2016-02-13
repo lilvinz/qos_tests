@@ -4,35 +4,24 @@
 
 # Common UT
 include $(ROOT_DIR)/src/common/ut/library.mk
-# ChibiOS with Quantec HAL
-include $(ROOT_DIR)/submodules/qos/hal/platforms/Posix/library.mk
+# Chibios
+include $(ROOT_DIR)/submodules/chibios/os/hal/osal/rt/osal.mk
+include $(ROOT_DIR)/submodules/chibios/os/rt/rt.mk
+include $(ROOT_DIR)/submodules/chibios/os/rt/ports/SIMIA32/compilers/GCC/port.mk
+# QOS
+include $(ROOT_DIR)/submodules/qos/hal/ports/simulator/posix/library.mk
+include $(ROOT_DIR)/submodules/qos/common/ports/SIMIA32/compilers/GCC/library.mk
 # Format
-include $(ROOT_DIR)/submodules/format/library_with_float.mk
+include $(ROOT_DIR)/submodules/format/library.mk
+CFLAGS += -DFORMAT_INCLUDE_FLOAT
 
-CFLAGS += -Os
+CFLAGS += -O2 -flto -ggdb
 CFLAGS += -Wall -Werror -Wshadow
-CFLAGS += -g
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
-# ChibiOS configuration for simulation
-CFLAGS += -DSIMULATOR
-CFLAGS += -DCH_DBG_ENABLE_STACK_CHECK=FALSE
 CFLAGS += -Wno-attributes
 CFLAGS += -Wno-redundant-decls
 CFLAGS += -m32
 CFLAGS += -D_GNU_SOURCE
-
-# LFSR encryption parameters
-LFSR_GENERATOR_POLY := 0xbe4f7253
-LFSR_KEY := 0x3fc01a44
-
-# Position of checksum in final image
-IMAGE_INFO_STRUCT_OFFSET := 0x00000188
-MESH_IMAGE_INFO_STRUCT_OFFSET := 0x4
-
-CFLAGS += -DIMAGE_INFO_STRUCT_OFFSET=$(IMAGE_INFO_STRUCT_OFFSET)UL
-CFLAGS += -DMESH_IMAGE_INFO_STRUCT_OFFSET=$(MESH_IMAGE_INFO_STRUCT_OFFSET)UL
-CFLAGS += -DLFSR_GENERATOR_POLY=$(LFSR_GENERATOR_POLY)
-CFLAGS += -DLFSR_KEY=$(LFSR_KEY)
 
 CONLYFLAGS += -std=gnu99
 

@@ -130,13 +130,13 @@ TEST_F(SerialFdx, test_a_to_b_over_mtu)
 /*
  * Worker thread moving data from sdfdx_a to sdfdx_b and back.
  */
-static msg_t loop_a_pump_worker(void *arg)
+static void loop_a_pump_worker(void *arg)
 {
     (void) arg;
 
     chRegSetThreadName("loop_a_pump_worker");
 
-    EventListener listener_slave;
+    event_listener_t listener_slave;
     static const uint32_t event_b_id = 1;
     chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
             &listener_slave, event_b_id);
@@ -147,7 +147,7 @@ static msg_t loop_a_pump_worker(void *arg)
 
         if (events & EVENT_MASK(event_b_id))
         {
-            flagsmask_t flags = chEvtGetAndClearFlags(&listener_slave);
+            eventflags_t flags = chEvtGetAndClearFlags(&listener_slave);
             if (flags & CHN_INPUT_AVAILABLE)
             {
                 msg_t c;
@@ -158,7 +158,7 @@ static msg_t loop_a_pump_worker(void *arg)
                         chEvtUnregister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
                                 &listener_slave);
 
-                        return 0;
+                        return;
                     }
                     else
                     {
@@ -172,8 +172,8 @@ static msg_t loop_a_pump_worker(void *arg)
 
 TEST_F(SerialFdx, test_events)
 {
-    static WORKING_AREA(wa_loop_a_pump_worker, 1024);
-    Thread* loop_a_pumpp = chThdCreateStatic(wa_loop_a_pump_worker,
+    static THD_WORKING_AREA(wa_loop_a_pump_worker, 1024);
+    thread_reference_t loop_a_pumpp = chThdCreateStatic(wa_loop_a_pump_worker,
             sizeof(wa_loop_a_pump_worker),
             HIGHPRIO, loop_a_pump_worker, NULL);
 
@@ -200,13 +200,13 @@ TEST_F(SerialFdx, test_events)
 /*
  * Worker thread to send a message after a connection event occurred
  */
-static msg_t connectionevents_a_pump_worker(void *arg)
+static void connectionevents_a_pump_worker(void *arg)
 {
     (void)arg;
 
     chRegSetThreadName("connectionevents_a_pump_worker");
 
-    EventListener listener_slave;
+    event_listener_t listener_slave;
     static const uint32_t event_b_id = 1;
     chEvtRegister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
             &listener_slave, event_b_id);
@@ -217,14 +217,14 @@ static msg_t connectionevents_a_pump_worker(void *arg)
 
         if (events & EVENT_MASK(event_b_id))
         {
-            flagsmask_t flags = chEvtGetAndClearFlags(&listener_slave);
+            eventflags_t flags = chEvtGetAndClearFlags(&listener_slave);
             if (flags & CHN_CONNECTED)
             {
                 qchprintf((BaseSequentialStream*)&sdfdx_slave, "Test234\n");
                 chEvtUnregister(chnGetEventSource((BaseAsynchronousChannel*)&sdfdx_slave),
                         &listener_slave);
 
-                return 0;
+                return;
             }
         }
     }
@@ -232,8 +232,8 @@ static msg_t connectionevents_a_pump_worker(void *arg)
 
 TEST_F(SerialFdx, test_connected_event)
 {
-    static WORKING_AREA(wa_connectionevents_a_pump_worker, 1024);
-    Thread* loop_a_pumpp = chThdCreateStatic(wa_connectionevents_a_pump_worker,
+    static THD_WORKING_AREA(wa_connectionevents_a_pump_worker, 1024);
+    thread_reference_t loop_a_pumpp = chThdCreateStatic(wa_connectionevents_a_pump_worker,
             sizeof(wa_connectionevents_a_pump_worker),
             HIGHPRIO, connectionevents_a_pump_worker, NULL);
 
