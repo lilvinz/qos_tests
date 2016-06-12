@@ -29,10 +29,12 @@ protected:
 
     virtual void SetUp()
     {
-        qhalInit();
-        chSysInit();
+        halInit();
 
         nvmmemoryObjectInit(&_nvmmemory);
+
+        chSysInit();
+
         nvmmemoryStart(&_nvmmemory, &_nvmmemory_cfg);
 
         nvmsObjectInit(&_nvmstream, (BaseNVMDevice*)&_nvmmemory, 0);
