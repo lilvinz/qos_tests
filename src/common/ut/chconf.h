@@ -165,7 +165,7 @@
  * @note    Requires @p CH_USE_SEMAPHORES.
  */
 #if !defined(CH_USE_SEMAPHORES_PRIORITY) || defined(__DOXYGEN__)
-#define CH_USE_SEMAPHORES_PRIORITY      FALSE
+#define CH_USE_SEMAPHORES_PRIORITY      TRUE
 #endif
 
 /**
@@ -303,7 +303,7 @@
  * @note    Mutexes are recommended.
  */
 #if !defined(CH_USE_HEAP) || defined(__DOXYGEN__)
-#define CH_USE_HEAP                     TRUE
+#define CH_USE_HEAP                     FALSE
 #endif
 
 /**
@@ -317,7 +317,7 @@
  *          appropriate documentation.
  */
 #if !defined(CH_USE_MALLOC_HEAP) || defined(__DOXYGEN__)
-#define CH_USE_MALLOC_HEAP              TRUE
+#define CH_USE_MALLOC_HEAP              FALSE
 #endif
 
 /**
@@ -458,7 +458,11 @@
  *          some test cases into the test suite.
  */
 #if !defined(CH_DBG_THREADS_PROFILING) || defined(__DOXYGEN__)
+#if defined(NDEBUG)
+#define CH_DBG_THREADS_PROFILING        FALSE
+#else
 #define CH_DBG_THREADS_PROFILING        TRUE
+#endif
 #endif
 
 /** @} */
@@ -554,18 +558,12 @@
 /* Port-specific settings (override port settings defaulted in chcore.h).    */
 /*===========================================================================*/
 
-/* NOTE: When changing this option you also have to enable or disable the FPU
-   in the project options.*/
-#define CORTEX_USE_FPU                  FALSE
-
-/*===========================================================================*/
-/* Various settings.                                                         */
-/*===========================================================================*/
-
 /**
- * @brief   Float type support.
+ * @brief   Shell maximum arguments per command.
  */
-#define CHPRINTF_USE_FLOAT              TRUE
+#if !defined(SHELL_MAX_ARGUMENTS) || defined(__DOXYGEN__)
+#define SHELL_MAX_ARGUMENTS         6
+#endif
 
 #endif  /* _CHCONF_H_ */
 
