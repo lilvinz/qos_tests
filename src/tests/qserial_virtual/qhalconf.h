@@ -30,7 +30,7 @@
  * @brief   Enables the NVM file subsystem.
  */
 #if !defined(HAL_USE_NVM_FILE) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_FILE            TRUE
+#define HAL_USE_NVM_FILE            FALSE
 #endif
 
 /**
@@ -76,10 +76,24 @@
 #endif
 
 /**
- * @brief   Enables the WDG subsystem.
+ * @brief   Enables the graphics display ILI9341 subsystem.
  */
-#if !defined(HAL_USE_WDG) || defined(__DOXYGEN__)
-#define HAL_USE_WDG                 FALSE
+#if !defined(HAL_USE_GD_ILI9341) || defined(__DOXYGEN__)
+#define HAL_USE_GD_ILI9341          FALSE
+#endif
+
+/**
+ * @brief   Enables the ms5541 driver.
+ */
+#if !defined(HAL_USE_MS5541) || defined(__DOXYGEN__)
+#define HAL_USE_MS5541              FALSE
+#endif
+
+/**
+ * @brief   Enables the ms58xx driver.
+ */
+#if !defined(HAL_USE_MS58XX) || defined(__DOXYGEN__)
+#define HAL_USE_MS58XX              FALSE
 #endif
 
 /**
@@ -87,6 +101,20 @@
  */
 #if !defined(HAL_USE_SERIAL_VIRTUAL) || defined(__DOXYGEN__)
 #define HAL_USE_SERIAL_VIRTUAL      TRUE
+#endif
+
+/**
+ * @brief   Enables the SERIAL FDX subsystem.
+ */
+#if !defined(HAL_USE_SERIAL_FDX) || defined(__DOXYGEN__)
+#define HAL_USE_SERIAL_FDX          FALSE
+#endif
+
+/**
+ * @brief   Enables the WDG subsystem.
+ */
+#if !defined(HAL_USE_WDG) || defined(__DOXYGEN__)
+#define HAL_USE_WDG                 FALSE
 #endif
 
 /*===========================================================================*/
@@ -187,6 +215,32 @@
 #endif
 
 /*===========================================================================*/
+/* NVM_FEE driver related settings                                           */
+/*===========================================================================*/
+
+/**
+ * @brief   Enables the @p nvmfeeAcquireBus() and @p nvmfeeReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(NVM_FEE_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define NVM_FEE_USE_MUTUAL_EXCLUSION    TRUE
+#endif
+
+/**
+ * @brief   Sets the number of payload bytes per slot.
+ */
+#if !defined(NVM_FEE_SLOT_PAYLOAD_SIZE) || defined(__DOXYGEN__)
+#define NVM_FEE_SLOT_PAYLOAD_SIZE       8
+#endif
+
+/**
+ * @brief   Sets the minimum writable unit of the underlying flash device.
+ */
+#if !defined(NVM_FEE_WRITE_UNIT_SIZE) || defined(__DOXYGEN__)
+#define NVM_FEE_WRITE_UNIT_SIZE         2
+#endif
+
+/*===========================================================================*/
 /* FLASH internal driver related settings                                    */
 /*===========================================================================*/
 
@@ -206,7 +260,19 @@
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(FLASH_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define FLASH_USE_MUTUAL_EXCLUSION              TRUE
+#define FLASH_USE_MUTUAL_EXCLUSION              FALSE
+#endif
+
+/*===========================================================================*/
+/* GD_ILI9341 driver related settings                                        */
+/*===========================================================================*/
+
+/**
+ * @brief   Enables the @p gdili9341AcquireBus() and @p gdili9341ReleaseBus() APIs.
+ * @note    Disabling this option saves both code and data space.
+ */
+#if !defined(GD_ILI9341_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
+#define GD_ILI9341_USE_MUTUAL_EXCLUSION         FALSE
 #endif
 
 #endif /* _QHALCONF_H_ */
