@@ -11,7 +11,12 @@ include $(ROOT_DIR)/submodules/qos/common/ports/SIMIA32/compilers/GCC/library.mk
 include $(ROOT_DIR)/submodules/chibios/os/hal/osal/rt/osal.mk
 include $(ROOT_DIR)/submodules/chibios/os/rt/rt.mk
 
-CFLAGS += -O2 -flto -ggdb
+# Compiler flags
+ifdef NDEBUG
+    CFLAGS += -O2 -flto -ggdb -fomit-frame-pointer -falign-functions=16 -falign-loops=16
+else
+    CFLAGS += -O0 -ggdb
+endif
 CFLAGS += -Wall -Werror -Wshadow
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 CFLAGS += -Wno-attributes

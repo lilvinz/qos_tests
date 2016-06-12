@@ -14,7 +14,12 @@ include $(ROOT_DIR)/submodules/chibios/os/rt/rt.mk
 include $(ROOT_DIR)/submodules/format/library.mk
 CFLAGS += -DFORMAT_INCLUDE_FLOAT
 
-CFLAGS += -O2 -flto -ggdb
+# Compiler flags
+ifdef NDEBUG
+    CFLAGS += -O2 -flto -ggdb -fomit-frame-pointer -falign-functions=16 -falign-loops=16
+else
+    CFLAGS += -O0 -ggdb
+endif
 CFLAGS += -Wall -Werror -Wshadow
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS)) -I.
 CFLAGS += -Wno-attributes
