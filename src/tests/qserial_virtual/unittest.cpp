@@ -35,7 +35,7 @@ protected:
 
     virtual void SetUp()
     {
-        qhalInit();
+        halInit();
         chSysInit();
 
         sdvirtualObjectInit(&sdvirtual_a);

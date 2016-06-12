@@ -29,7 +29,7 @@ protected:
 
     virtual void SetUp()
     {
-        qhalInit();
+        halInit();
         chSysInit();
 
         nvmmemoryObjectInit(&_nvmmemory);
