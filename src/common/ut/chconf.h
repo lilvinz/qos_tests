@@ -140,7 +140,11 @@
  *
  * @note    The default is @p TRUE.
  */
+#if !defined(NDEBUG)
+#define CH_CFG_USE_TM                       TRUE
+#else
 #define CH_CFG_USE_TM                       FALSE
+#endif /* defined(NDEBUG) */
 
 /**
  * @brief   Threads registry APIs.
@@ -327,7 +331,11 @@
  *
  * @note    The default is @p FALSE.
  */
+#if !defined(NDEBUG)
+#define CH_DBG_STATISTICS                   TRUE
+#else
 #define CH_DBG_STATISTICS                   FALSE
+#endif /* defined(NDEBUG) */
 
 /**
  * @brief   Debug option, system state check.
@@ -392,7 +400,11 @@
  * @note    The default failure mode is to halt the system with the global
  *          @p panic_msg variable set to @p NULL.
  */
-#define CH_DBG_ENABLE_STACK_CHECK           FALSE
+#if !defined(NDEBUG)
+#define CH_DBG_SYSTEM_STATE_CHECK           TRUE
+#else
+#define CH_DBG_SYSTEM_STATE_CHECK           FALSE
+#endif /* defined(NDEBUG) */
 
 /**
  * @brief   Debug option, stacks initialization.
