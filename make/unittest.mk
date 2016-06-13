@@ -45,10 +45,9 @@ xml: $(OUTDIR)/$(TARGET).xml
 
 $(OUTDIR)/$(TARGET).xml: $(OUTDIR)/$(TARGET).elf
 	$(V0) @echo " TEST XML    $(MSG_EXTRA) $(call toprel, $@)"
-	$(V1) $< --gtest_output=xml:$(OUTDIR)/$(TARGET).xml > /dev/null || true
+	$(V1) $< --gtest_output=xml:$(OUTDIR)/$(TARGET).xml > /dev/null || [ $$? -eq 1 ]
 
 .PHONY: run
 run: $(OUTDIR)/$(TARGET).elf
 	$(V0) @echo " TEST RUN    $(MSG_EXTRA) $(call toprel, $<)"
-	$(V1) $< || true
-
+	$(V1) $< || [ $$? -eq 1 ]
