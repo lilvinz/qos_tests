@@ -30,7 +30,7 @@
  * @brief   Enables the NVM file subsystem.
  */
 #if !defined(HAL_USE_NVM_FILE) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_FILE            TRUE
+#define HAL_USE_NVM_FILE            FALSE
 #endif
 
 /**
@@ -79,7 +79,7 @@
  * @brief   Enables the graphics display ILI9341 subsystem.
  */
 #if !defined(HAL_USE_GD_ILI9341) || defined(__DOXYGEN__)
-#define HAL_USE_GD_ILI9341          TRUE
+#define HAL_USE_GD_ILI9341          FALSE
 #endif
 
 /**

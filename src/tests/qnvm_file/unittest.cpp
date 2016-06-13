@@ -146,12 +146,7 @@ TEST_F(NVMFile, EraseWriteReadVerify)
         EXPECT_EQ(nvmSync(&_nvmfile), HAL_SUCCESS);
 
         for (size_t i = 0; i < block_length; ++i)
-        {
-            if (buffer[i] != (uint8_t)(pattern ^ i))
-            {
-                EXPECT_EQ(true, false);
-            }
-        }
+            EXPECT_EQ((uint8_t)(pattern ^ i), buffer[i]);
 
         /* go to next block */
         addr += block_length;

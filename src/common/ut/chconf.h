@@ -28,6 +28,8 @@
 #ifndef _CHCONF_H_
 #define _CHCONF_H_
 
+#define _CHIBIOS_RT_CONF_
+
 /*===========================================================================*/
 /**
  * @name System timers settings
@@ -138,7 +140,11 @@
  *
  * @note    The default is @p TRUE.
  */
+#if !defined(NDEBUG)
+#define CH_CFG_USE_TM                       TRUE
+#else
 #define CH_CFG_USE_TM                       FALSE
+#endif /* defined(NDEBUG) */
 
 /**
  * @brief   Threads registry APIs.
@@ -325,7 +331,11 @@
  *
  * @note    The default is @p FALSE.
  */
+#if !defined(NDEBUG)
+#define CH_DBG_STATISTICS                   TRUE
+#else
 #define CH_DBG_STATISTICS                   FALSE
+#endif /* defined(NDEBUG) */
 
 /**
  * @brief   Debug option, system state check.
@@ -390,7 +400,11 @@
  * @note    The default failure mode is to halt the system with the global
  *          @p panic_msg variable set to @p NULL.
  */
-#define CH_DBG_ENABLE_STACK_CHECK           FALSE
+#if !defined(NDEBUG)
+#define CH_DBG_SYSTEM_STATE_CHECK           TRUE
+#else
+#define CH_DBG_SYSTEM_STATE_CHECK           FALSE
+#endif /* defined(NDEBUG) */
 
 /**
  * @brief   Debug option, stacks initialization.
@@ -451,10 +465,6 @@
 /**
  * @brief   Threads finalization hook.
  * @details User finalization code added to the @p chThdExit() API.
- *
- * @note    It is inserted into lock zone.
- * @note    It is also invoked when the threads simply return in order to
- *          terminate.
  */
 #define CH_CFG_THREAD_EXIT_HOOK(tp) {                                       \
   /* Add threads finalization code here.*/                                  \
@@ -469,12 +479,27 @@
 }
 
 /**
+ * @brief   ISR enter hook.
+ */
+#define CH_CFG_IRQ_PROLOGUE_HOOK() {                                        \
+  /* IRQ prologue code here.*/                                              \
+}
+
+/**
+ * @brief   ISR exit hook.
+ */
+#define CH_CFG_IRQ_EPILOGUE_HOOK() {                                        \
+  /* IRQ epilogue code here.*/                                              \
+}
+
+/**
  * @brief   Idle thread enter hook.
  * @note    This hook is invoked within a critical zone, no OS functions
  *          should be invoked from here.
  * @note    This macro can be used to activate a power saving mode.
  */
 #define CH_CFG_IDLE_ENTER_HOOK() {                                          \
+  /* Idle-enter code here.*/                                                \
 }
 
 /**
@@ -484,6 +509,7 @@
  * @note    This macro can be used to deactivate a power saving mode.
  */
 #define CH_CFG_IDLE_LEAVE_HOOK() {                                          \
+  /* Idle-leave code here.*/                                                \
 }
 
 /**
@@ -510,6 +536,15 @@
  */
 #define CH_CFG_SYSTEM_HALT_HOOK(reason) {                                   \
   /* System halt code here.*/                                               \
+}
+
+/**
+ * @brief   Trace hook.
+ * @details This hook is invoked each time a new record is written in the
+ *          trace buffer.
+ */
+#define CH_CFG_TRACE_HOOK(tep) {                                            \
+  /* Trace code here.*/                                                     \
 }
 
 /** @} */

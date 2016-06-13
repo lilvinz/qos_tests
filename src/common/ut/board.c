@@ -35,4 +35,8 @@ void __early_init(void)
  */
 void boardInit(void)
 {
+    /*
+     * Initialize custom drivers as boardInit() is being called at the end of halInit()
+     */
+    qhalInit();
 }
