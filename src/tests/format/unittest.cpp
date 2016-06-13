@@ -19,10 +19,7 @@ TEST(format, float)
     EXPECT_STREQ("0.999", test);
 
     // This is a rounding test.
-    // Format lib has been patched not to do rounding as it fails on it.
-    // Standard compliant behavior requires rounding.
-    // We will fix this as a patch is available upstream.
     EXPECT_GE(qchsnprintf(test, sizeof(test), "%.2f", 0.999f), 0);
-    EXPECT_STREQ("0.99", test);
+    EXPECT_STREQ("1.00", test);
 }
 

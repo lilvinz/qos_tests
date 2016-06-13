@@ -37,9 +37,9 @@ protected:
     virtual void SetUp()
     {
         nvmfileObjectInit(&nvmfile_extfram);
-        nvmfileStart(&nvmfile_extfram, &nvmfilecfg_extfram);
-
         nvmmirrorObjectInit(&nvmmirror_test);
+
+        nvmfileStart(&nvmfile_extfram, &nvmfilecfg_extfram);
         nvmmirrorStart(&nvmmirror_test, &nvmmirrorcfg_test);
     }
 
@@ -110,12 +110,7 @@ TEST_F(NVMMirror, EraseWriteReadVerify)
         EXPECT_EQ(nvmRead(&nvmmirror_test, addr, block_length, buffer), CH_SUCCESS);
 
         for (size_t i = 0; i < block_length; ++i)
-        {
-            if (buffer[i] != (uint8_t)(pattern ^ i))
-            {
-                EXPECT_EQ(true, false);
-            }
-        }
+            EXPECT_EQ((uint8_t)(pattern ^ i), buffer[i]);
 
         // go to next block
         addr += block_length;

@@ -43,19 +43,18 @@ protected:
 
     virtual void SetUp()
     {
-        qhalInit();
-        chSysInit();
+        halInit();
 
         sdvirtualObjectInit(&sdvirtual_a);
-        sdvirtualStart(&sdvirtual_a, &sdvirtual_a_cfg);
-
         sdvirtualObjectInit(&sdvirtual_b);
-        sdvirtualStart(&sdvirtual_b, &sdvirtual_b_cfg);
-
         sfdxdObjectInit(&sdfdx_master);
-        sfdxdStart(&sdfdx_master, &sdfdx_master_cfg);
-
         sfdxdObjectInit(&sdfdx_slave);
+
+        chSysInit();
+
+        sdvirtualStart(&sdvirtual_a, &sdvirtual_a_cfg);
+        sdvirtualStart(&sdvirtual_b, &sdvirtual_b_cfg);
+        sfdxdStart(&sdfdx_master, &sdfdx_master_cfg);
         sfdxdStart(&sdfdx_slave, &sdfdx_slave_cfg);
     }
 
