@@ -41,9 +41,9 @@ protected:
         memset(memory_test, 0, sizeof(memory_test));
 
         nvmmemoryObjectInit(&nvmmemory_test);
-        nvmmemoryStart(&nvmmemory_test, &nvmmemorycfg_test);
-
         nvmfeeObjectInit(&nvmfee_test);
+
+        nvmmemoryStart(&nvmmemory_test, &nvmmemorycfg_test);
         nvmfeeStart(&nvmfee_test, &nvmfeecfg_test);
     }
 

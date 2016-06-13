@@ -36,15 +36,15 @@ protected:
     virtual void SetUp()
     {
         halInit();
-        chSysInit();
 
         sdvirtualObjectInit(&sdvirtual_a);
-        sdvirtualStart(&sdvirtual_a, &sdvirtual_a_cfg);
-
         sdvirtualObjectInit(&sdvirtual_b);
-        sdvirtualStart(&sdvirtual_b, &sdvirtual_b_cfg);
-
         sdvirtualObjectInit(&sdvirtual_loop);
+
+        chSysInit();
+
+        sdvirtualStart(&sdvirtual_a, &sdvirtual_a_cfg);
+        sdvirtualStart(&sdvirtual_b, &sdvirtual_b_cfg);
         sdvirtualStart(&sdvirtual_loop, &sdvirtual_loop_cfg);
     }
 
