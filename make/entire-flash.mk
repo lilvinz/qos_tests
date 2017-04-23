@@ -2,7 +2,6 @@
 include $(ROOT_DIR)/make/firmware-defs.mk
 
 BL_BIN := $(BUILD_DIR)/bl_$(BOARD_NAME)/bl_$(BOARD_NAME).bin
-BG_BIN := $(BUILD_DIR)/bg_$(BOARD_NAME)/bg_$(BOARD_NAME).bin
 FW_BIN := $(BUILD_DIR)/fw_$(BOARD_NAME)/fw_$(BOARD_NAME).bin
 TARGET_BIN := $(OUTDIR)/$(BUILD_PREFIX)_$(BOARD_NAME).bin
 TARGET_ELF := $(OUTDIR)/$(BUILD_PREFIX)_$(BOARD_NAME).elf
@@ -17,8 +16,6 @@ all: $(TARGET_BIN) $(TARGET_ELF)
 $(TARGET_BIN): $(BL_ELF) $(BG_ELF) $(FW_ELF) | $(OUTDIR)
 	$(V0) @echo $(MSG_PADDING) $(call toprel, $@)
 	$(V1) cat $(BL_BIN) > $@
-	$(V1) $(OBJCOPY) --pad-to=$$(($(BG_ORIGIN) - $(EF_ORIGIN))) --gap-fill=0xff -I binary -O binary $@ $@
-	$(V1) cat $(BG_BIN) >> $@
 	$(V1) $(OBJCOPY) --pad-to=$$(($(FW_ORIGIN) - $(EF_ORIGIN))) --gap-fill=0xff -I binary -O binary $@ $@
 	$(V1) cat $(FW_BIN) >> $@
 	$(V1) $(OBJCOPY) --pad-to=$(EF_SIZE) --gap-fill=0xff -I binary -O binary $@ $@
