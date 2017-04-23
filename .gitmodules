@@ -1,9 +1,9 @@
 [submodule "submodules/qos"]
 	path = submodules/qos
-	url = ssh://git@gitlab/quantec/qos.git
+	url = https://github.com/lilvinz/qos.git
 [submodule "submodules/chibios"]
 	path = submodules/chibios
-	url = ssh://git@gitlab/quantec/chibios.git
+	url = https://github.com/lilvinz/chibios.git
 [submodule "submodules/format"]
 	path = submodules/format
-	url = ssh://git@gitlab/quantec/format.git
+	url = https://github.com/lilvinz/format.git
