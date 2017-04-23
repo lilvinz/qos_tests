@@ -4,10 +4,10 @@
 #
 ###########################################################################################################
 
-ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-4_8-2014q1
+ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-6-2017-q1-update
 
 .PHONY: arm_sdk_install
-arm_sdk_install: ARM_SDK_URL := https://launchpad.net/gcc-arm-embedded/4.8/4.8-2014-q1-update/+download/gcc-arm-none-eabi-4_8-2014q1-20140314-linux.tar.bz2
+arm_sdk_install: ARM_SDK_URL := https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/6_1-2017q1/gcc-arm-none-eabi-6-2017-q1-update-linux.tar.bz2
 arm_sdk_install: ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
 # order-only prereq on directory existance:
 arm_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
@@ -33,8 +33,8 @@ OPENOCD_BUILD_DIR := $(DL_DIR)/openocd-build
 
 .PHONY: openocd_install
 openocd_install: | $(DL_DIR) $(TOOLS_DIR)
-openocd_install: OPENOCD_URL := https://github.com/lilvinz/openocd
-openocd_install: OPENOCD_REV := d7cbdee3e98d5dec9c8760f730d7a5096717ed73
+openocd_install: OPENOCD_URL := git://git.code.sf.net/p/openocd/code
+openocd_install: OPENOCD_REV := 888d5a5ec9f0e2178241c7fda99558d2e33a06a5
 openocd_install: OPENOCD_OPTIONS := --enable-maintainer-mode --prefix="$(OPENOCD_DIR)" --enable-ftdi --enable-stlink
 openocd_install: openocd_clean
     # download the source
@@ -74,22 +74,20 @@ openocd_clean:
 #
 ###########################################################################################################
 
-GTEST_DIR := $(TOOLS_DIR)/gtest-1.7.0
+GTEST_DIR := $(TOOLS_DIR)/googletest-release-1.8.0/googletest
 
 .PHONY: gtest_install
 gtest_install: | $(DL_DIR) $(TOOLS_DIR)
-gtest_install: GTEST_URL := http://googletest.googlecode.com/files/gtest-1.7.0.zip
+gtest_install: GTEST_URL := https://github.com/google/googletest/archive/release-1.8.0.tar.gz
 gtest_install: GTEST_FILE := $(notdir $(GTEST_URL))
 gtest_install: gtest_clean
-    # download the file unconditionally since google code gives back 404
-    # for HTTP HEAD requests which are used when using the wget -N option
+    # download the source only if it's newer than what we already have
 	$(V1) [ ! -f "$(DL_DIR)/$(GTEST_FILE)" ] || $(RM) "$(DL_DIR)/$(GTEST_FILE)"
-	$(V1) wget -P "$(DL_DIR)" --trust-server-name "$(GTEST_URL)"
+	$(V1) wget -N -P "$(DL_DIR)" "$(GTEST_URL)"
 
     # extract the source
 	$(V1) [ ! -d "$(GTEST_DIR)" ] || $(RM) -rf "$(GTEST_DIR)"
-	$(V1) mkdir -p "$(GTEST_DIR)"
-	$(V1) unzip -q -d "$(TOOLS_DIR)" "$(DL_DIR)/$(GTEST_FILE)"
+	$(V1) tar -C $(TOOLS_DIR) -xzf "$(DL_DIR)/$(GTEST_FILE)"
 
 .PHONY: gtest_clean
 gtest_clean:
@@ -98,40 +96,15 @@ gtest_clean:
 
 ###########################################################################################################
 #
-# Set up astyle tools
+# Install required package dependencies
 #
 ###########################################################################################################
 
-ASTYLE_DIR := $(TOOLS_DIR)/astyle
-ASTYLE_BUILD_DIR := $(DL_DIR)/astyle
-
-.PHONY: astyle_install
-astyle_install: | $(DL_DIR) $(TOOLS_DIR)
-astyle_install: ASTYLE_URL := https://svn.code.sf.net/p/astyle/code/trunk/AStyle
-astyle_install: ASTYLE_REV := 376
-astyle_install: ASTYLE_OPTIONS := prefix=$(ASTYLE_DIR)
-astyle_install: astyle_clean
-    # download the source
-	$(V0) @echo " DOWNLOAD     $(ASTYLE_URL) @ $(ASTYLE_REV)"
-	$(V1) svn export -q "$(ASTYLE_URL)" -r $(ASTYLE_REV) "$(ASTYLE_BUILD_DIR)"
-
-    # build and install
-	$(V0) @echo " BUILD        $(ASTYLE_DIR)"
-	$(V1) mkdir -p "$(ASTYLE_DIR)"
-	$(V1) ( \
-	    $(MAKE) -C $(ASTYLE_BUILD_DIR)/build/gcc $(ASTYLE_OPTIONS) ; \
-	    $(MAKE) -C $(ASTYLE_BUILD_DIR)/build/gcc $(ASTYLE_OPTIONS) install ; \
-	)
-
-    # delete the extracted source when we're done
-	$(V1) [ ! -d "$(ASTYLE_BUILD_DIR)" ] || $(RM) -r "$(ASTYLE_BUILD_DIR)"
-
-.PHONY: astyle_clean
-astyle_clean:
-	$(V0) @echo " CLEAN        $(ASTYLE_DIR)"
-	$(V1) [ ! -d "$(ASTYLE_DIR)" ] || $(RM) -r "$(ASTYLE_DIR)"
-	$(V0) @echo " CLEAN        $(ASTYLE_BUILD_DIR)"
-	$(V1) [ ! -d "$(ASTYLE_BUILD_DIR)" ] || $(RM) -r "$(ASTYLE_BUILD_DIR)"
+.PHONY: deps_install
+deps_install: DEPS_PACKAGES := build-essential unzip wget bzip2 tar bash gcc-multilib g++-multilib libxcb-image0-dev:i386 libxcb-icccm4-dev:i386 libxcb-util0-dev:i386
+deps_install:
+	$(V0) @echo " INSTALL      $(DEPS_PACKAGES)"
+	$(V1) apt-get install $(DEPS_PACKAGES)
 
 ###########################################################################################################
 #
@@ -152,11 +125,3 @@ else
     # not installed, hope it's in the path...
     export OPENOCD ?= openocd
 endif
-
-ifeq ($(shell [ -d "$(ASTYLE_DIR)" ] && echo "exists"), exists)
-    export ASTYLE := $(ASTYLE_DIR)/bin/astyle
-else
-    # not installed, hope it's in the path...
-    export ASTYLE ?= astyle
-endif
-

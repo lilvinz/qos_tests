@@ -73,14 +73,12 @@ help:
 	@echo "     all                  - Build all firmware, bootloaders, entire flash and flashtool"
 	@echo "     all_fw               - Build only firmware for all boards"
 	@echo "     all_bl               - Build only bootloaders for all boards"
-	@echo "     all_bg               - Build only background for all boards"
 	@echo "     all_ef               - Build only entire flash imanges for all boards"
 	@echo "     all_ft               - Build only flashtool packages for all boards"
 	@echo
 	@echo "     all_clean            - Remove your build directory ($(BUILD_DIR))"
 	@echo "     all_fw_clean         - Remove firmware for all boards"
 	@echo "     all_bl_clean         - Remove bootloaders for all boards"
-	@echo "     all_bg_clean         - Remove background for all boards"
 	@echo "     all_ef_clean         - Remove entire flash images for all boards"
 	@echo "     all_ft_clean         - Remove flashtool packages for all boards"
 	@echo
@@ -96,11 +94,6 @@ help:
 	@echo "     bl_<board>           - Build bootloader for <board>"
 	@echo "                            supported boards are ($(BL_BOARDS))"
 	@echo "     bl_<board>_clean     - Remove bootloader for <board>"
-	@echo
-	@echo "   [Background]"
-	@echo "     bg_<board>           - Build background for <board>"
-	@echo "                            supported boards are ($(BL_BOARDS))"
-	@echo "     bg_<board>_clean     - Remove background for <board>"
 	@echo
 	@echo "   [Entire Flash]"
 	@echo "     ef_<board>           - Build entire flash image for <board>"
@@ -175,25 +168,6 @@ bl_$(1)_clean:
 endef
 
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
-define BG_TEMPLATE
-.PHONY: bg_$(1)
-bg_$(1): bg_$(1)_all
-
-bg_$(1)_%:
-	$(V1) cd $(TARGETS_DIR)/$(1)/bg && \
-		$$(MAKE) -r --no-print-directory \
-		BOARD_NAME=$(1) \
-		BUILD_PREFIX=bg \
-		OUTDIR=$(BUILD_DIR)/bg_$(1) \
-		$$*
-
-.PHONY: bg_$(1)_clean
-bg_$(1)_clean:
-	$(V0) @echo " CLEAN        $$@"
-	$(V1) $(RM) -r $(BUILD_DIR)/bg_$(1)
-endef
-
-# $(1) = Canonical board name all in lower case (e.g. discoveryf4)
 define EF_TEMPLATE
 .PHONY: ef_$(1)
 ef_$(1): ef_$(1)_all
@@ -249,14 +223,12 @@ define BOARD_PHONY_TEMPLATE
 .PHONY: all_$(1)
 all_$(1): $$(filter fw_$(1), $$(FW_TARGETS))
 all_$(1): $$(filter bl_$(1), $$(BL_TARGETS))
-all_$(1): $$(filter bg_$(1), $$(BG_TARGETS))
 all_$(1): $$(filter ef_$(1), $$(EF_TARGETS))
 all_$(1): $$(filter ft_$(1), $$(FT_TARGETS))
 
 .PHONY: all_$(1)_clean
 all_$(1)_clean: $$(addsuffix _clean, $$(filter fw_$(1), $$(FW_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter bl_$(1), $$(BL_TARGETS)))
-all_$(1)_clean: $$(addsuffix _clean, $$(filter bg_$(1), $$(BG_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ef_$(1), $$(EF_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ft_$(1), $$(FT_TARGETS)))
 endef
@@ -267,7 +239,6 @@ endef
 # Generate the targets
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
 BL_TARGETS := $(addprefix bl_, $(BL_BOARDS))
-BG_TARGETS := $(addprefix bg_, $(BG_BOARDS))
 EF_TARGETS := $(addprefix ef_, $(EF_BOARDS))
 FT_TARGETS := $(addprefix ft_, $(FT_BOARDS))
 
@@ -278,10 +249,6 @@ all_fw_clean: $(addsuffix _clean, $(FW_TARGETS))
 .PHONY: all_bl all_bl_clean
 all_bl: $(BL_TARGETS)
 all_bl_clean: $(addsuffix _clean, $(BL_TARGETS))
-
-.PHONY: all_bg all_bg_clean
-all_bg: $(BG_TARGETS)
-all_bg_clean: $(addsuffix _clean, $(BG_TARGETS))
 
 .PHONY: all_ef all_ef_clean
 all_ef: $(EF_TARGETS)
@@ -301,10 +268,6 @@ $(foreach board, $(FW_BOARDS), $(eval $(call FW_TEMPLATE,$(board))))
 # Expand the bootloader rules
 $(foreach board, $(BL_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
 $(foreach board, $(BL_BOARDS), $(eval $(call BL_TEMPLATE,$(board))))
-
-# Expand the background rules
-$(foreach board, $(BG_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
-$(foreach board, $(BG_BOARDS), $(eval $(call BG_TEMPLATE,$(board))))
 
 # Expand the entire-flash rules
 $(foreach board, $(EF_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
