@@ -66,19 +66,21 @@ help:
 	@echo "   [Tools]"
 	@echo "     arm_sdk_install      - Install the GNU ARM gcc toolchain"
 	@echo "     openocd_install      - Install the OpenOCD JTAG daemon"
-	@echo "     astyle_install       - Install the astyle code formatter"
 	@echo "     gtest_install        - Install the google test framework"
+	@echo "     deps_install         - Install required os dependencies"
 	@echo
 	@echo "   [Big Hammer]"
 	@echo "     all                  - Build all firmware, bootloaders, entire flash and flashtool"
 	@echo "     all_fw               - Build only firmware for all boards"
 	@echo "     all_bl               - Build only bootloaders for all boards"
+	@echo "     all_bg               - Build only background for all boards"
 	@echo "     all_ef               - Build only entire flash imanges for all boards"
 	@echo "     all_ft               - Build only flashtool packages for all boards"
 	@echo
 	@echo "     all_clean            - Remove your build directory ($(BUILD_DIR))"
 	@echo "     all_fw_clean         - Remove firmware for all boards"
-	@echo "     all_bl_clean         - Remove bootlaoders for all boards"
+	@echo "     all_bl_clean         - Remove bootloaders for all boards"
+	@echo "     all_bg_clean         - Remove background for all boards"
 	@echo "     all_ef_clean         - Remove entire flash images for all boards"
 	@echo "     all_ft_clean         - Remove flashtool packages for all boards"
 	@echo
@@ -95,6 +97,11 @@ help:
 	@echo "                            supported boards are ($(BL_BOARDS))"
 	@echo "     bl_<board>_clean     - Remove bootloader for <board>"
 	@echo
+	@echo "   [Background]"
+	@echo "     bg_<board>           - Build background for <board>"
+	@echo "                            supported boards are ($(BL_BOARDS))"
+	@echo "     bg_<board>_clean     - Remove background for <board>"
+	@echo
 	@echo "   [Entire Flash]"
 	@echo "     ef_<board>           - Build entire flash image for <board>"
 	@echo "                            supported boards are ($(EF_BOARDS))"
@@ -105,20 +112,11 @@ help:
 	@echo "                            supported boards are ($(FT_BOARDS))"
 	@echo "     ft_<board>_clean     - Remove flashtool package for <board>"
 	@echo
-	@echo "   [Simulation]"
-	@echo "     sim_<board>          - Build simulation app for <board>"
-	@echo "                            supported boards are ($(SIM_BOARDS))"
-	@echo "     sim_<board>_clean    - Remove simulation app for <board>"
-	@echo
 	@echo "   [Unittests]"
 	@echo "     ut_<test>            - Build unit test <test>"
 	@echo "                            supported tests are ($(ALL_UNITTESTS))"
 	@echo "     ut_<test>_xml        - Run test and capture XML output into a file"
 	@echo "     ut_<test>_run        - Run test and dump output to console"
-	@echo
-	@echo "   [Misc]"
-	@echo "     astyle FILE=<name>   - Executes the astyle code formatter to reformat"
-	@echo "                            a c source file"
 	@echo
 	@echo "   Hint: Add V=1 to your command line to see verbose build output."
 	@echo
@@ -148,7 +146,6 @@ fw_$(1)_%:
 		BOARD_NAME=$(1) \
 		BUILD_PREFIX=fw \
 		OUTDIR=$(BUILD_DIR)/fw_$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
 
 .PHONY: $(1)_clean
@@ -169,13 +166,31 @@ bl_$(1)_%:
 		BOARD_NAME=$(1) \
 		BUILD_PREFIX=bl \
 		OUTDIR=$(BUILD_DIR)/bl_$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
 
 .PHONY: bl_$(1)_clean
 bl_$(1)_clean:
 	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/bl_$(1)
+endef
+
+# $(1) = Canonical board name all in lower case (e.g. discoveryf4)
+define BG_TEMPLATE
+.PHONY: bg_$(1)
+bg_$(1): bg_$(1)_all
+
+bg_$(1)_%:
+	$(V1) cd $(TARGETS_DIR)/$(1)/bg && \
+		$$(MAKE) -r --no-print-directory \
+		BOARD_NAME=$(1) \
+		BUILD_PREFIX=bg \
+		OUTDIR=$(BUILD_DIR)/bg_$(1) \
+		$$*
+
+.PHONY: bg_$(1)_clean
+bg_$(1)_clean:
+	$(V0) @echo " CLEAN        $$@"
+	$(V1) $(RM) -r $(BUILD_DIR)/bg_$(1)
 endef
 
 # $(1) = Canonical board name all in lower case (e.g. discoveryf4)
@@ -189,7 +204,6 @@ ef_$(1)_%:
 		BOARD_NAME=$(1) \
 		BUILD_PREFIX=ef \
 		OUTDIR=$(BUILD_DIR)/ef_$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
 
 .PHONY: ef_$(1)_clean
@@ -209,34 +223,12 @@ ft_$(1)_%:
 		BOARD_NAME=$(1) \
 		BUILD_PREFIX=ft \
 		OUTDIR=$(BUILD_DIR)/ft_$(1) \
-		TCHAIN_PREFIX="$(ARM_SDK_PREFIX)" \
 		$$*
 
 .PHONY: ft_$(1)_clean
 ft_$(1)_clean:
 	$(V0) @echo " CLEAN        $$@"
 	$(V1) $(RM) -r $(BUILD_DIR)/ft_$(1)
-endef
-
-# $(1) = Canonical board name all in lower case (e.g. discoveryf4)
-define SIM_TEMPLATE
-.PHONY: $(1) sim_$(1)
-sim_$(1): sim_$(1)_all
-
-sim_$(1)_%:
-	$(V1) cd $(TARGETS_DIR)/$(1)/sim && \
-		$$(MAKE) -r --no-print-directory \
-		BOARD_NAME=$(1) \
-		BUILD_PREFIX=sim \
-		OUTDIR=$(BUILD_DIR)/sim_$(1) \
-		TCHAIN_PREFIX= \
-		$$*
-
-.PHONY: $(1)_clean
-$(1)_clean: sim_$(1)_clean
-sim_$(1)_clean:
-	$(V0) @echo " CLEAN        $$@"
-	$(V1) $(RM) -r $(BUILD_DIR)/sim_$(1)
 endef
 
 # When building any of the "all_*" targets, tell all sub makefiles to display
@@ -257,16 +249,16 @@ define BOARD_PHONY_TEMPLATE
 .PHONY: all_$(1)
 all_$(1): $$(filter fw_$(1), $$(FW_TARGETS))
 all_$(1): $$(filter bl_$(1), $$(BL_TARGETS))
+all_$(1): $$(filter bg_$(1), $$(BG_TARGETS))
 all_$(1): $$(filter ef_$(1), $$(EF_TARGETS))
 all_$(1): $$(filter ft_$(1), $$(FT_TARGETS))
-all_$(1): $$(filter sim_$(1), $$(SIM_TARGETS))
 
 .PHONY: all_$(1)_clean
 all_$(1)_clean: $$(addsuffix _clean, $$(filter fw_$(1), $$(FW_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter bl_$(1), $$(BL_TARGETS)))
+all_$(1)_clean: $$(addsuffix _clean, $$(filter bg_$(1), $$(BG_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ef_$(1), $$(EF_TARGETS)))
 all_$(1)_clean: $$(addsuffix _clean, $$(filter ft_$(1), $$(FT_TARGETS)))
-all_$(1)_clean: $$(addsuffix _clean, $$(filter sim_$(1), $$(SIM_TARGETS)))
 endef
 
 # Include all board definitions from targets dir
@@ -275,9 +267,9 @@ endef
 # Generate the targets
 FW_TARGETS := $(addprefix fw_, $(FW_BOARDS))
 BL_TARGETS := $(addprefix bl_, $(BL_BOARDS))
+BG_TARGETS := $(addprefix bg_, $(BG_BOARDS))
 EF_TARGETS := $(addprefix ef_, $(EF_BOARDS))
 FT_TARGETS := $(addprefix ft_, $(FT_BOARDS))
-SIM_TARGETS := $(addprefix sim_, $(SIM_BOARDS))
 
 .PHONY: all_fw all_fw_clean
 all_fw: $(FW_TARGETS)
@@ -287,6 +279,10 @@ all_fw_clean: $(addsuffix _clean, $(FW_TARGETS))
 all_bl: $(BL_TARGETS)
 all_bl_clean: $(addsuffix _clean, $(BL_TARGETS))
 
+.PHONY: all_bg all_bg_clean
+all_bg: $(BG_TARGETS)
+all_bg_clean: $(addsuffix _clean, $(BG_TARGETS))
+
 .PHONY: all_ef all_ef_clean
 all_ef: $(EF_TARGETS)
 all_ef_clean: $(addsuffix _clean, $(EF_TARGETS))
@@ -295,12 +291,8 @@ all_ef_clean: $(addsuffix _clean, $(EF_TARGETS))
 all_ft: $(FT_TARGETS)
 all_ft_clean: $(addsuffix _clean, $(FT_TARGETS))
 
-.PHONY: all_sim all_sim_clean
-all_sim: $(SIM_TARGETS)
-all_sim_clean: $(addsuffix _clean, $(SIM_TARGETS))
-
 .PHONY: all
-all: all_fw all_bl all_ef all_ft all_sim
+all: all_fw all_bl all_ef all_ft
 
 # Expand the firmware rules
 $(foreach board, $(FW_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
@@ -310,6 +302,10 @@ $(foreach board, $(FW_BOARDS), $(eval $(call FW_TEMPLATE,$(board))))
 $(foreach board, $(BL_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
 $(foreach board, $(BL_BOARDS), $(eval $(call BL_TEMPLATE,$(board))))
 
+# Expand the background rules
+$(foreach board, $(BG_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
+$(foreach board, $(BG_BOARDS), $(eval $(call BG_TEMPLATE,$(board))))
+
 # Expand the entire-flash rules
 $(foreach board, $(EF_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
 $(foreach board, $(EF_BOARDS), $(eval $(call EF_TEMPLATE,$(board))))
@@ -317,10 +313,6 @@ $(foreach board, $(EF_BOARDS), $(eval $(call EF_TEMPLATE,$(board))))
 # Expand the flashtool rules
 $(foreach board, $(FT_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
 $(foreach board, $(FT_BOARDS), $(eval $(call FT_TEMPLATE,$(board))))
-
-# Expand the simulation rules
-$(foreach board, $(SIM_BOARDS), $(eval $(call BOARD_PHONY_TEMPLATE,$(board))))
-$(foreach board, $(SIM_BOARDS), $(eval $(call SIM_TEMPLATE,$(board))))
 
 ##############################
 #
@@ -374,19 +366,3 @@ ifneq ($(strip $(filter all_ut_run,$(MAKECMDGOALS))),)
     $(info *NOTE*        Parallel make disabled by all_ut_run target so we have sane console output)
 endif
 
-##############################
-#
-# AStyle
-#
-##############################
-
-ifneq ($(strip $(filter astyle,$(MAKECMDGOALS))),)
-    ifeq ($(FILE),)
-        $(error pass files to astyle by adding FILE=<file> to the make command line)
-    endif
-endif
-
-.PHONY: astyle
-astyle: ASTYLE_OPTIONS := --suffix=none --lineend=linux --mode=c --convert-tabs --align-pointer=type --align-reference=type --indent=spaces=4 --style=allman --break-blocks --pad-oper --pad-header --unpad-paren
-astyle:
-	$(V1) $(ASTYLE) $(ASTYLE_OPTIONS) $(FILE)
