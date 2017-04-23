@@ -1,9 +1,6 @@
 # Set bash shell
 SHELL := /bin/bash
 
-# Toolchain prefix (i.e arm-elf- -> arm-elf-gcc.exe)
-TCHAIN_PREFIX ?= $(ARM_SDK_PREFIX)/arm-none-eabi-
-
 # Define toolchain component names.
 CC := $(TCHAIN_PREFIX)gcc
 CPP := $(TCHAIN_PREFIX)g++
@@ -14,6 +11,8 @@ SIZE := $(TCHAIN_PREFIX)size
 NM := $(TCHAIN_PREFIX)nm
 STRIP := $(TCHAIN_PREFIX)strip
 RM := rm
+GIT := git
+DATE := date
 
 THUMB := -mthumb
 
@@ -68,28 +67,23 @@ gccversion :
 # Create final output file (.hex) from ELF output file.
 %.hex: %.elf
 	$(V0) @echo $(MSG_HEX_FILE) $(call toprel, $@)
-	$(V1) $(OBJCOPY) --gap-fill=0xff -O ihex $< $@
+	$(V1) $(OBJCOPY) -O ihex $< $@
 
 # Create final output file (.bin) from ELF output file.
 %.bin: %.elf
 	$(V0) @echo $(MSG_BIN_FILE) $(call toprel, $@)
-	$(V1) $(OBJCOPY) --gap-fill=0xff -O binary $< $@
+	$(V1) $(OBJCOPY) -O binary $< $@
 
 # Create extended listing file/disassambly from ELF output file.
 # using objdump testing: option -C
 %.lss: %.elf
 	$(V0) @echo $(MSG_EXTENDED_LISTING) $(call toprel, $@)
 	$(V1) $(OBJDUMP) -h -S -C -r $< > $@
-	
+
 # Create a symbol table from ELF output file.
 %.sym: %.elf
 	$(V0) @echo $(MSG_SYMBOL_TABLE) $(call toprel, $@)
 	$(V1) $(NM) -n $< > $@
-
-# Create encrypted output from .bin file
-%.enc: %.bin
-	$(V0) @echo $(MSG_ENCRYPT) $(call toprel, $@)
-	$(V1) perl $(ROOT_DIR)/make/scripts/lfsr.pl $(LFSR_GENERATOR_POLY) $(LFSR_KEY) < $< > $@ || ($(RM) -f $@; exit 1)
 
 # Target: clean project.
 .PHONY: clean
@@ -193,7 +187,8 @@ endef
 # $(2) = Base of flash region to write/wipe
 # $(3) = Size of flash region to write/wipe
 # $(4) = OpenOCD JTAG interface configuration file to use
-# $(5) = OpenOCD configuration file to use
+# $(5) = OpenOCD transport select command
+# $(6) = OpenOCD configuration file to use
 define JTAG_TEMPLATE
 # ---------------------------------------------------------------------------
 # Options for OpenOCD flash-programming
@@ -206,7 +201,7 @@ OPENOCD ?= openocd
 OOCD_JTAG_SETUP  = -d0
 # interface and board/target settings (using the OOCD target-library here)
 OOCD_JTAG_SETUP += -s $(ROOT_DIR)/make/openocd
-OOCD_JTAG_SETUP += -f $(4) -f $(5)
+OOCD_JTAG_SETUP += -f $(4) -c "transport select $(5)" -f $(6)
 
 # initialize
 OOCD_BOARD_RESET = -c "init"
@@ -236,18 +231,20 @@ wipe:
 endef
 
 #---------------- vcs environment ----------------
-VCS_REVISION := $(shell git rev-parse --short=10 HEAD)
+VCS_REVISION := $(shell $(GIT) rev-parse --short=10 HEAD)
 ifeq ($(GIT_BRANCH),)
     # try to get remote tracking branch
-    VCS_PATH := $(shell git rev-parse --symbolic-full-name --abbrev-ref @{u} 2> /dev/null)
+    VCS_PATH := $(shell $(GIT) rev-parse --symbolic-full-name --abbrev-ref @{u} 2> /dev/null)
     # if that failed, get local branch
-    ifeq ($(VCS_PATH),@{u})
-        VCS_PATH := $(shell git rev-parse --abbrev-ref HEAD)
+    ifeq ($(VCS_PATH),)
+        VCS_PATH := $(shell $(GIT) rev-parse --abbrev-ref HEAD)
     endif
 else
     VCS_PATH := $(GIT_BRANCH)
 endif
-GIT_CHECK_DIRTY := $(shell git diff)
+GIT_CHECK_DIRTY := $(shell $(GIT) diff)
 ifneq ($(GIT_CHECK_DIRTY),)
     VCS_PATH := $(join $(VCS_PATH),+)
 endif
+VCS_DATETIME := $(shell $(GIT) log -n1 --no-color --format=format:%ci HEAD)
+VCS_DATETIME_ISO := $(shell $(DATE) -u -d "$(VCS_DATETIME)" +%Y-%m-%dT%H-%M-%S)
