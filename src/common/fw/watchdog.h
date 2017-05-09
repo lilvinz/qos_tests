@@ -18,9 +18,21 @@
 enum watchdog_source
 {
     WATCHDOG_MOD_TEST,
+    WATCHDOG_MOD_TEST_CPP,
 };
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 void watchdog_register(enum watchdog_source source);
 void watchdog_reload(enum watchdog_source source);
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif /* WATCHDOG_H_ */
