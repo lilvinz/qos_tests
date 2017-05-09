@@ -22,14 +22,14 @@ ifeq (${result}, test)
     quote := '
 # This line is just to clear out the single quote above '
 else
-     quote := 
+     quote :=
 endif
 
 # Add a board designator to the terse message text
 ifeq ($(ENABLE_MSG_EXTRA),yes)
     MSG_EXTRA := [$(shell printf '%-3s' $(BUILD_PREFIX))|$(shell printf '%-14s' $(BOARD_NAME))]
 else
-    MSG_EXTRA := 
+    MSG_EXTRA :=
 endif
 
 # Define Messages
@@ -137,7 +137,7 @@ endef
 define COMPILE_CPP_THUMB_TEMPLATE
 $(OUTDIR)/$(notdir $(basename $(1))).o : $(1) $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_COMPILINGCPP_THUMB) $$(call toprel, $$<)
-	$(V1) $(CPP) $(THUMB) -c $$(CFLAGS) $$(CPPFLAGS) $$< -o $$@
+	$(V1) $(CPP) $(THUMB) -c $$(CPPFLAGS) $$< -o $$@
 endef
 
 # Compile: create object files from C++ source files.
