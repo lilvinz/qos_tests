@@ -180,7 +180,7 @@ define LINK_CPP_TEMPLATE
 .PRECIOUS : $(2)
 $(1):  $(2) | $(OUTDIR)
 	$(V0) @echo $(MSG_LINKING_CPP) $$(call toprel, $$@)
-	$(V1) $(CPP) $$(CFLAGS) $(2) --output $$@ $$(LDFLAGS)
+	$(V1) $(CPP) $$(CPPFLAGS) $(2) --output $$@ $$(LDFLAGS)
 endef
 
 # $(1) = Name of binary image to write

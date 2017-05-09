@@ -12,13 +12,13 @@
     limitations under the License.
 */
 
-#include "mod_test_cpp.h"
+#include "mod_test_cpp.hpp"
 
 #if MOD_TEST_CPP
 
 #include "ch_tools.h"
 #include "watchdog.h"
-#include "module_init.h"
+#include "module_init_cpp.h"
 
 #include "qhal.h"
 
@@ -43,6 +43,7 @@
 /*===========================================================================*/
 ModTestCpp ModTestCpp::modInstance = ModTestCpp();
 
+
 /*===========================================================================*/
 /* Local functions                                                           */
 /*===========================================================================*/
@@ -57,17 +58,17 @@ tprio_t ModTestCpp::GetThreadPrio() const
  */
 void ModTestCpp::ThreadMain()
 {
-    chRegSetThreadName("mod_test");
+    chRegSetThreadName("mod_test_cpp");
 
-    systime_t lastSysTime = chVTGetSystemTimeX();
+    systime_t lastSysTime = chibios_rt::System::getTimeX();
 
-    while (chThdShouldTerminateX() == false)
+    while (chibios_rt::BaseThread::shouldTerminate() == false)
     {
         watchdog_reload(WATCHDOG_MOD_TEST);
 
         ledToggle(LED_STATUS);
 
-        chThdSleepPeriod(&lastSysTime, OSAL_MS2ST(250));
+        chThdSleepPeriod(&lastSysTime, TIME_MS2I(250));
     }
 }
 
@@ -90,45 +91,30 @@ ModTestCpp::~ModTestCpp()
  * @note: This is being called from main.c while scheduler is running
  */
 
- void ModTestCpp::Init()
- {
+void ModTestCpp::Init()
+{
     watchdog_register(WATCHDOG_MOD_TEST);
- }
+}
 
 /**
  * stage 2 - Start the module, called after all modules have been initialized
  * @note: This is being called from main.c while scheduler is running
  */
- void ModTestCpp::Start()
- {
+void ModTestCpp::Start()
+{
     Super::Start();
- }
+}
 
 /**
  * stage 3 - Stop the module, called after all modules have been started
  * @note: This is being called from main.c while scheduler is running
  */
  void ModTestCpp::Shutdown()
- {
-    Super::Shutdown();
- }
+{
+     Super::Shutdown();
+}
 
- void mod_test_cpp_init()
- {
-     ModTestCpp::GetInstance()->Init();
- }
-
- void mod_test_cpp_start()
- {
-     ModTestCpp::GetInstance()->Start();
- }
-
- void mod_test_cpp_stop()
- {
-     ModTestCpp::GetInstance()->Shutdown();
- }
-
-MODULE_INITCALL(0, mod_test_cpp_init, mod_test_cpp_start, mod_test_cpp_stop)
+MODULE_INITCALL(0, qos::ModuleInit<ModTestCpp>::Init, qos::ModuleInit<ModTestCpp>::Start, qos::ModuleInit<ModTestCpp>::Shutdown)
 
 
 #endif /* MOD_TEST_CPP */
