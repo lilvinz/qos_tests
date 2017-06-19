@@ -1,0 +1,21 @@
+sudo: false
+dist: trusty
+
+addons:
+  apt:
+    packages:
+    - gcc-multilib
+    - g++-multilib
+
+language: c
+
+matrix:
+  include:
+    - env:
+    - env:
+      - NDEBUG=1
+
+before_script:
+  - make -j2 arm_sdk_install gtest_install
+
+script: make -j2 all all_ut && make all_ut_run
