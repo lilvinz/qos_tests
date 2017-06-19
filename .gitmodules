@@ -15,4 +15,4 @@
 	url = https://github.com/lilvinz/fatfs.git
 [submodule "submodules/minini"]
 	path = submodules/minini
-	url = https://github.com/lilvinz/fatfs.git
+	url = https://github.com/lilvinz/minini.git
