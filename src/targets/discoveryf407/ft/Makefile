@@ -2,9 +2,9 @@
 .DEFAULT_GOAL := all
 
 ifndef NDEBUG
-    PRODUCT_NAME = odcp_$(BOARD_NAME)_DEBUG
+    PRODUCT_NAME = qos_tests_$(BOARD_NAME)_DEBUG
 else
-    PRODUCT_NAME = odcp_$(BOARD_NAME)
+    PRODUCT_NAME = qos_tests_$(BOARD_NAME)
 endif
 
 .PHONY: all
