@@ -4,10 +4,10 @@
 #
 ###########################################################################################################
 
-ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-6-2017-q1-update
+ARM_SDK_DIR := $(TOOLS_DIR)/gcc-arm-none-eabi-6-2017-q2-update
 
 .PHONY: arm_sdk_install
-arm_sdk_install: ARM_SDK_URL := https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/6_1-2017q1/gcc-arm-none-eabi-6-2017-q1-update-linux.tar.bz2
+arm_sdk_install: ARM_SDK_URL := https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
 arm_sdk_install: ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
 # order-only prereq on directory existance:
 arm_sdk_install: | $(DL_DIR) $(TOOLS_DIR)
