@@ -50,6 +50,7 @@
  */
 void __early_init(void)
 {
+    stm32_gpio_init();
     stm32_clock_init();
 }
 
