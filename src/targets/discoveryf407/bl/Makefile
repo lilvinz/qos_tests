@@ -13,7 +13,7 @@ include $(ROOT_DIR)/submodules/qos/common/ports/ARMCMx/compilers/GCC/library.mk
 # Chibios
 include $(ROOT_DIR)/submodules/chibios/os/hal/osal/rt/osal.mk
 include $(ROOT_DIR)/submodules/chibios/os/rt/rt.mk
-include $(ROOT_DIR)/submodules/chibios/os/rt/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
+include $(ROOT_DIR)/submodules/chibios/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 
 # List modules to include in this build here
 MODULES += $(notdir $(wildcard $(ROOT_DIR)/src/modules/*))
