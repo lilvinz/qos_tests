@@ -23,7 +23,7 @@
 /*
  * SERIAL 485 driver system settings.
  */
-#define STM32_SERIAL_485_USE_USART1         FALSE
+#define STM32_SERIAL_485_USE_USART1         TRUE
 #define STM32_SERIAL_485_USE_USART2         FALSE
 #define STM32_SERIAL_485_USE_USART3         FALSE
 #define STM32_SERIAL_485_USE_UART4          FALSE

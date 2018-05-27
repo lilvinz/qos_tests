@@ -31,21 +31,21 @@
  * @brief   Enables the SERIAL 485 subsystem.
  */
 #if !defined(HAL_USE_SERIAL_485) || defined(__DOXYGEN__)
-#define HAL_USE_SERIAL_485          FALSE
+#define HAL_USE_SERIAL_485          TRUE
 #endif
 
 /**
  * @brief   Enables the FLASH_JEDEC_SPI subsystem.
  */
 #if !defined(HAL_USE_FLASH_JEDEC_SPI) || defined(__DOXYGEN__)
-#define HAL_USE_FLASH_JEDEC_SPI     FALSE
+#define HAL_USE_FLASH_JEDEC_SPI     TRUE
 #endif
 
 /**
  * @brief   Enables the NVM file subsystem.
  */
 #if !defined(HAL_USE_NVM_FILE) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_FILE            FALSE
+#define HAL_USE_NVM_FILE            TRUE
 #endif
 
 /**
@@ -66,7 +66,7 @@
  * @brief   Enables the NVM mirror subsystem.
  */
 #if !defined(HAL_USE_NVM_MIRROR) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_MIRROR          FALSE
+#define HAL_USE_NVM_MIRROR          TRUE
 #endif
 
 /**
@@ -94,14 +94,21 @@
  * @brief   Enables the graphics display ILI9341 subsystem.
  */
 #if !defined(HAL_USE_GD_ILI9341) || defined(__DOXYGEN__)
-#define HAL_USE_GD_ILI9341          FALSE
+#define HAL_USE_GD_ILI9341          TRUE
 #endif
 
 /**
  * @brief   Enables the ms5541 driver.
  */
 #if !defined(HAL_USE_MS5541) || defined(__DOXYGEN__)
-#define HAL_USE_MS5541              FALSE
+#define HAL_USE_MS5541              TRUE
+#endif
+
+/**
+ * @brief   Enables the ms58xx driver.
+ */
+#if !defined(HAL_USE_MS58XX) || defined(__DOXYGEN__)
+#define HAL_USE_MS58XX              TRUE
 #endif
 
 /*===========================================================================*/
