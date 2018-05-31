@@ -96,7 +96,7 @@ TEST_F(SerialFdx, test_a_to_b)
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
+    chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), TIME_S2I(1));
 
     EXPECT_STREQ("Test234\n", temp);
 }
@@ -113,7 +113,7 @@ TEST_F(SerialFdx, test_b_to_a)
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, sizeof(temp), S2ST(1));
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, sizeof(temp), TIME_S2I(1));
 
     EXPECT_STREQ("Test234\n", temp);
 }
@@ -135,7 +135,7 @@ TEST_F(SerialFdx, test_a_to_b_over_mtu)
     char temp[SERIAL_FDX_MTU * 3];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), S2ST(1));
+    chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(temp), TIME_S2I(1));
 
     EXPECT_STREQ(src, temp);
 }
@@ -175,7 +175,7 @@ static void loop_a_pump_worker(void *arg)
                     }
                     else
                     {
-                        chnPutTimeout((BaseAsynchronousChannel*)&sdfdx_slave, c, S2ST(1));
+                        chnPutTimeout((BaseAsynchronousChannel*)&sdfdx_slave, c, TIME_S2I(1));
                     }
                 }
             }
@@ -200,7 +200,7 @@ TEST_F(SerialFdx, test_events)
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, S2ST(1));
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, TIME_S2I(1));
 
     EXPECT_STREQ("Test234\n", temp);
 
@@ -226,7 +226,7 @@ static void connectionevents_a_pump_worker(void *arg)
 
     while (true)
     {
-        uint32_t events = chEvtWaitOneTimeout(EVENT_MASK(event_b_id), S2ST(2));
+        uint32_t events = chEvtWaitOneTimeout(EVENT_MASK(event_b_id), TIME_S2I(2));
 
         if (events & EVENT_MASK(event_b_id))
         {
@@ -258,7 +258,7 @@ TEST_F(SerialFdx, test_connected_event)
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, MS2ST(1));
+    chnReadTimeout(&sdfdx_master, (uint8_t*)temp, 8, TIME_MS2I(1));
 
     EXPECT_STREQ("Test234\n", temp);
 
@@ -305,7 +305,7 @@ TEST_F(SerialFdx, test_escaping)
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    msg_t rb = chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(src), S2ST(4));
+    msg_t rb = chnReadTimeout(&sdfdx_slave, (uint8_t*)temp, sizeof(src), TIME_S2I(4));
 
     EXPECT_STREQ(src, temp);
     EXPECT_EQ(4, rb);

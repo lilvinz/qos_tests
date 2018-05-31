@@ -172,7 +172,7 @@ TEST_F(SerialVirtual, test_events)
     char temp[200];
     memset(temp, 0, sizeof(temp));
 
-    chnReadTimeout(&sdvirtual_a, (uint8_t*)temp, 8, S2ST(1));
+    chnReadTimeout(&sdvirtual_a, (uint8_t*)temp, 8, TIME_S2I(1));
 
     EXPECT_STREQ("Test234\n", temp);
 
