@@ -147,7 +147,7 @@ static void loop_a_pump_worker(void *arg)
                     }
                     else
                     {
-                        chSequentialStreamPut((BaseSequentialStream*)&sdvirtual_b, c);
+                        streamPut((BaseSequentialStream*)&sdvirtual_b, c);
                     }
                 }
             }
