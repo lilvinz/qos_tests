@@ -1,11 +1,7 @@
-sudo: false
-dist: trusty
+sudo: required
 
-addons:
-  apt:
-    packages:
-    - gcc-multilib
-    - g++-multilib
+services:
+  - docker
 
 language: c
 
@@ -16,6 +12,7 @@ matrix:
       - NDEBUG=1
 
 before_script:
-  - make -j2 arm_sdk_install gtest_install
+  - docker build -t buildenv .
 
-script: make -j2 all all_ut && make all_ut_run
+script:
+  - docker run buildenv /bin/sh -c "cd /root && make -j2 arm_sdk_install gtest_install && make all_ut_run"
