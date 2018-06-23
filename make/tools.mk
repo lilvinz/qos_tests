@@ -104,7 +104,7 @@ gtest_clean:
 deps_install: DEPS_PACKAGES := build-essential unzip wget bzip2 tar bash gcc-multilib g++-multilib libxcb-image0-dev:i386 libxcb-icccm4-dev:i386 libxcb-util0-dev:i386
 deps_install:
 	$(V0) @echo " INSTALL      $(DEPS_PACKAGES)"
-	$(V1) apt-get install $(DEPS_PACKAGES)
+	$(V1) apt-get -y install $(DEPS_PACKAGES)
 
 ###########################################################################################################
 #
