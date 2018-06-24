@@ -90,6 +90,27 @@
 #define HAL_USE_LED                 TRUE
 #endif
 
+/**
+ * @brief   Enables the graphics display ILI9341 subsystem.
+ */
+#if !defined(HAL_USE_GD_ILI9341) || defined(__DOXYGEN__)
+#define HAL_USE_GD_ILI9341          FALSE
+#endif
+
+/**
+ * @brief   Enables the ms5541 driver.
+ */
+#if !defined(HAL_USE_MS5541) || defined(__DOXYGEN__)
+#define HAL_USE_MS5541              FALSE
+#endif
+
+/**
+ * @brief   Enables the ms58xx driver.
+ */
+#if !defined(HAL_USE_MS58XX) || defined(__DOXYGEN__)
+#define HAL_USE_MS58XX              FALSE
+#endif
+
 /*===========================================================================*/
 /* SERIAL_485 driver related settings.                                       */
 /*===========================================================================*/

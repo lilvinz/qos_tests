@@ -1,4 +1,6 @@
 /*
+    ChibiOS - Copyright (C) 2006..2017 Giovanni Di Sirio
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
@@ -12,11 +14,17 @@
     limitations under the License.
 */
 
-#ifndef _BOARD_H_
-#define _BOARD_H_
+/*
+ * This file has been automatically generated using ChibiStudio board
+ * generator plugin. Do not edit manually.
+ */
 
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef BOARD_H
+#define BOARD_H
+
+/*===========================================================================*/
+/* Driver constants.                                                         */
+/*===========================================================================*/
 
 /*
  * Setup for discoveryf407 board.
@@ -39,7 +47,6 @@
 #define STM32_HSECLK                8000000U
 #endif
 
-
 /*
  * Board voltages.
  * Required for performance limits calculation.
@@ -47,7 +54,7 @@
 #define STM32_VDD                   300U
 
 /*
- * MCU type as defined in the ST header file stm32f4xx.h.
+ * MCU type as defined in the ST header.
  */
 #define STM32F407xx
 
@@ -221,34 +228,42 @@
 #define LINE_OTG_FS_DP              PAL_LINE(GPIOA, 12U)
 #define LINE_SWDIO                  PAL_LINE(GPIOA, 13U)
 #define LINE_SWCLK                  PAL_LINE(GPIOA, 14U)
-
 #define LINE_SWO                    PAL_LINE(GPIOB, 3U)
 #define LINE_SCL                    PAL_LINE(GPIOB, 6U)
 #define LINE_SDA                    PAL_LINE(GPIOB, 9U)
 #define LINE_CLK_IN                 PAL_LINE(GPIOB, 10U)
-
 #define LINE_OTG_FS_POWER_ON        PAL_LINE(GPIOC, 0U)
 #define LINE_PDM_OUT                PAL_LINE(GPIOC, 3U)
 #define LINE_MCLK                   PAL_LINE(GPIOC, 7U)
 #define LINE_SCLK                   PAL_LINE(GPIOC, 10U)
 #define LINE_SDIN                   PAL_LINE(GPIOC, 12U)
-
 #define LINE_RESET                  PAL_LINE(GPIOD, 4U)
 #define LINE_OVER_CURRENT           PAL_LINE(GPIOD, 5U)
 #define LINE_LED4                   PAL_LINE(GPIOD, 12U)
 #define LINE_LED3                   PAL_LINE(GPIOD, 13U)
 #define LINE_LED5                   PAL_LINE(GPIOD, 14U)
 #define LINE_LED6                   PAL_LINE(GPIOD, 15U)
-
 #define LINE_INT1                   PAL_LINE(GPIOE, 0U)
 #define LINE_INT2                   PAL_LINE(GPIOE, 1U)
 #define LINE_CS_SPI                 PAL_LINE(GPIOE, 3U)
-
-
-
 #define LINE_OSC_IN                 PAL_LINE(GPIOH, 0U)
 #define LINE_OSC_OUT                PAL_LINE(GPIOH, 1U)
 
+/*===========================================================================*/
+/* Driver pre-compile time settings.                                         */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Derived constants and error checks.                                       */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Driver data structures and types.                                         */
+/*===========================================================================*/
+
+/*===========================================================================*/
+/* Driver macros.                                                            */
+/*===========================================================================*/
 
 /*
  * I/O ports initial setup, this configuration is established soon after reset
@@ -1325,6 +1340,10 @@
                                      PIN_AFIO_AF(GPIOI_PIN14, 0U) |         \
                                      PIN_AFIO_AF(GPIOI_PIN15, 0U))
 
+/*===========================================================================*/
+/* External declarations.                                                    */
+/*===========================================================================*/
+
 #if !defined(_FROM_ASM_)
 #ifdef __cplusplus
 extern "C" {
@@ -1341,4 +1360,4 @@ extern "C" {
 #endif
 #endif /* _FROM_ASM_ */
 
-#endif /* _BOARD_H_ */
+#endif /* BOARD_H */

@@ -72,27 +72,27 @@ TEST_F(Test_NVMStream, chprintf)
     EXPECT_STREQ("Test234", (const char*)_nvmmemory_buf);
 }
 
-TEST_F(Test_NVMStream, chSequentialStreamWrite)
+TEST_F(Test_NVMStream, streamWrite)
 {
     BaseSequentialStream *streamp = (BaseSequentialStream*)&_nvmstream;
 
-    chSequentialStreamWrite(streamp, (const uint8_t*)"Test234\0", 8);
+    streamWrite(streamp, (const uint8_t*)"Test234\0", 8);
 
     EXPECT_STREQ("Test234", (const char*)_nvmmemory_buf);
 }
 
-TEST_F(Test_NVMStream, chSequentialStreamPut)
+TEST_F(Test_NVMStream, streamPut)
 {
     BaseSequentialStream *streamp = (BaseSequentialStream*)&_nvmstream;
 
-    chSequentialStreamPut(streamp, 'T');
-    chSequentialStreamPut(streamp, 'e');
-    chSequentialStreamPut(streamp, 's');
-    chSequentialStreamPut(streamp, 't');
-    chSequentialStreamPut(streamp, '2');
-    chSequentialStreamPut(streamp, '3');
-    chSequentialStreamPut(streamp, '4');
-    chSequentialStreamPut(streamp, '\0');
+    streamPut(streamp, 'T');
+    streamPut(streamp, 'e');
+    streamPut(streamp, 's');
+    streamPut(streamp, 't');
+    streamPut(streamp, '2');
+    streamPut(streamp, '3');
+    streamPut(streamp, '4');
+    streamPut(streamp, '\0');
 
     EXPECT_STREQ("Test234", (const char*)_nvmmemory_buf);
 }
@@ -112,23 +112,23 @@ TEST_F(Test_NVMStream, overflow)
     BaseSequentialStream *streamp = (BaseSequentialStream*)&_nvmstream;
 
     for (size_t i = 0; i < sizeof(_nvmmemory_buf); ++i)
-        EXPECT_EQ(chSequentialStreamPut(streamp, (uint8_t)i), Q_OK);
+        EXPECT_EQ(streamPut(streamp, (uint8_t)i), Q_OK);
 
-    EXPECT_EQ(chSequentialStreamPut(streamp, 0x00), Q_RESET);
+    EXPECT_EQ(streamPut(streamp, 0x00), Q_RESET);
 }
 
-TEST_F(Test_NVMStream, chSequentialStreamRead)
+TEST_F(Test_NVMStream, streamRead)
 {
     BaseSequentialStream *streamp = (BaseSequentialStream*)&_nvmstream;
     uint8_t temp[8];
 
-    chSequentialStreamWrite(streamp, (const uint8_t*)"Test234\0", 8);
+    streamWrite(streamp, (const uint8_t*)"Test234\0", 8);
 
-    chSequentialStreamRead(streamp, temp, 8);
+    streamRead(streamp, temp, 8);
 
-    chSequentialStreamWrite(streamp, (const uint8_t*)"Test567\0", 8);
+    streamWrite(streamp, (const uint8_t*)"Test567\0", 8);
 
-    chSequentialStreamRead(streamp, temp, 8);
+    streamRead(streamp, temp, 8);
 
     EXPECT_STREQ((const char*)temp, (const char*)_nvmmemory_buf + 8);
 }

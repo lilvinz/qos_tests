@@ -30,98 +30,98 @@
  * @brief   Enables the SERIAL 485 subsystem.
  */
 #if !defined(HAL_USE_SERIAL_485) || defined(__DOXYGEN__)
-#define HAL_USE_SERIAL_485          FALSE
+#define HAL_USE_SERIAL_485                  FALSE
 #endif
 
 /**
  * @brief   Enables the FLASH_JEDEC_SPI subsystem.
  */
 #if !defined(HAL_USE_FLASH_JEDEC_SPI) || defined(__DOXYGEN__)
-#define HAL_USE_FLASH_JEDEC_SPI     FALSE
+#define HAL_USE_FLASH_JEDEC_SPI             FALSE
 #endif
 
 /**
  * @brief   Enables the NVM file subsystem.
  */
 #if !defined(HAL_USE_NVM_FILE) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_FILE            FALSE
+#define HAL_USE_NVM_FILE                    FALSE
 #endif
 
 /**
  * @brief   Enables the NVM memory subsystem.
  */
 #if !defined(HAL_USE_NVM_MEMORY) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_MEMORY          FALSE
+#define HAL_USE_NVM_MEMORY                  FALSE
 #endif
 
 /**
  * @brief   Enables the NVM partition subsystem.
  */
 #if !defined(HAL_USE_NVM_PARTITION) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_PARTITION       FALSE
+#define HAL_USE_NVM_PARTITION               FALSE
 #endif
 
 /**
  * @brief   Enables the NVM mirror subsystem.
  */
 #if !defined(HAL_USE_NVM_MIRROR) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_MIRROR          FALSE
+#define HAL_USE_NVM_MIRROR                  FALSE
 #endif
 
 /**
  * @brief   Enables the NVM flash eeprom emulation subsystem.
  */
 #if !defined(HAL_USE_NVM_FEE) || defined(__DOXYGEN__)
-#define HAL_USE_NVM_FEE             FALSE
+#define HAL_USE_NVM_FEE                     FALSE
 #endif
 
 /**
  * @brief   Enables the internal FLASH subsystem.
  */
 #if !defined(HAL_USE_FLASH) || defined(__DOXYGEN__)
-#define HAL_USE_FLASH               FALSE
+#define HAL_USE_FLASH                       FALSE
 #endif
 
 /**
  * @brief   Enables the LED subsystem.
  */
 #if !defined(HAL_USE_LED) || defined(__DOXYGEN__)
-#define HAL_USE_LED                 FALSE
+#define HAL_USE_LED                         FALSE
 #endif
 
 /**
  * @brief   Enables the graphics display ILI9341 subsystem.
  */
 #if !defined(HAL_USE_GD_ILI9341) || defined(__DOXYGEN__)
-#define HAL_USE_GD_ILI9341          FALSE
+#define HAL_USE_GD_ILI9341                  FALSE
 #endif
 
 /**
  * @brief   Enables the ms5541 driver.
  */
 #if !defined(HAL_USE_MS5541) || defined(__DOXYGEN__)
-#define HAL_USE_MS5541              FALSE
+#define HAL_USE_MS5541                      FALSE
 #endif
 
 /**
  * @brief   Enables the ms58xx driver.
  */
 #if !defined(HAL_USE_MS58XX) || defined(__DOXYGEN__)
-#define HAL_USE_MS58XX              FALSE
+#define HAL_USE_MS58XX                      FALSE
 #endif
 
 /**
  * @brief   Enables the SERIAL VIRTUAL subsystem.
  */
 #if !defined(HAL_USE_SERIAL_VIRTUAL) || defined(__DOXYGEN__)
-#define HAL_USE_SERIAL_VIRTUAL      TRUE
+#define HAL_USE_SERIAL_VIRTUAL              TRUE
 #endif
 
 /**
  * @brief   Enables the SERIAL FDX subsystem.
  */
 #if !defined(HAL_USE_SERIAL_FDX) || defined(__DOXYGEN__)
-#define HAL_USE_SERIAL_FDX          FALSE
+#define HAL_USE_SERIAL_FDX                  FALSE
 #endif
 
 /*===========================================================================*/
@@ -134,7 +134,7 @@
  *          default configuration.
  */
 #if !defined(SERIAL_485_DEFAULT_BITRATE) || defined(__DOXYGEN__)
-#define SERIAL_485_DEFAULT_BITRATE  38400
+#define SERIAL_485_DEFAULT_BITRATE          38400
 #endif
 
 /**
@@ -145,7 +145,7 @@
  *          buffers.
  */
 #if !defined(SERIAL_485_BUFFERS_SIZE) || defined(__DOXYGEN__)
-#define SERIAL_485_BUFFERS_SIZE     16
+#define SERIAL_485_BUFFERS_SIZE             16
 #endif
 
 /*===========================================================================*/
@@ -230,21 +230,21 @@
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(NVM_FEE_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define NVM_FEE_USE_MUTUAL_EXCLUSION    TRUE
+#define NVM_FEE_USE_MUTUAL_EXCLUSION        TRUE
 #endif
 
 /**
  * @brief   Sets the number of payload bytes per slot.
  */
 #if !defined(NVM_FEE_SLOT_PAYLOAD_SIZE) || defined(__DOXYGEN__)
-#define NVM_FEE_SLOT_PAYLOAD_SIZE       8
+#define NVM_FEE_SLOT_PAYLOAD_SIZE           8
 #endif
 
 /**
  * @brief   Sets the minimum writable unit of the underlying flash device.
  */
 #if !defined(NVM_FEE_WRITE_UNIT_SIZE) || defined(__DOXYGEN__)
-#define NVM_FEE_WRITE_UNIT_SIZE         2
+#define NVM_FEE_WRITE_UNIT_SIZE             2
 #endif
 
 /*===========================================================================*/
@@ -259,7 +259,7 @@
  * @note    This does only make sense if code is being executed from RAM.
  */
 #if !defined(FLASH_NICE_WAITING) || defined(__DOXYGEN__)
-#define FLASH_NICE_WAITING                      FALSE
+#define FLASH_NICE_WAITING                  FALSE
 #endif
 
 /**
@@ -267,7 +267,7 @@
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(FLASH_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define FLASH_USE_MUTUAL_EXCLUSION              FALSE
+#define FLASH_USE_MUTUAL_EXCLUSION          FALSE
 #endif
 
 /*===========================================================================*/
@@ -279,7 +279,7 @@
  * @note    Disabling this option saves both code and data space.
  */
 #if !defined(GD_ILI9341_USE_MUTUAL_EXCLUSION) || defined(__DOXYGEN__)
-#define GD_ILI9341_USE_MUTUAL_EXCLUSION         FALSE
+#define GD_ILI9341_USE_MUTUAL_EXCLUSION     FALSE
 #endif
 
 #endif /* _QHALCONF_H_ */
