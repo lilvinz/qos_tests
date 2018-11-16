@@ -12,27 +12,19 @@
     limitations under the License.
 */
 
-#ifndef WATCHDOG_H_
-#define WATCHDOG_H_
+#ifndef TARGET_CFG_H
+#define TARGET_CFG_H
 
-enum watchdog_source
-{
-    WATCHDOG_MOD_TEST,
-    WATCHDOG_MOD_TEST_CPP,
-};
+#include "board_drivers.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#define LED_STATUS              &led_green
+#define LED_WARNING             &led_red
 
-void watchdog_register(enum watchdog_source source);
-void watchdog_reload(enum watchdog_source source);
+#define PARTITION_BL            ((BaseNVMDevice*)&nvm_part_internal_flash_bl)
+#define PARTITION_FW            ((BaseNVMDevice*)&nvm_part_internal_flash_fw)
+#define PARTITION_BL_UPDATE     ((BaseNVMDevice*)&nvm_memory_bl_bin)
 
-#ifdef __cplusplus
-}
-#endif
+/* List modules here. */
+#define MOD_TEST_CPP                TRUE
 
-
-
-#endif /* WATCHDOG_H_ */
+#endif /* TARGET_CFG_H */
