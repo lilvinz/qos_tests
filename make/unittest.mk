@@ -28,6 +28,8 @@ $(foreach src,$(ALLSRC),$(eval $(call COMPILE_C_TEMPLATE,$(src))))
 
 $(foreach src,$(ALLCPPSRC),$(eval $(call COMPILE_CPP_TEMPLATE,$(src))))
 
+CPPFLAGS += $(CFLAGS)
+
 # Specific extensions to CPPFLAGS only for the google test library
 $(OUTDIR)/gtest-all.o : CPPFLAGS += -I$(GTEST_DIR)
 $(eval $(call COMPILE_CPP_TEMPLATE, $(GTEST_DIR)/src/gtest-all.cc))
