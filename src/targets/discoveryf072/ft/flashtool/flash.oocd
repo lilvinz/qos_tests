@@ -1,0 +1,12 @@
+source [find interface/stlink-v2.cfg]
+transport select hla_swd
+source [find target/stm32f4x.cfg]
+version
+init
+reset halt
+targets
+flash write_image erase ef_discoveryf407.bin 0x08000000 bin
+verify_image ef_discoveryf407.bin
+reset halt
+resume
+shutdown
