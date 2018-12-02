@@ -42,6 +42,7 @@ MEMORY
 
 /* Flash region to be used for exception vectors.*/
 REGION_ALIAS("VECTORS_FLASH", flash0);
+REGION_ALIAS("VECTORS_RAM", ram0);
 REGION_ALIAS("VECTORS_FLASH_LMA", flash0);
 
 /* Flash region to be used for module initcalls.*/

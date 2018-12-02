@@ -19,7 +19,7 @@
  */
 MEMORY
 {
-    flash0  : org = 0x08000000, len = 128k
+    flash0  : org = 0x08000000 + 64k, len = 128k
     flash1  : org = 0x00000000, len = 0
     flash2  : org = 0x00000000, len = 0
     flash3  : org = 0x00000000, len = 0
@@ -42,6 +42,7 @@ MEMORY
 
 /* Flash region to be used for exception vectors.*/
 REGION_ALIAS("VECTORS_FLASH", flash0);
+REGION_ALIAS("VECTORS_RAM", ram0);
 REGION_ALIAS("VECTORS_FLASH_LMA", flash0);
 
 /* Flash region to be used for module initcalls.*/
