@@ -75,14 +75,14 @@ CFLAGS += -ffunction-sections -fdata-sections -fno-common
 CFLAGS += -fno-builtin-printf -nodefaultlibs
 CFLAGS += -MMD -MP -MF $(OUTDIR)/$(@F).d
 CFLAGS += -std=gnu99
-CFLAGS += -mcpu=cortex-m4
+CFLAGS += -mcpu=cortex-m0
 ifdef NDEBUG
     CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
 CFLAGS += $(patsubst %, -I%, $(EXTRAINCDIRS))
 
 # Assembler flags
-ASFLAGS += -mcpu=cortex-m4
+ASFLAGS += -mcpu=cortex-m0
 ifdef NDEBUG
     ASFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 endif
