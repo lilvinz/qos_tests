@@ -67,8 +67,8 @@ void __early_init(void)
             DBGMCU_APB1_FZ_DBG_I2C1_SMBUS_TIMEOUT |
             DBGMCU_APB1_FZ_DBG_CAN_STOP;
     dbg->APB2FZ =
-            //DBGMCU_APB2_FZ_DBG_TIM1_STOP |
-            //DBGMCU_APB2_FZ_DBG_TIM15_STOP |
+            DBGMCU_APB2_FZ_DBG_TIM1_STOP |
+            DBGMCU_APB2_FZ_DBG_TIM15_STOP |
             DBGMCU_APB2_FZ_DBG_TIM16_STOP |
             DBGMCU_APB2_FZ_DBG_TIM17_STOP ;
 #else
@@ -114,13 +114,6 @@ void boardInit(void)
 #endif /* HAL_USE_NVM_FEE */
 #endif /* HAL_USE_NVM_PARTITION */
 #endif /* HAL_USE_FLASH */
-
-    /* nvm memory drivers */
-#if HAL_USE_NVM_MEMORY
-#if STM32_BKPRAM_ENABLE == TRUE
-    nvmmemoryObjectInit(&nvm_memory_bkpsram);
-#endif /* STM32_BKPRAM_ENABLE == TRUE */
-#endif /* HAL_USE_NVM_MEMORY */
 }
 
 /**
@@ -151,20 +144,13 @@ void boardStart(void)
 #endif /* HAL_USE_NVM_PARTITION */
 #endif /* HAL_USE_FLASH */
 
-    /* nvm memory drivers */
-#if HAL_USE_NVM_MEMORY
-#if STM32_BKPRAM_ENABLE == TRUE
-    nvmmemoryStart(&nvm_memory_bkpsram, &nvm_memory_bkpsram_cfg);
-#endif /* STM32_BKPRAM_ENABLE == TRUE */
-#endif /* HAL_USE_NVM_MEMORY */
-
     /*
      * Set low level board options
      */
 #if defined(NDEBUG)
 #if HAL_USE_FLASH
     /* Enable brown out detection.
-     * note: the discoveryf407 board provides 3V so
+     * note: the discoveryf072 board provides 3V so
      * we can only use LEVEL 2 here */
     flash_lld_ob_bor(&FLASHD, OB_BOR_LEVEL_2);
 
@@ -186,14 +172,6 @@ void boardStart(void)
  */
 void boardStop(void)
 {
-    /* nvm memory drivers */
-#if HAL_USE_NVM_MEMORY
-#if STM32_BKPRAM_ENABLE == TRUE
-    nvmmemorySync(&nvm_memory_bkpsram);
-    nvmmemoryStop(&nvm_memory_bkpsram);
-#endif /* STM32_BKPRAM_ENABLE == TRUE */
-#endif /* HAL_USE_NVM_MEMORY */
-
     /* Internal flash */
 #if HAL_USE_FLASH
 #if HAL_USE_NVM_PARTITION

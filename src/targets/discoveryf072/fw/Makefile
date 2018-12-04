@@ -41,12 +41,8 @@ EXTRAINCDIRS += ../common
 # -U options for C here.
 ifdef NDEBUG
     CFLAGS += -DNDEBUG
-    CFLAGS += -DCORTEX_USE_FPU=TRUE
     CFLAGS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
-else
-    CFLAGS += -DCORTEX_USE_FPU=FALSE
 endif
-CFLAGS += -DCORTEX_VTOR_INIT=$$(($(FW_ORIGIN) - $(EF_ORIGIN)))
 CFLAGS += -DBL_BIN=$(OUTDIR)/../bl_$(BOARD_NAME)/bl_$(BOARD_NAME).bin
 CFLAGS += -DBG_BIN=$(OUTDIR)/../bg_$(BOARD_NAME)/bg_$(BOARD_NAME).bin
 
@@ -54,10 +50,7 @@ CFLAGS += -DBG_BIN=$(OUTDIR)/../bg_$(BOARD_NAME)/bg_$(BOARD_NAME).bin
 # Assembler with preprocessor here.
 ifdef NDEBUG
     ASFLAGS += -DNDEBUG
-    ASFLAGS += -DCORTEX_USE_FPU=TRUE
     ASFLAGS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
-else
-    ASFLAGS += -DCORTEX_USE_FPU=FALSE
 endif
 ASFLAGS += -D__ASSEMBLY__
 
@@ -76,16 +69,10 @@ CFLAGS += -fno-builtin-printf -nodefaultlibs
 CFLAGS += -MMD -MP -MF $(OUTDIR)/$(@F).d
 CFLAGS += -std=gnu99
 CFLAGS += -mcpu=cortex-m0
-ifdef NDEBUG
-    CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-endif
 CFLAGS += $(patsubst %, -I%, $(EXTRAINCDIRS))
 
 # Assembler flags
 ASFLAGS += -mcpu=cortex-m0
-ifdef NDEBUG
-    ASFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-endif
 ASFLAGS += $(patsubst %, -I%, $(EXTRAINCDIRS))
 ASFLAGS += -x assembler-with-cpp
 

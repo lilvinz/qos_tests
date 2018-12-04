@@ -43,9 +43,6 @@ extern NVMFeeDriver nvm_fee;
 #if defined(BL_BIN)
 extern NVMMemoryDriver nvm_memory_bl_bin;
 #endif /* defined(BL_BIN) */
-#if STM32_BKPRAM_ENABLE == TRUE
-extern NVMMemoryDriver nvm_memory_bkpsram;
-#endif /* STM32_BKPRAM_ENABLE == TRUE */
 #endif /* HAL_USE_NVM_MEMORY */
 
 #endif /* BOARD_DRIVERS_H_ */
